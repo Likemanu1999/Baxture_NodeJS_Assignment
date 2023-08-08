@@ -1,0 +1,157 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-6">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+						<div class="col-md-6 text-right">
+							<!-- <a *ngIf="enableCreatePIButton" class="btn btn-primary text-white"
+								(click)="createPi()">Create PI</a> -->
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="annual_ctc_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<!-- <div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getData()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly />
+												</div> -->
+												<div class="form-group mb-1">
+													<p-dropdown [options]="financial_year_list"
+														[(ngModel)]="selected_financial_year"
+														optionLabel="financial_year" (onChange)="getData()">
+													</p-dropdown>
+												</div>
+												<div class="form-group mb-1">
+													<p-dropdown [options]="statusList"
+														[(ngModel)]="selected_status"
+														optionLabel="name" optionValue="id" (onChange)="getData()">
+													</p-dropdown>
+												</div>
+												<div class="form-group mb-1">
+													<p-dropdown [options]="department"
+														[(ngModel)]="selected_department"
+														optionLabel="dept_name" optionValue="id" (onChange)="getData()">
+													</p-dropdown>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData>
+									<tr class="ui-selectable-row">
+										<td>{{rowData.staff_id}}
+											<button *ngIf="role_id == 1" class="ml-2 btn btn-primary btn-sm"
+												(click)="onChangeValue(null, rowData, 'update_tds')">
+												<i class="fa fa-refresh"></i>
+											</button>
+										</td>
+										<td>{{rowData.emp_name}}</td>
+										<td>
+											<input type="text" class="form-control w-auto" name="{{rowData.annual_ctc}}"
+												placeholder="Annual CTC" value="{{rowData.annual_ctc}}"
+												(change)="onChangeValue($event.target.value, rowData, 'annual_ctc')"
+												numbersOnly [readonly]="!rowData.enable_ctc_edit">
+										</td>
+										<td>{{rowData.basic | currency:'INR'}}</td>
+										<td>{{rowData.da | currency:'INR'}}</td>
+										<td>{{rowData.hra | currency:'INR'}}</td>
+										<td>{{rowData.lta | currency:'INR'}}</td>
+										<td>{{rowData.child_edu_allowance | currency:'INR'}}</td>
+										<td>{{rowData.special_allowance | currency:'INR'}}</td>
+										<td>{{rowData.employee_pf | currency:'INR'}}</td>
+										<td>{{rowData.employer_pf | currency:'INR'}}</td>
+										<td>
+											<input type="text" class="form-control w-auto" name="{{rowData.feb_pt}}"
+												placeholder="Feb PT" value="{{rowData.feb_pt}}"
+												(change)="onChangeValue($event.target.value, rowData, 'feb_pt')"
+												numbersOnly>
+										</td>
+										<td>
+											<input type="text" class="form-control w-auto" name="{{rowData.other_pt}}"
+												placeholder="Other PT" value="{{rowData.other_pt}}"
+												(change)="onChangeValue($event.target.value, rowData, 'other_pt')"
+												numbersOnly>
+										</td>
+										<td>
+											<input type="text" class="form-control w-auto" name="{{rowData.bonus}}"
+												placeholder="Bonus" value="{{rowData.bonus}}"
+												(change)="onChangeValue($event.target.value, rowData, 'bonus')"
+												numbersOnly>
+										</td>
+										<td>
+											<input type="text" class="form-control w-auto" name="{{rowData.incentive}}"
+												placeholder="Incentive" value="{{rowData.incentive}}"
+												(change)="onChangeValue($event.target.value, rowData, 'incentive')"
+												numbersOnly>
+										</td>
+										<td>
+											<input type="text" class="form-control w-auto"
+												name="{{rowData.additional_bonus}}" placeholder="Additional Bonus"
+												value="{{rowData.additional_bonus}}"
+												(change)="onChangeValue($event.target.value, rowData, 'additional_bonus')"
+												numbersOnly>
+										</td>
+										<td>{{rowData.tds | currency:'INR'}}</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

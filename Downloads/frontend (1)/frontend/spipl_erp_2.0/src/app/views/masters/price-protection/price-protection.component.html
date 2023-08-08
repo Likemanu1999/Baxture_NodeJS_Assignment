@@ -1,0 +1,126 @@
+<div class="animated fadeIn custom_body">
+    <div class="row">
+        <div class="col-md-12 p-0">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-1.5">
+                            <i class="fa fa-list"></i> {{ page_title }}
+                        </div>
+                        <div class="col-md-2">
+                            <a class="btn btn-success text-white mb-1 mr-2" (click)="exportData('Excel')"
+                                data-toggle="tooltip" data-placement="top" title="Excel">
+                                <i class="fa fa-file-excel-o"></i>
+                                <span class="export-text d-none">Excel</span>
+                            </a>
+                            <a class="btn btn-danger text-white mb-1 mr-2" (click)="exportData('PDF')"
+                                data-toggle="tooltip" data-placement="top" title="PDF">
+                                <i class="fa fa-file-pdf-o"></i>
+                                <span class="export-text d-none">PDF</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <ng-select id="company" placeholder="Select Company" [searchable]="true" [clearable]="true"
+                                bindLabel="org_name" bindValue="id" [items]="data">
+                            </ng-select>
+                        </div>
+                        <div class="col-md-3">
+                            <input pInputText [(ngModel)]="selected_date_range" (ngModelChange)="getCompanyList()"
+                                [bsConfig]="datePickerConfig" #dp="bsDaterangepicker" bsDaterangepicker
+                                placeholder="Choose Date Range" class="form-control page-filter" readonly />
+
+                        </div>
+                    </div>
+                    <!-- <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p-table #dt dataKey="id" styleClass="" [value]="" [showCurrentPageReport]="true"
+                                [rowHover]="true" [loading]="isLoading" [autoLayout]="true"
+                                currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+                                <ng-template pTemplate="caption">
+                                    <div class="row">
+                                        <div class="col-md-9">
+                                            <div class="form-inline">
+                                                <a class="btn btn-success text-white mb-1 mr-2"
+                                                    (click)="exportData('Excel')" data-toggle="tooltip"
+                                                    data-placement="top" title="Excel">
+                                                    <i class="fa fa-file-excel-o"></i>
+                                                    <span class="export-text d-none">Excel</span>
+                                                </a>
+                                                <a class="btn btn-danger text-white mb-1 mr-2"
+                                                    (click)="exportData('PDF')" data-toggle="tooltip"
+                                                    data-placement="top" title="PDF">
+                                                    <i class="fa fa-file-pdf-o"></i>
+                                                    <span class="export-text d-none">PDF</span>
+                                                </a>
+                                                <div class="form-inline">
+                                                    <ng-select id="company" style="font-size: 12px;"
+                                                        placeholder="Select Company" [searchable]="true"
+                                                        [clearable]="true" bindLabel="org_name" bindValue="id"
+                                                        [items]="data">
+                                                    </ng-select>
+                                                </div>
+                                                <div class="form-inline">
+                                                    <input pInputText [(ngModel)]="selected_date_range"
+                                                        (ngModelChange)="getCompanyList()" [bsConfig]="datePickerConfig"
+                                                        #dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+                                                        placeholder="Choose Date Range" class="form-control page-filter"
+                                                        readonly />
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="w-100 mt-1 pull-right">
+                                                <input pInputText type="text" class="form-control"
+                                                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                    placeholder="Global Search" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <table class="table">
+        <tr class="table-row-not-expanded" *ngFor="let item of section;">
+            <td class="cell" (click)="item.isExpanded = !item.isExpanded">
+                <div>{{ item.name }}</div>
+
+                <div *ngIf="item.isExpanded" class="expanded-panel">
+                    <div class="table-container">
+                        <table class="table">
+                            <tr class="header-row">
+                                <th></th>
+                                <th class="header">Section</th>
+                                <th class="header">From Date</th>
+                                <th class="header">To Date</th>
+                                <th class="header">Value</th>
+                            </tr>
+                            <tr class="table-row" *ngFor="let items of data2;">
+                                <td><input type="checkbox"></td>
+                                <td class="cell">{{items.grade_name}}</td>
+                                <td class="cell">{{selected_date_range[0] | date:'dd/MM/yyyy'}}</td>
+                                <td class="cell">{{selected_date_range[1] | date:'dd/MM/yyyy'}}</td>
+                                <td><input type="text"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+
+
+
+
+
+    <toaster-container [toasterconfig]=" toasterconfig"></toaster-container>

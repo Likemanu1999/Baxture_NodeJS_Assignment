@@ -1,0 +1,284 @@
+<div class="animated fadeIn" *ngIf="!payablePara">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<i class="fa fa-inr"></i> {{ page_title }}
+					<button class="btn btn-outline-primary active pull-right" (click)="onAdd()" *ngIf="add_opt"> + Add
+						Expense</button>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="exp_table" [value]="data" [rows]="10"
+								[rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="selected_cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2" data-toggle="tooltip"
+													data-placement="top" title="Excel" (click)="exportData('Excel')">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2" data-toggle="tooltip"
+													data-placement="top" title="PDF" (click)="exportData('pdf')">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getCols()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly />
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"
+														style="padding-left: 10px;"></app-dropdown-daterange>
+												</div>
+												<div class="form-group mb-1 mr-1">
+													<p-dropdown [options]="companyList" [(ngModel)]="selected_company"
+														optionLabel="name" defaultLabel="All"
+														(onChange)="onChangeCompany($event)" class="dropdown-width">
+													</p-dropdown>
+												</div>
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of selected_cols"
+											[style.width]='col.style'>
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of selected_cols" [style.width]='col.style'>
+											<p-multiSelect *ngIf="col.filter"
+												[options]="col.dropdown" defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row ">
+										<td *ngFor="let col of selected_cols; let i = index" [attr.data-index]="i"
+											[attr.id]="col.id" [style.width]='col.style'
+											[ngClass]="(rowData.is_open == 0) ? 'font-weight-bold' : ''">
+											<div *ngIf="getColumnPresent(col.field)">
+												<div *ngIf="col.field == 'import_local_flag'">
+													<span *ngIf=" rowData[col.field] == 1"
+														class="badge badge-success">Import</span>
+													<span *ngIf="rowData[col.field] ==2"
+														class="badge badge-success">Local</span>
+													<span *ngIf="rowData[col.field] ==3"
+														class="badge badge-success">Common</span>
+
+												</div>
+												<div *ngIf="col.field == 'refundable_status'">
+													{{getRefundableStatus(rowData[col.field])}}
+												</div>
+												<div *ngIf="col.field == 'service_provider'">
+													{{rowData[col.field]}}
+												</div>
+												<div *ngIf="col.field == 'expense_copy'">
+													<!-- <a *ngIf="rowData[col.field] != null" [ngClass]="back"
+														class="btn btn-success btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="Download"
+														target="_blank" download (click)="onAction(rowData[col.field])">
+														<i class="fa fa-download"></i>
+													</a> -->
+													<a *ngIf="rowData[col.field] != null"
+													class="btn btn-success btn-sm action-btn mr-1 mb-1"
+													data-toggle="tooltip" data-placement="top" title="Download"
+													(click)="onAction(rowData[col.field])">
+													<i class="fa fa-download"></i>
+												</a>
+												</div>
+												<div *ngIf="col.field == 'status'">
+													<div *ngIf="rowData[col.field] == 'Pending'"
+														class="btn btn-pill btn-sm btn-warning">
+														<a style="cursor: pointer;" data-placement="top"
+															title="Change Status" mwlConfirmationPopover
+															[popoverTitle]="popoverTitle1"
+															[popoverMessage]="popoverMessage1"
+															[confirmText]="confirmText1" [cancelText]="cancelText1"
+															[placement]="placement" closeOnOutsideClick="true"
+															confirmButtonType="success" cancelButtonType="danger"
+															(confirm)="changeStatus(rowData,'change')"
+															(cancel)="changeStatus(rowData,'reject')">{{rowData[col.field]}}</a>
+
+													</div>
+													<div *ngIf="rowData[col.field] == 'Approved'"
+														class="btn btn-pill btn-sm btn-success">
+														{{rowData[col.field]}}</div>
+
+													<div *ngIf="rowData[col.field] == 'Rejected'"
+														class="btn btn-pill btn-sm btn-danger">
+														{{rowData[col.field]}}</div>
+												</div>
+
+												<div *ngIf="col.field != 'id' && col.field != 'action'">
+													<span class="ui-column-title">{{ col.header }}: </span>
+
+													<div *ngIf="col.type == null">
+
+														{{ rowData[col.field] }}
+
+													</div>
+													<div *ngIf="col.type == 'Amount'">
+														{{ rowData[col.field] | currency:'INR' }}
+
+													</div>
+												</div>
+											</div>
+
+											<div *ngIf="col.field == 'action'">
+												<a class="btn btn-outline-info btn-sm action-btn mr-1 mb-1"
+													data-toggle="tooltip" data-placement="top" title="Edit Order"
+													(click)="onEdit(rowData.id, 'Edit')">
+													<i class="fa fa-pencil"></i>
+												</a>
+												<a class="btn btn-outline-danger btn-sm action-btn mr-1 mb-1"
+													data-toggle="tooltip" data-placement="top" title="Delete Order"
+													mwlConfirmationPopover [popoverTitle]="popoverTitle"
+													[popoverMessage]="popoverMessage1" [confirmText]="confirmText"
+													[cancelText]="cancelText" [placement]="placement"
+													closeOnOutsideClick="true" confirmButtonType="success"
+													cancelButtonType="danger" (confirm)="onDelete(rowData.id, 'Delete')"
+													(cancel)="cancelClicked = true">
+													<i class="fa fa-trash"></i>
+												</a>
+											</div>
+											<div *ngIf="col.field == 'refund_access'">
+												<button class="btn btn-primary"
+													(click)="onEditRefund(rowData.id)">Refund</button>
+											</div>
+
+											<div *ngIf="col.field=='reimburse_access'">
+												<button class="btn btn-primary"
+													(click)="onEditReimburse(rowData.amount,rowData.id)">Reimburse</button>
+											</div>
+
+											<div *ngIf="col.field =='payment_request'">
+												<div *ngIf="rowData['status'] == 1">
+													<button class="btn btn-primary"
+														(click)="onPaymentClick(rowData)">Payment</button>
+												</div>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of selected_cols">
+											<strong *ngIf="col.type == 'Amount'">
+												Total:{{col.total| currency:'INR'}}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="selected_cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+</div>
+
+
+
+<app-payable-request [initialPara]="payablePara" *ngIf="payablePara" (payableBack)="backFromPayable($event)">
+</app-payable-request>
+
+
+<div bsModal #myModalRefund="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<form [formGroup]="refundUpdateForm" novalidate (ngSubmit)="onUpdateRefund()" class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">Update Refund</h4>
+					<button type="button" class="close" (click)="myModalRefund.hide()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="col-md-8">
+
+						<div class="form-group">
+							<label for="up_refundable_status" class="col-form-label">Refund status</label>
+							<select class="form-control" id="up_refundable_status" name="up_refundable_status"
+								formControlName="up_refundable_status">
+								<option value="0">Partial Refund</option>
+								<option value="1">Full Refund</option>
+								<option value="2">Non Refundable</option>
+							</select>
+						</div>
+
+
+						<div class="form-group">
+							<label class="col-form-label" for="up_refund_amount">Refund Amount</label>
+							<input class="form-control" id="up_refund_amount" type="text"
+								formControlName="up_refund_amount" placeholder="Enter Refund Amount"
+								autocomplete="given-name" required autofocus />
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="myModalRefund.hide()">Close</button>
+					<button type="submit" class="btn btn-primary">Update</button>
+				</div>
+			</form>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div bsModal #myModalReimburse="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<form [formGroup]="reimburseUpdateForm" novalidate (ngSubmit)="onUpdateReimburse()"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">Update Reimburse Amount</h4>
+					<button type="button" class="close" (click)="myModalReimburse.hide()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="col-md-8">
+						<div class="form-group">
+							<label class="col-form-label" for="up_reimburse_amount">Reimburse Amount</label>
+							<input class="form-control" id="up_reimburse_amount" type="text"
+								formControlName="up_reimburse_amount" placeholder="Enter Reimburse Amount"
+								autocomplete="given-name" required autofocus />
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="myModalReimburse.hide()">Close</button>
+					<button type="submit" class="btn btn-primary">Update</button>
+				</div>
+			</form>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

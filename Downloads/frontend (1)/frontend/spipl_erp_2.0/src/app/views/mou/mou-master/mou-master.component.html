@@ -1,0 +1,250 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    
+                    <h4><i class="fa fa-handshake-o"></i> Memorandum of Understanding (MOU)
+                        <button class="btn btn-outline-primary active pull-right" (click)="addNew()"><i
+                            class="fa fa-plus"></i> Add MOU</button>
+                      </h4>
+                </div>
+                <div class="card-body overflow-auto">
+                    <div class="row" *ngIf="isLoading">
+                        <div class="col-md-12">
+                            <div style="text-align :center;">
+                                <app-loading-spinner></app-loading-spinner>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="!isLoading">
+                        <p-table #dt [value]="data" datakey="id" styleClass="ui-table-cons" [rowHover]="true"
+                            [rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]"
+                            [loading]="isLoading" [paginator]="true" [columns]="cols" (onFilter)="onFilter($event, dt)"
+                            currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries"
+                            [filterDelay]="0" [globalFilterFields]="[]">
+
+                            <ng-template pTemplate="caption">
+                                <div class="ui-helper-clearfix" style="text-align: left">
+                                    <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                        (click)="exportExcel()" style="margin-right: 0.5em;"
+                                        class="ui-button-success mb-2"></button>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header" let-columns>
+                                <tr>
+                                    <th pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+                                        style="width: 180px;">
+                                        {{col.header}} <p-sortIcon field="{{col.field}}">
+                                        </p-sortIcon>
+                                    </th>
+                                </tr>
+
+
+                                <tr>
+                                    <th *ngIf=" getColumnPresent('manufacture_name')">
+                                        <div *ngIf="manufacturer_arr.length > 0 ">
+                                            <p-multiSelect [options]="manufacturer_arr" placeholder="All"
+                                                (onChange)="onchange($event,'manufacture_name')"
+                                                styleClass="ui-column-filter" optionLabel='manufacture_name'>
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th *ngIf=" getColumnPresent('product_name')">
+                                        <div *ngIf="product_arr.length > 0 ">
+                                            <p-multiSelect [options]="product_arr" placeholder="All"
+                                                (onChange)="onchange($event,'product_name')"
+                                                styleClass="ui-column-filter" optionLabel='product_name'>
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item let-columns>
+                                <tr class="ui-selectable-row">
+
+
+                                    <td>
+                                        <span class="ui-column-title">Manufacturer Name</span>
+                                        {{item.sub_org_master.sub_org_name}}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Sector</span>
+                                        {{item.product_master.name}}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Date</span>
+                                        {{item.date | date: 'MMM' }} - {{item.date | date: 'yyyy' }}
+
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Quantity</span>
+                                        {{item.quantity | number : '1.0-3'}}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Total Lifting</span>
+                                        {{item.lifting_qty | number : '1.0-3'}}
+                                    </td>
+
+                                    <td>
+                                        <span class="ui-column-title">Total Pending</span>
+                                        {{item.remain_lifting_qty | number : '1.0-3'}}
+                                    </td>
+
+                                    <td>
+                                        <button class="btn btn-dark btn-sm mb-2 mx-2" (click)="duplicate(item.id)">
+                                            <i class="fa fa-clone"></i>
+                                        </button>
+
+                                        <button class="btn btn-primary btn-sm mb-2 mx-2" (click)="onEdit(item)">
+                                            <i class="fa fa-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm mb-2 " mwlConfirmationPopover
+                                            [popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+                                            [confirmText]="confirmText" [cancelText]="cancelText"
+                                            [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+                                            confirmButtonType="danger" cancelButtonType="success"
+                                            (confirm)="onDelete(item.id)" (cancel)="cancelClicked = true">
+                                            <i class="fa fa-trash text-white"></i>
+                                        </button>
+                                    </td>
+
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="footer">
+                               
+                               
+
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        {{ tot_mou_quantity | number : '1.0-3'}}
+
+                                    </td>
+                                    <td>
+                                        {{data | totalsum : 'lifting_qty' | number : '1.0-3'}}
+                                    </td>
+                                    <td>
+                                        {{data | totalsum : 'remain_lifting_qty' | number : '1.0-3' }}
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="6" class="text-center">No Data found.</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+
+
+                    </div>
+
+                </div>
+                <div class="card-footer">
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form [formGroup]="addMouForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+
+        <div class="modal-header">
+          <h4 class="modal-title">MOU</h4>
+          <button type="button" class="close" (click)=" oncloseModal()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="row">
+          
+            <div class="col-md-8">
+              <div class="form-group">
+                <label class="col-form-label" for="manufacture_id">Manufacture Name</label>
+
+                <ng-select id="manufacture_id" formControlName="manufacture_id" placeholder="Select Manufacture"
+                  [searchable]="true" [clearable]="true" bindLabel="sub_org_name" bindValue="sub_org_id"
+                  [items]="sub_org_arr" [(ngModel)]="manufacture_id">
+                  <ng-template ng-option-tmp let-item="item">
+                    <div title="{{item.sub_org_name}}">{{item.sub_org_name}}
+                    </div>
+                  </ng-template>
+                </ng-select>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="col-form-label" for="product_id">Sector</label>
+                <ng-select id="product_id" formControlName="product_id" placeholder="Select Product" [searchable]="true"
+                  [clearable]="true" bindLabel="name" bindValue="id" [items]="product_arr"
+                  [(ngModel)]="product_id">
+                </ng-select>
+              </div>
+            </div>
+
+            
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="col-form-label" for="date">Booking Date</label>
+                <input type="text" class="form-control" id="date" formControlName="date"
+                  [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                  bsDatepicker readonly placeholder="Enter Deal Date " [(ngModel)]="date"
+                  style="background-color: white;">
+              </div>
+            </div>
+
+          
+
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="col-form-label" for="quantity">Quantity</label>
+                <input type="text" class="form-control" id="quantity" formControlName="quantity"
+                  placeholder="Enter Deal Quantity " [(ngModel)]="quantity" numbersOnly>
+              </div>
+            </div>
+
+            <input type="hidden" class="form-control" formControlName="mou_id" [(ngModel)]="mou_id">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary mr-1" type="submit"
+            [disabled]="addMouForm.pristine || addMouForm.invalid">
+            <i class="fa fa-dot-circle-o"></i>Submit
+          </button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

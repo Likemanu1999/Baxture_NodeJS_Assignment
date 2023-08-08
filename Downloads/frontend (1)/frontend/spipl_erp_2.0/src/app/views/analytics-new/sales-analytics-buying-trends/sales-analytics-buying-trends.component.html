@@ -1,0 +1,143 @@
+<div class="animated fadeIn custom_body">
+    <div class="row">
+        <div class="col-md-12 p-0">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <i class="fa fa-money"></i> {{ page_title }}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p-table #dt dataKey="id" styleClass="sales_analytics_buying_trends_table"
+                                [paginator]="true" [rows]="10" [showCurrentPageReport]="true" [rowHover]="true"
+                                [loading]="isLoading" [autoLayout]="true" [columns]="cols" [value]="data"
+                                [globalFilterFields]="filter" [rowsPerPageOptions]="[10,25,50,100]"
+                                (onFilter)="onFilter($event, dt)" (onLazyLoad)="onFilter($event, dt)"
+                                currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+                                <ng-template pTemplate="caption">
+                                    <div class="row">
+                                        <div class="col-md-9">
+                                            <div class="form-inline">
+                                                <a class="btn btn-success text-white mb-1 mr-2"
+                                                    (click)="exportData('Excel')" data-toggle="tooltip"
+                                                    data-placement="top" title="Excel">
+                                                    <i class="fa fa-file-excel-o"></i>
+                                                    <span class="export-text d-none">Excel</span>
+                                                </a>
+                                                <a class="btn btn-danger text-white mb-1 mr-2"
+                                                    (click)="exportData('PDF')" data-toggle="tooltip"
+                                                    data-placement="top" title="PDF">
+                                                    <i class="fa fa-file-pdf-o"></i>
+                                                    <span class="export-text d-none">PDF</span>
+                                                </a>
+                                                <div class="form-group mb-1 mr-1">
+                                                    <input pInputText [(ngModel)]="selected_date_range"
+                                                        (ngModelChange)="clearDropdown(); getData()"
+                                                        [bsConfig]="datePickerConfig" #dp="bsDaterangepicker"
+                                                        [maxDate]="maxDate" bsDaterangepicker
+                                                        placeholder="Choose Date Range" class="form-control page-filter"
+                                                        readonly />
+                                                    <app-dropdown-daterange (dateEvent)="receiveDate($event)"
+                                                        [uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+                                                </div>
+                                                <div class="form-group mb-1 mr-1">
+                                                    <p-dropdown [options]="optionsList" [(ngModel)]="selected_option"
+                                                        optionLabel="name" (onChange)="onChangeOption($event)">
+                                                    </p-dropdown>
+                                                </div>
+                                                <div class="form-group mb-1 mr-1" *ngIf="selected_option.id==1">
+                                                    <ng-select id="id"
+                                                        style="font-size: 12px; min-width:200px; max-width: 200px;"
+                                                        [(ngModel)]="zone_id" placeholder="Select Zone"
+                                                        [searchable]="true" [clearable]="true" bindLabel="first_name"
+                                                        bindValue="id" [items]="staff" (change)="getCols()">
+                                                    </ng-select>
+                                                </div>
+                                                <div class="form-group mb-1 mr-1" *ngIf="selected_option.id==2">
+                                                    <ng-select id="id"
+                                                        style="font-size: 12px; min-width:200px; max-width: 200px;"
+                                                        [(ngModel)]="state_id" placeholder="Select  State"
+                                                        [searchable]="true" [clearable]="true" bindLabel="name"
+                                                        bindValue="id" [items]="stateList" (change)="getCols()">
+                                                    </ng-select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="w-100 mt-1 pull-right">
+                                                <input pInputText type="text" class="form-control"
+                                                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                    placeholder="Global Search" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+                                        <th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+                                            {{col.header}}
+                                            <p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th *ngFor="let col of columns">
+                                            <p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+                                                defaultLabel="All"
+                                                (onChange)="customFilter($event.value, col.field, 'in')">
+                                            </p-multiSelect>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-rowData let-expanded="expanded">
+                                    <tr class="ui-selectable-row">
+                                        <td *ngFor="let col of cols">
+                                            <div *ngIf="col.field != 'action'">
+                                                <span class="ui-column-title">{{col.header}}:</span>
+                                                <div *ngIf="col.type == null">
+                                                    {{rowData[col.field]}}
+                                                </div>
+                                                <div *ngIf="col.type =='days'">
+                                                    <span class="badge badge-warning round-badge" pTooltip="Last Order on: 
+																{{rowData.latest_booking_date | date:'dd-MMM-yyyy'}}">
+                                                        {{ rowData[col.field] }}
+                                                    </span>
+                                                    <!-- <span class="badge bg-danger">{{rowData[col.field] }}</span> -->
+                                                </div>
+                                                <div *ngIf="col.type == 'Quantity'">
+                                                    {{ rowData[col.field] }} MT
+                                                </div>
+                                                <div *ngIf="col.type =='Date'">
+                                                    {{rowData[col.field] | date: 'dd-MMM-yyyy'}}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="footer" let-columns>
+                                    <tr>
+                                        <td *ngFor="let col of cols">
+                                            <strong *ngIf="col.type == 'Quantity'">
+                                                Total: {{ col.total | number }} MT
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td [attr.colspan]="cols.length" class="text-center">
+                                            No Data Found
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,9 @@
+.centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .tds_header{
+      margin-top: 1% !important;
+  }

@@ -1,0 +1,198 @@
+
+<div class="row">
+    <div class="col-md-2 offset-5" *ngIf="isLoading">
+        <app-loading-spinner></app-loading-spinner>
+    </div>
+</div>
+
+
+
+<div class="row" *ngIf="!isLoading">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fa fa-money"></i> TDS Form Opening and Closing Date Settings
+
+                </h4>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+                    <!-- <div class="col-md-4">
+
+                        <div class="input-group">
+                            <label for=""><b>Financial Year</b></label> &nbsp;
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                            </div>
+                            
+                                <input type="text" id="dateRange" class="form-control" 
+                                    bsDaterangepicker [(ngModel)]="bsRangeValue" placeholder="Date Range"
+                                    [bsConfig]="datePickerConfig">
+                                    &nbsp; &nbsp;
+                                    <button type="button" class="btn btn-primary" (click)="getTaxComplianceMasterDetails()">
+                                        Search</button>
+                               
+                        </div>
+                    </div> -->
+                </div>
+
+
+                <br>
+                <p-table #dt [value]="financialYearList" styleClass="ui-table-tds-setting-list" [rowHover]="true"
+                    [rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100,150,200]"
+                    [loading]="isLoading" [paginator]="true" [columns]="selectedColumns" [autoLayout]="true"
+                    (onFilter)="onFilter($event, dt)"
+                    currentPageReportTemplate="Total Records : &#123;&#123;financialYearList.length&#125;&#125; "
+                    [filterDelay]="0" [globalFilterFields]="[]">
+
+                    <ng-template pTemplate="header">
+
+
+                        <tr>
+                            <th pSortableColumn="{{col.field}}" *ngFor="let col of cols"> {{col.header}}</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+
+                    </ng-template>
+                    <ng-template pTemplate="body" let-financialYearList let-index="rowIndex">
+                        <tr class="ui-selectable-row">
+
+                            <td style="width: 10%;">
+
+                                <span class="ui-column-title">Financial Year</span>
+                                {{financialYearList.financial_year }}
+                            </td>
+                            <td >
+                                <span class="ui-column-title">Actual/Budgeted Flag</span>
+                                {{getValue(financialYearList.tds_form_fill_flag)}}
+                               
+                            </td>
+                            <td >
+                                <span class="ui-column-title">Open From date</span>
+                                {{financialYearList.tds_form_open_from | date : 'dd/MM/yyyy'}}
+                            </td>
+
+                            <td >
+                                <span class="ui-column-title">Open To Date</span>
+                                {{financialYearList.tds_form_open_to | date : 'dd/MM/yyyy'}}
+                            </td>
+
+                            <td >
+                                <span class="ui-column-title">Remark</span>
+                                {{financialYearList.tds_form_remark}}
+
+                            </td>
+
+                            <td>
+                                <a class="btn btn-outline-info custom-action-btn" data-toggle="tooltip"
+                                    data-placement="left" title="Edit" (click)="onEdit(financialYearList)">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                            </td>
+
+
+
+
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="footer">
+                        <tr>
+                            <td colspan="6" style="text-align: right;"></td>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+
+                            <td colspan="6" style="text-align:left">No Records found.</td>
+                        </tr>
+                    </ng-template>
+
+                </p-table>
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+
+
+<div bsModal #TdsDateOpenCloseModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+    aria-labelledby="myModalLabel" aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog" role="document">
+
+        <div class="modal-content">
+            <form [formGroup]="updateForm" novalidate (ngSubmit)="updateTdsFormOpenCloseDate()" class="needs-validation">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">TDS Form Opening Closing Details</h4>
+                    <button type="button" class="close" (click)="closeModal()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-md-8">
+
+                        <div class="form-group ">
+                            <label class="col-form-label" for="">Financial Year</label>
+                            <input formControlName="financial_year" class="form-control"
+                                placeholder="Enter Financial Year" readonly='true' />
+                        </div>
+
+                        <div class="form-group " *ngIf="actual_budgted_flag_list.length > 0">
+                            <label class="col-form-label" for="">Select Actual Budgeted Status</label>
+                            <ng-select id="tds_form_fill_flag" formControlName="tds_form_fill_flag" placeholder="Select Type "
+                            [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                            [items]="actual_budgted_flag_list">
+                        </ng-select>
+                        </div>
+
+
+                        <div class="form-group ">
+                            <label class="col-form-label" for="">Form Opening Date</label>
+                            <input type="text" class="form-control" [(ngModel)]="formOpenDate"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker placeholder="Form Open Date"
+                                formControlName="tds_form_open_from">
+                        </div>
+
+                        <div class="form-group ">
+                            <label class="col-form-label" for="">Form Closing Date</label>
+                            <input type="text" class="form-control" [(ngModel)]="formCloseDate"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker placeholder="Form Close  Date"
+                                formControlName="tds_form_open_to">
+                        </div>
+
+
+                        <div class="form-group ">
+                            <label class="col-form-label" for="">Remark</label>
+                            <textarea formControlName="tds_form_remark" class="form-control"
+                                placeholder="Enter Remark if any"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <!-- <button type="submit" class="btn btn-primary" (click)="updateTdsFormOpenCloseDate()">Update</button> -->
+                </div>
+            </form>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

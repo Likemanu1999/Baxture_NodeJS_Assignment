@@ -1,0 +1,79 @@
+.scrollvertical {
+
+    height: 680px;
+    overflow: auto;
+  }
+  
+  .activeitem {background-color:rgb(221, 243, 233);}
+  
+  .headRow {background-color:rgb(221, 243, 233); padding-bottom: 10px;padding-bottom: 10px;}
+  
+  .email-app nav {
+    flex: 0 0 400px;
+    padding: 1rem;
+    border-right: 1px solid #c8ced3;
+  }
+
+  table {
+    width: 100%;
+  }
+  
+  tr.example-detail-row {
+    // height: 0;
+    height: 0px !important; 
+    min-height: 0px !important;
+  }
+  
+  tr.example-element-row:not(.example-expanded-row):hover {
+    background: whitesmoke;
+  }
+  
+  tr.example-element-row:not(.example-expanded-row):active {
+    background: #efefef;
+  }
+  
+  .example-element-row td {
+    border-bottom-width: 0;
+    overflow-wrap: break-word;
+  }
+  
+  .example-element-detail {
+    overflow: hidden;
+    // display: flex;
+  }
+  
+  .example-element-diagram {
+    min-width: 80px;
+    border: 2px solid black;
+    padding: 8px;
+    font-weight: lighter;
+    margin: 8px 0;
+    // height: 104px;
+  }
+  
+  .example-element-symbol {
+    font-weight: bold;
+    font-size: 40px;
+    line-height: normal;
+  }
+  
+  .example-element-description {
+    padding: 16px;
+  }
+  
+  .example-element-description-attribution {
+    opacity: 0.5;
+  }
+  
+.captionTopDiv2 {
+    display: flex;
+    justify-content: space-between;
+}
+
+.over-flow-wrap-break-word td{
+    overflow-wrap: break-word;
+}
+
+.margin-right-20{
+  margin-right: 20px;
+}

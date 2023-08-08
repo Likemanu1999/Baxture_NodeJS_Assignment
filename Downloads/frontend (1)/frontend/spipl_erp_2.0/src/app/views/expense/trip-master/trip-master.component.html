@@ -1,0 +1,105 @@
+<div class="animated fadeIn">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+            <i class="fa fa-compass fa-2x"></i><b>Trip List</b>
+            <button
+            class="btn btn-outline-primary active pull-right"
+            (click)="onAdd()" *ngIf="add_opt"> + Add Trip</button>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 offset-md-8">
+
+                      <div class="input-group">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text"><i class="fa fa-search"></i></span>
+                        </div>
+                        <input type="text" class="form-control" [(ngModel)]="filterQuery"
+                         placeholder="Search"/>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div *ngIf="isLoading" style="text-align: center;">
+                    <app-loading-spinner></app-loading-spinner>
+                  </div>
+
+                  <table class="table table-striped table-hover table-responsive-lg"
+                  [mfData]="data | tableFilter : filterQuery:filterArray"
+                  #mf="mfDataTable"
+                  [mfRowsOnPage]="5"
+                  *ngIf="!error && !isLoading"
+                  >
+                  <thead>
+                      <tr>
+                        <th>
+                          <mfDefaultSorter by="id">Sr.No.</mfDefaultSorter>
+                        </th>
+                        <th>
+                          <mfDefaultSorter by="trip_name">Trip name</mfDefaultSorter>
+                        </th>
+                        <th>
+                          <mfDefaultSorter by="agent_name">Agent Name</mfDefaultSorter>
+                        </th>
+                        <th>
+                          <mfDefaultSorter by="status">Status</mfDefaultSorter>
+                        </th>
+                        <th>
+                          <mfDefaultSorter by="description">Description</mfDefaultSorter>
+                        </th>
+                        <th>
+                          <mfDefaultSorter by="delete">Details</mfDefaultSorter>
+                      </th>
+                        <th *ngIf="edit_opt">
+                          <mfDefaultSorter by="delete">Edit</mfDefaultSorter>
+                      </th>
+                        <th *ngIf="del_opt">
+                            <mfDefaultSorter by="delete">Delete</mfDefaultSorter>
+                        </th>
+
+                      </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" [attr.id]="item.id">
+                        <td>{{i+1}}</td>
+                        <td>{{item.trip_name}}</td>
+                        <td>{{item.sub_org_master.sub_org_name}}</td>
+                        <td>{{ getStatus(item.status) }}</td>
+                        <td>{{item.description}}</td>
+
+                        <td><button class="btn btn-primary" (click)="onDetailView(item.id)">Details</button></td>
+                        <td *ngIf="edit_opt"><a style="cursor: pointer;" (click)="onEdit(item.id)"><i class="fa fa-pencil"></i></a></td>
+                        <td *ngIf="del_opt"><a style="cursor: pointer;"
+                            mwlConfirmationPopover
+                            [popoverTitle]="popoverTitle"
+                            [popoverMessage]="popoverMessage"
+                            [confirmText]="confirmText"
+                            [cancelText]="cancelText"
+                            [placement]="placement"
+                            [closeOnOutsideClick]="closeOnOutsideClick"
+                            confirmButtonType="danger"
+                            cancelButtonType="success"
+                            (confirm)="onDelete(item.id)"
+                            (cancel)="cancelClicked = true"
+                            ><i class="fa fa-trash"></i></a></td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="8">
+                          <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+
+            </div>
+
+        </div>
+      </div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+

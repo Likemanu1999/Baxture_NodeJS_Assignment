@@ -1,0 +1,848 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><em class="fa fa-truck"></em> License List
+                        <span class="pull-right"><button class="btn btn-primary" *ngIf="lic_add"
+                                (click)="onAddList()"><em class="fa fa-plus"></em></button></span>
+                    </h4>
+                </div>
+                <div class="card-body">
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-inline">
+                                <div class="form-group">
+                                    <label for="dateRange" class="font-weight-bold">Invoice Date: </label>
+                                    <div class="input-group mx-sm-4">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><em class="fa fa-calendar"></em></span>
+                                        </div>
+                                        
+                                        <input type="text" id="dateRange" class="form-control" bsDaterangepicker
+                                            [(ngModel)]="bsRangeValue" placeholder="Date Range"
+                                          >
+                                        <div class="input-group-prepend " style="cursor: pointer;"
+                                            (click)="clearDate()">
+                                            <span class="input-group-text"><em class="fa fa-times-circle"></em></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary" (click)="getLicense()">Get
+                                    License</button>
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 offset-5" *ngIf="isLoading">
+                            <app-loading-spinner></app-loading-spinner>
+                        </div>
+                    </div>
+
+
+                    <div class="row mt-4" *ngIf="!isLoading">
+
+
+                        <div class="col-12">
+                            <p-table #dt [value]="filter_table_data" dataKey="id" styleClass="ui-table-license"
+                                [rowHover]="true" [rows]="10" [showCurrentPageReport]="true"
+                                [rowsPerPageOptions]="[10,25,50,100]" [paginator]="true" [columns]="cols"
+                                (onFilter)="onFilter($event, dt)"
+                                currentPageReportTemplate="Total records: {{filter_table_data.length}}"
+                                [filterDelay]="0" [scrollable]="true"   [virtualRowHeight]="500"
+                                [globalFilterFields]="['lic_purchase_date','vendor_name','lic_no','lic_value','tot_utilise','lic_rate','lic_invoice_no','type_of_lic']">
+                                <ng-template pTemplate="caption">
+                                    <div class="ui-table-globalfilter-container">
+                                        <input pInputText type="text" class="form-control"
+                                            (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                            placeholder="Global Search" />
+                                    </div>
+                                    <div style="text-align: left">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <button *ngIf="lic_csv" type="button" pButton icon="pi pi-file-excel"
+                                                    iconPos="left" label="EXCEL" (click)="exportExcel()"
+                                                    style="margin-right: 0.5em;" class="ui-button-success"></button>
+                                                <button type="button" *ngIf="send_mail" pButton icon="pi pi-envelope"
+                                                    iconPos="left" label="SEND MAIL" (click)="sendMail()"
+                                                    style="margin-right: 0.5em;" class="ui-button-success"></button>
+                                                <!-- 
+                                                    <button type="button" pButton icon="pi pi-file" iconPos="left"
+                                                    label="Knock Off" (click)="knockoff()" style="margin-right: 0.5em;"
+                                                    class="ui-button-success" *ngIf="knockoff_button && knock_off"></button> -->
+
+                                                <button type="button" pButton icon="pi pi-file" iconPos="left"
+                                                    label="Knock Off" (click)="knockoff()" *ngIf="knock_off"
+                                                    style="margin-right: 0.5em;" class="ui-button-success"></button>
+
+                                                <button type="button" pButton icon="pi pi-file" iconPos="left"
+                                                    label="Transfer" (click)="transferedLicense()"
+                                                    style="margin-right: 0.5em;" class="ui-button-danger"></button>
+                                            </div>
+
+                                            <div class=" col-3" *ngIf="port_list">
+
+                                                <div class="form-group">
+                                                    <ng-select placeholder="Select Port " [searchable]="true"
+                                                        [clearable]="true" bindLabel="port_name" bindValue="id"
+                                                        [items]="port_list" (ngModelChange)="onSelectPort($event)"
+                                                        [(ngModel)]="port" style="font-size: 11px;">
+                                                    </ng-select>
+                                                </div>
+
+                                            </div>
+                                            <div class=" col-3">
+                                                <div class="form-group">
+
+                                                    <div class="form-group mx-sm-3">
+                                                        <ng-select [(ngModel)]="selected_status"
+                                                            placeholder="Select status" bindLabel="label"
+                                                            bindValue="value" [searchable]="false" [clearable]="false"
+                                                            [items]="license_status" style="width: 180px !important;"
+                                                            (change)="getLicense()" style="font-size: 11px;">
+                                                        </ng-select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+                                        <th style="width: 5rem">Sr.No.</th>
+                                        <th id="" pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+                                            [style.width.px]='col.style'> {{col.header}} <p-sortIcon
+                                                field="{{col.field}}"></p-sortIcon>
+                                        </th>
+                                    </tr>
+
+                                    <tr>
+                                        <th style="width: 5rem"></th>
+                                        <th style="width: 3rem">
+                                            <p-tableHeaderCheckbox (click)="onCheckAll(a.checked)" #a>
+                                            </p-tableHeaderCheckbox>
+                                        </th>
+                                        <th>
+                                            <p-multiSelect [options]="portList" defaultLabel="All" appendTo="body"
+                                                class="pt-filter-dropdown"
+                                                (onChange)="dt.filter($event.value, 'port_name', 'in')"
+                                                [(ngModel)]="selectedPort">
+                                            </p-multiSelect>
+                                        </th>
+
+                                        <th>
+                                            <input type="text" class="form-control" [(ngModel)]="lic_purchase_date"
+                                                (ngModelChange)="onDateSelect($event,'lic_purchase_date')"
+                                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                                #dp="bsDatepicker" bsDatepicker placeholder="Search by Date">
+                                        </th>   
+                                        <th> 
+                                            <!-- <input type="text" class="form-control" [(ngModel)]="expiry_date"
+                                                (ngModelChange)="onDateSelect($event,'expiry_date')"
+                                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                                #dp="bsDatepicker" bsDatepicker placeholder="Search by Date"> -->
+                                        </th>                                     
+
+                                        <th>
+                                            <input pInputText type="text"
+                                                (input)="dt.filter($event.target.value, 'lic_no', 'startsWith')"
+                                                placeholder="Search by Invoice Number"
+                                                class="ui-column-filter form-control">
+                                        </th>
+                                        <th colspan="3"></th>
+
+
+                                        <th>
+                                            <p-multiSelect [options]="vendorList" defaultLabel="All" appendTo="body"
+                                                class="pt-filter-dropdown"
+                                                (onChange)="dt.filter($event.value, 'vendor_name', 'in')">
+                                            </p-multiSelect>
+                                        </th>
+
+
+                                        <th>
+                                            <input pInputText type="text"
+                                                (input)="dt.filter($event.target.value, 'lic_invoice_no', 'startsWith')"
+                                                placeholder="Search by Invoice Number"
+                                                class="ui-column-filter form-control">
+                                        </th>
+
+                                        <th>
+                                            <input type="text" class="form-control" [(ngModel)]="invoice_date"
+                                                (ngModelChange)="onDateSelect($event,'invoice_date')"
+                                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                                #dp="bsDatepicker" bsDatepicker placeholder="Search by Date">
+                                        </th>
+
+                                        <th colspan="8"></th>
+                                    </tr>
+
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item let-columns let-i="rowIndex">
+                                    <tr class="ui-selectable-row">
+                                        <td style="width: 5rem">{{i+1}}</td>
+                                        <td style="width:100px">
+                                            <input type="checkbox" [value]="item" #inputs #checkboxes
+                                                (click)="onChange(checkboxes.checked,item)">
+                                            <span *ngIf="item.days"> <span
+                                                    class="badge badge-pill badge-danger a1">{{item.days}}</span></span>
+                                        </td>
+                                        <td style="width: 200px">{{item.port_name}}</td>
+                                        <td style="width: 200px">{{item.lic_purchase_date | date : 'dd/MM/yyyy'}}</td>
+                                        <td style="width:200px">                                      
+                                            {{item.expiry_date | date : 'dd/MM/yyyy'}}
+                                        </td>                                     
+                                        <td style="width: 200px"> {{item.lic_no}} <span class="badge badge-success">{{item.type_of_lic}}</span> <div *ngIf="item.mail_sent_dttm"
+                                                style="color: red;">Mail Sent: {{item.mail_sent_dttm | date: 'dd-MM-y
+                                                hh:mm:ss a'}}</div>
+                                        </td>
+                                        <td style="width: 200px"> {{item.lic_value | currencyInr}}</td>
+                                        <td style="width: 200px">{{item.tot_utilise | currencyInr}}
+                                            <i style="cursor: pointer;" class="fa fa-info-circle" aria-hidden="true"
+                                                (click)="getUtilizationByLicenceId(item.id)"></i>
+
+                                        </td>
+                                        <td style="width: 200px">{{item.balance | currencyInr}} </td>
+                                        <td style="width: 200px">{{item.vendor_name}}</td>
+                                        <td style="width: 200px">{{item.lic_invoice_no}}  <span
+                                                *ngIf="item.lic_invoice_master.invoice_file != null"><a [href]="file"
+                                                    *ngFor="let file of item.invoice_file" target="_blank">
+                                                    <button class="btn btn-primary btn-sm mr-1"><em
+                                                            class="fa fa-file"></em></button>
+                                                </a></span></td>
+                                        <td style="width: 200px">{{item.invoice_date | date: 'dd/MM/yyyy'}}
+
+                                        </td>
+                                        <td style="width: 100px">{{item.port_code}}</td>
+
+                                        <td style="width: 200px">
+                                            <a [href]="file" *ngFor="let file of item.lic_file" target="_blank">
+                                                <em class="fa fa-file"></em> &nbsp;&nbsp;
+                                            </a>
+                                        </td>
+                                        <td style="width: 200px">{{item.lic_rate}}</td>
+
+                                        <td pEditableColumn style="width: 200px">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+
+                                                    <select class="form-control"
+                                                        (keydown.enter)="updateStatus($event, item.id )"
+                                                        (change)="updateStatus($event, item.id )">
+                                                        <option value="0">Select</option>
+                                                        <option value="0">NO</option>
+                                                        <option value="1">YES</option>
+
+                                                    </select>
+
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    <span class="ui-column-title">Trasfered status</span>
+                                                    {{getTransferedStatus(item.transfered_status)}}
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+
+                                        <td style="width: 200px"><span
+                                                *ngIf="item.addedBy != null">{{item.addedBy.first_name}}
+                                                {{item.addedBy.last_name}}</span></td>
+                                        <td style="width: 200px">{{item.added_date |date: 'dd-MM-yyyy'}}</td>
+
+                                        <td style="width: 200px">
+                                            <button *ngIf="lic_edit" class="btn btn-primary btn-sm"
+                                                (click)="onAdd('edit',item)"><em class="fa fa-pencil"></em></button>
+
+                                            <button *ngIf="lic_delete && item.tot_utilise <=0"
+                                                class="btn btn-primary btn-sm" (click)="onDelete(item.id)"><em
+                                                    class="fa fa-trash"></em></button>
+                                        </td>
+                                        <td style="width: 200px">
+                                            <button class="btn btn-success btn-sm" (click)="transerToOrg(item)">
+                                                Transfer License</button>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template pTemplate="footer" let-columns>
+                                    <tr>
+                                        <td colspan="6" style="width: 984px"></td>
+                                        <td style="width: 200px">Total License val: {{total_lic_val | currencyInr}}</td>
+                                        <td style="width: 200px">Total Utilize : {{total_utilize_val | currencyInr}}
+                                        </td>
+                                        <td style="width: 200px">Total Balance: {{total_balance_val | currencyInr}}</td>
+                                        <td colspan="10" style="width: 2080px"></td>
+                                    </tr>
+                                    <td colspan="18" style="text-align:left">Total Records: {{filteredValuess?.length}}
+                                    </td>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td colspan="18" style="text-align:left">No Data found.</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+
+                        </div>
+                        <!--/.col-->
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div bsModal #addLicenseModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Invoice</h4>
+                <button type="button" class="close" (click)="closeModalForm()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="licenseForm" (ngSubmit)="addLicence()" autocomplete="off">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-form-label" for="invoice_id"><Strong>Invoice</Strong></label>
+                                <ng-select id="invoice_id" formControlName="invoice_id" placeholder="Select  Invoice"
+                                    [searchable]="true" [clearable]="false" bindLabel="lic_invoice_no" bindValue="id"
+                                    [items]="invoice_list" [ngClass]="{ 'is-invalid':f.invoice_id.errors }">
+                                </ng-select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-form-label" for="type_of_lic"><Strong>Type of License
+                                    </Strong></label>
+                                <ng-select id="type_of_lic" formControlName="type_of_lic"
+                                    placeholder="Select Type Of License" [searchable]="true" [clearable]="false"
+                                    bindLabel="name" bindValue="value" [items]="typeOfList"
+                                    [ngClass]="{ 'is-invalid':f.type_of_lic.errors }">
+                                </ng-select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-form-label" for="lic_no"><strong>License Number</strong></label>
+                                <input class="form-control" id="lic_no" formControlName="lic_no" type="text"
+                                    [ngClass]="{ 'is-invalid':f.lic_no.errors && f.lic_no.touched }">
+                                <div *ngIf="f.lic_no.errors && f.lic_no.touched" class="invalid-feedback">
+                                    <div *ngIf="f.lic_no.errors.required">License number is required</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="lic_purchase_date" class="col-form-label"><strong>License Purchase
+                                        Date</strong></label>
+                                <em class="fa fa-calendar"></em>
+                                <input type="text" id="lic_purchase_date" formControlName="lic_purchase_date"
+                                    class="form-control"
+                                    [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                                    #dp="bsDatepicker" bsDatepicker placement="up"
+                                    [ngClass]="{ 'is-invalid':f.lic_purchase_date.errors && f.lic_purchase_date.touched }">
+                                <div *ngIf="f.lic_purchase_date.errors && f.lic_purchase_date.touched"
+                                    class="invalid-feedback">
+                                    <div *ngIf="f.lic_purchase_date.errors.required">Purchase date is required</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-form-label" for="lic_value"><strong>license Value</strong></label>
+                                <em class="fa fa-inr"></em>
+                                <input class="form-control" id="lic_value" formControlName="lic_value" numbersOnly
+                                    type="text" [ngClass]="{ 'is-invalid':f.lic_value.errors && f.lic_value.touched }">
+                                <div *ngIf="f.lic_value.errors && f.lic_value.touched" class="invalid-feedback">
+                                    <div *ngIf="f.lic_value.errors.required">License value is required</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-form-label" for="port_code"><strong>Port Code</strong></label>
+                                <em class="fa fa-inr"></em>
+                                <input class="form-control" id="port_code" formControlName="port_code" 
+                                    type="text">
+                               
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="lic_file" class="col-form-label"><strong>license file</strong></label>
+                                <input type="file" class="form-control custom-file-input" id="lic_file" name="lic_file"
+                                    formControlName="lic_file" multiple (change)="licenseFileUploadEvent($event)"
+                                    [ngClass]="{ 'is-invalid':f.lic_file.errors && f.lic_file.touched }">
+
+                                <div *ngIf="f.lic_file.errors && f.lic_file.touched" class="invalid-feedback">
+                                    <div *ngIf="f.lic_file.errors.required">License file is required</div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="docs.length > 0">
+                                <div *ngFor="let doc of docs ; let i = index ">
+                                    <div>
+                                        <span> <a href="{{doc}}"><em class="fa fa-file"></em> {{doc |
+                                                fileName}}</a></span> <span style="cursor: pointer;"
+                                            (click)="deleteFile(i)"><em class="fa fa-trash"></em></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                    <div class="row mt-5">
+                        <div class="col text-center">
+                            <button class="btn btn-primary mr-1" type="submit" [disabled]="licenseForm.invalid">
+                                <em class="fa fa-dot-circle-o"></em>Submit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeModalForm()">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div bsModal #addModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog" role="document" style="max-width: 95%;" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Invoice</h4> &nbsp;
+                <button type="button" class="btn btn-primary" (click)="addRow()" [disabled]="addenable"><em
+                        class="fa fa-plus"></em></button>
+                <button type="button" class="close" (click)="closeAddModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <form [formGroup]="repeaterlicenseForm" (ngSubmit)="addLicenceList()" autocomplete="off">
+
+
+                            <div>
+                                <div class="row mb-2">
+                                    <div class="col-md-3">
+                                        <label>Invoice </label>
+                                        <ng-select formControlName="add_invoice_id" placeholder="Select  Invoice"
+                                            [searchable]="true" [clearable]="false" bindLabel="lic_invoice_no"
+                                            bindValue="id" [items]="invoice_list">
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+
+                                            <th>Type of License</th>
+                                            <th>License Number</th>
+                                            <th>Purchase Date</th>
+                                            <th>License Value</th>
+                                            <th>Port Code</th>
+                                            <th>License Files</th>
+                                            <th>Delete</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <tr formArrayName="licenseArr"
+                                            *ngFor="let item of repeaterlicenseForm.get('licenseArr')['controls'] ; let i = index">
+                                            <ng-container [formGroupName]=i>
+
+
+
+                                                <td>
+                                                    <ng-select formControlName="add_type_of_lic"
+                                                        placeholder="Select Type Of License" [searchable]="true"
+                                                        [clearable]="false" bindLabel="name" bindValue="value"
+                                                        [items]="typeOfList">
+                                                    </ng-select>
+                                                </td>
+
+                                                <td>
+                                                    <input class="form-control" formControlName="add_lic_no" type="text"
+                                                        placeholder="license Number">
+                                                </td>
+
+                                                <td>
+                                                    <input type="text" formControlName="add_lic_purchase_date"
+                                                        class="form-control"
+                                                        [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                                                        #dp="bsDatepicker" bsDatepicker placement="up"
+                                                        placeholder="License Date">
+
+                                                </td>
+                                                <td>
+                                                    <input class="form-control" formControlName="add_lic_value"
+                                                        numbersOnly type="text" placeholder="license Value">
+                                                </td>
+                                                <td>
+                                                    <input class="form-control" formControlName="port_code" type="text"
+                                                        placeholder="Port Code">
+                                                </td>
+                                                <td>
+
+                                                    <input type="file" class="form-control custom-file-input"
+                                                        formControlName="add_lic_file" multiple
+                                                        (change)="fileuploadlic($event,ind.value, i)">
+
+                                                    <input type="hidden" formControlName="indexcount" #ind>
+
+                                                </td>
+
+                                                <td>
+                                                    <button class="btn btn-danger" (click)="delete(i)"><em
+                                                            class="fa fa-trash"></em></button>
+                                                </td>
+                                            </ng-container>
+
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+
+
+
+
+
+                                <div class="row mt-5">
+                                    <div class="col text-center">
+                                        <button class="btn btn-primary mr-1" type="submit"
+                                            [disabled]="repeaterlicenseForm.invalid">
+                                            <em class="fa fa-dot-circle-o"></em>Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div bsModal #sendMailModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fa fa-envolope"></i> Send Mail</h4>
+                <button type="button" class="close" (click)="closeModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div *ngIf="isLoadingMail" style="text-align: center;">
+                    <app-loading-spinner></app-loading-spinner>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div *ngIf="mailList.length>0">
+                            <p style="color: crimson;">Put Additional Email comma (,) seperated</p>
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <p> <strong>To</strong> : <span *ngFor="let mail of email"><input type="checkbox"
+                                                (click)="mailto(a.checked,mail)" #a> {{mail}} <br> </span></p>
+                                    <p><textarea class="form-control" cols="6" [(ngModel)]="tomailtext "
+                                            (change)='tomailvalue($event)'></textarea></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p> <strong>Cc</strong> : <span *ngFor="let cc of email"><input type="checkbox"
+                                                (click)="ccmail(e.checked,cc)" #e> {{cc}}<br> </span></p>
+                                    <p><textarea class="form-control" cols="6" [(ngModel)]="ccmailtext "
+                                            (change)='ccmailvalue($event)'></textarea></p>
+
+                                </div>
+                            </div>
+
+
+                            <p>Dear Sir / Madam,</p>
+                            <p> Good Day. </p>
+                            <p>Kindly find enclosed herewith the license copies for your records. The Details of the
+                                same are as belows </p>
+                        </div>
+
+                        <table class="table table-striped table-hover table-responsive-lg" [mfData]="mailList"
+                            #mf2="mfDataTable">
+                            <thead>
+                                <tr>
+                                    <th>Sr.No</th>
+                                    <th>Type of license.</th>
+                                    <th>License No.</th>
+                                    <th>License Date</th>
+                                    <th>License Value</th>
+                                    <th>Port Code</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <tr *ngFor="let val of mf2.data; let i = index" [attr.data-index]="i"
+                                    [attr.id]="val.id">
+
+                                    <td>{{i+1}}</td>
+                                    <td>{{val.type_of_lic}} </td>
+                                    <td>{{val.lic_no}} </td>
+                                    <td>{{val.lic_purchase_date | date : 'dd/MM/yyyy'}}</td>
+                                    <td>{{val.lic_value}} </td>
+                                    <td>{{val.port_code}} </td>
+
+                                </tr>
+                            </tbody>
+
+                        </table>
+                        <p>Request you to kindly note and update the same at your end .</p>
+
+                        <p>Also note that the license has to debited strictly on FIFO basis and send the Utilized/Nill
+                            license copy.</p>
+
+                        <p>Kindly mail us the updated license passbook sheet once the Bill of Entries filed.</p>
+
+                        <p>Thank you for your kind cooperation.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div *ngFor="let item of mailList">
+
+                                <div *ngIf="item.lic_file ">
+                                    <a [href]="file" *ngFor="let file of item.lic_file" target="_blank">
+                                        <button class="btn btn-primary btn-sm mr-1">{{file | fileName}} <em
+                                                class="fa fa-file"></em></button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+                    <button type="button" class="btn btn-primary" (click)="compose_mail()"
+                        [disabled]="loadingBtn">Send Mail
+                        <i class="fa fa-spinner fa-spin" *ngIf="loadingBtn"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div bsModal #trasferModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Tranfer License</h4>
+                <button type="button" class="close" aria-label="Close" (click)="transferModalClose()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="licenseForm" (ngSubmit)="transferLicenseToOrg()" autocomplete="off">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-form-label"
+                                    for="transfer_org_id"><Strong>Organization</Strong></label>
+                                <ng-select id="transfer_org_id" formControlName="transfer_org_id"
+                                    placeholder="Select  Invoice" [searchable]="true" [clearable]="true"
+                                    bindLabel="sub_org_name" bindValue="sub_org_id" [items]="sub_org">
+                                </ng-select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-form-label" for="transfer_amount"><strong>Amount</strong></label>
+                                <input class="form-control" id="transfer_amount" formControlName="transfer_amount"
+                                    type="text" numbersOnly>
+
+                            </div>
+                        </div>
+
+
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-form-label" for="transfer_amount"><strong>Remark</strong></label>
+                                <textarea class="form-control" formControlName="transfer_remark"></textarea>
+
+                            </div>
+                        </div>
+
+
+
+
+
+                    </div>
+                    <div class="row mt-5">
+                        <div class="col text-center">
+                            <button class="btn btn-primary mr-1" type="submit">
+                                <em class="fa fa-dot-circle-o"></em>Submit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="transferModalClose()">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+
+<div bsModal #utilizeModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" *ngIf="utlilization_list.length > 0"><i class="fa fa-envolope"></i> Licence
+                    Details : total Amount : {{ utlilization_list[0].lic_value}}</h4>
+                <button type="button" class="close" (click)="utilizeModal.hide()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div *ngIf="isLoadingUtilize" style="text-align: center;">
+                    <app-loading-spinner></app-loading-spinner>
+                </div>
+                <div class="row" *ngIf="utlilization_list.length > 0">
+                    <div class="col-md-12">
+                        <table class="table table-striped table-hover table-responsive-lg" [mfData]="utlilization_list"
+                            #mf2="mfDataTable">
+                            <thead>
+                                <tr>
+                                    <th>SR. NO.</th>
+                                    <th>BE NO</th>
+                                    <th>License No.</th>
+                                    <th>Utilize Date</th>
+                                    <th>Utilize Amount</th>
+                                    <th>BE Copy</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <tr *ngFor="let val of mf2.data; let i = index" [attr.data-index]="i"
+                                    [attr.id]="val.id">
+
+                                    <td>{{i+1}}</td>
+                                    <td>{{val.be_no}} </td>
+                                    <td>{{val.lic_number}} </td>
+                                    <td>{{val.utilize_date | date : 'dd/MM/yyyy'}}</td>
+                                    <td>{{val.amount_utilize}} </td>
+                                    <td>
+                                        <a 
+														class="btn btn-outline-success btn-sm action-btn mb-2 mr-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Download BE Copy"
+														(click)="onAction(val.be_copy, 'Download_BE_COPY')">
+														<i class="fa fa-download"></i>
+													</a>                                      
+                                       
+                                    </td>
+
+                                </tr>
+                            </tbody>
+
+                            <tfoot>
+                                <td colspan="5" class="text-right">
+                                    <Strong> Balance : </Strong>
+                                    {{utlilization_list[0].lic_value-getSumOf(utlilization_list,'amount_utilize')}}
+
+                                </td>
+
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="utilizeModal.hide()">Close</button>
+                </div>
+
+            </div>
+
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

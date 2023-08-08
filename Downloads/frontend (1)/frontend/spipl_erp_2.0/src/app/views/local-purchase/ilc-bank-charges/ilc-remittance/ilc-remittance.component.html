@@ -1,0 +1,260 @@
+<div class="row">
+	<div class="col-md-2 offset-5" *ngIf="isLoading">
+		<app-loading-spinner></app-loading-spinner>
+	</div>
+</div>
+
+<div class="row" *ngIf="!isLoading">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-header">
+				<h4><i class="fa fa-money"></i> ILC Remittance Charges List</h4>
+			</div>
+			<div class="card-body">
+				<br>
+				<p-table #dt [value]="chargesList" styleClass="ui-p-table" [rowHover]="true" [rows]="10"
+					[showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100,150,200]" [loading]="isLoading"
+					[paginator]="true" [columns]="selectedColumns" [autoLayout]="true" (onFilter)="onFilter($event, dt)"
+					currentPageReportTemplate="Total Records : &#123;&#123;chargesList.length&#125;&#125; "
+					[filterDelay]="0" [globalFilterFields]="['bank_name']">
+					<div class="ui-table-globalfilter-container">
+						<input pInputText type="text" class="form-control"
+							(input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+
+					</div>
+					<ng-template pTemplate="header">
+						<tr>
+							<th pSortableColumn="{{col.field}}" *ngFor="let col of cols"> {{col.header}}</th>
+						</tr>
+						<tr>
+							<th *ngIf=" getColumnPresent('bank_name')">
+								<div *ngIf="banks.length > 0 ">
+									<p-multiSelect [options]="banks" placeholder="All"
+										(onChange)="onchange($event,'bank_name')" styleClass="ui-column-filter"
+										optionLabel='bank_name'>
+										<ng-template let-op pTemplate="item">
+											<span>&#123;&#123;op.label&#125;&#125;</span>
+										</ng-template>
+									</p-multiSelect>
+								</div>
+							</th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="body" let-chargesList let-index="rowIndex">
+						<tr class="ui-selectable-row">
+							<td>
+								<span class="ui-column-title">Bank Name</span>
+								{{chargesList.spipl_bank.bank_name}}
+							</td>
+							<td>
+								<span class="ui-column-title">Bank ILC No</span>
+								{{chargesList.ilc_letter_of_credit.ilc_bank_no}}
+							</td>
+							<td>
+								<div class="custom-btn-group">
+									<button class="btn btn-outline-primary mr-1"
+										(click)="recalculateCharges(chargesList.bex_id)">ReCalculate</button>
+									<br>
+									<button class="btn btn-outline-danger ml-1" (click)="generatePdf(chargesList, 1)">
+										<i class="fa fa-file-pdf-o"></i>
+									</button>
+								</div>
+							</td>
+							<td>
+								<span class="ui-column-title">System Charges</span>
+								<i class="fa fa-inr"></i> {{chargesList.total_charges_system | currencyInr }}
+							</td>
+							<td>
+								<div class="custom-btn-group">
+									<button class="btn btn-outline-primary mr-1"
+										(click)="updateCharges(chargesList)">Update</button>
+									<button class="btn btn-outline-danger ml-1" (click)="generatePdf(chargesList, 2)">
+										<i class="fa fa-file-pdf-o"></i>
+									</button>
+								</div>
+							</td>
+							<td>
+								<span class="ui-column-title">Bank Charges</span>
+								<i class="fa fa-inr"></i> {{chargesList.total_charges_bank | currencyInr }}
+							</td>
+							<td>
+								<span class="ui-column-title mb-1">Godown Wise Charges</span>
+								<h5>
+									<span class="badge badge-warning">
+										<i class="fa fa-truck"></i> {{chargesList.godown}}
+									</span>
+									<br>
+									<span class="badge badge-warning mt-2">
+										Qty: {{chargesList.piQuantity}}
+									</span>
+									<br>
+									<span class="badge badge-warning mt-2">
+										<i class="fa fa-inr"></i> {{chargesList.godownWiseCharges}}
+									</span>
+								</h5>
+							</td>
+							<td>
+								<button class="btn btn-outline-dark mb-1"
+									(click)="updateVoucher(chargesList.id, 1)">Check</button>
+								<p class="mb-0" *ngIf="chargesList.checked_date">
+									<span class="badge badge-primary mb-1">
+										{{chargesList.checked_date | date: 'dd-MMM-y HH:mm a'}}
+									</span>
+									<br>
+									<span class="badge badge-primary">
+										{{chargesList.checkedBy.checkedBy }}
+									</span>
+								</p>
+							</td>
+							<td>
+								<button class="btn btn-outline-dark mb-1"
+									(click)="updateVoucher(chargesList.id, 2)">Enter</button>
+								<p class="mb-0" *ngIf="chargesList.entered_date">
+									<span class="badge badge-success mb-1">
+										{{chargesList.entered_date | date: 'dd-MMM-y HH:mm a'}}
+									</span>
+									<br>
+									<span class="badge badge-success">
+										{{chargesList.enteredBy.enteredBy }}
+									</span>
+								</p>
+							</td>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="footer">
+						<tr>
+							<td style="text-align: right;"></td>
+							<td style="text-align: right;"></td>
+							<td style="text-align: right;"></td>
+							<td style="text-align: right;">
+								<i class="fa fa-inr"></i> {{totalSystemCharges | currencyInr}}
+							</td>
+							<td style="text-align: right;"></td>
+							<td style="text-align: right;">
+								<i class="fa fa-inr"></i> {{totalBankCharges | currencyInr }}
+							</td>
+							<td style="text-align: right;"></td>
+							<td style="text-align: right;"></td>
+							<td style="text-align: right;"></td>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="emptymessage">
+						<tr>
+							<td colspan="6" style="text-align:left">No Records found.</td>
+						</tr>
+					</ng-template>
+				</p-table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg " role="document" *ngIf="editChargesDetails">
+		<div class="modal-content">
+			<form [formGroup]="updateChargesForm" novalidate (ngSubmit)="updateChargesSubmit()" autocomplete="off">
+				<div class="modal-header">
+					<h4 class="modal-title">Update Charges</h4>
+					<button type="button" class="close" (click)="myModal.hide()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="card">
+								<div class="card-header">
+									<b><i class="fa fa-university"></i> ILC Remittance Details</b>
+								</div>
+								<div class="card-body">
+									<div class="form-row">
+										<div class="col-lg-6 col-sm-12">
+											<label class="col-form-label" for="charges_date">Charges Date</label>
+											<div class="input-group mb-2">
+												<div class="input-group-prepend">
+													<div class="input-group-text">
+														<i class="fa fa-calendar"></i>
+													</div>
+												</div>
+												<input type="text" class="form-control" id="charges_date"
+													formControlName="charges_date" placeholder="Enter Charges Date"
+													[bsConfig]="datePickerConfig" bsDatepicker readonly>
+											</div>
+										</div>
+										<div class="col-lg-6 col-sm-12">
+											<label class="col-form-label" for="update_bex_amount">Bill of Exchange Amount :</label>
+											<input type="text" class="form-control" id="update_bex_amount"
+												formControlName="update_bex_amount" placeholder="Bill of Exchange Amount">
+										</div>
+									</div>
+									<div class="form-row">
+										<div class="col-lg-6 col-sm-12">
+											<label class="col-form-label" for="update_remit_charges">Remittance Charges:
+											</label>
+											<input type="text" class="form-control" id="update_remit_charges"
+												formControlName="update_remit_charges"
+												placeholder="Enter Remittance Charges">
+										</div>
+										<div class="col-lg-6 col-sm-12">
+											<label class="col-form-label" for="update_boa_charges">Bill of Acceptance Charges:
+											</label>
+											<input type="text" class="form-control" id="update_boa_charges"
+												formControlName="update_boa_charges"
+												placeholder="Enter Bill of Acceptance Charges">
+										</div>
+									</div>
+									<div class="form-row">
+										<div class="col-lg-6 col-sm-12">
+											<label class="col-form-label" for="update_discrepancy_charges">Discrepancy Charges: </label>
+											<input type="text" class="form-control" id="update_discrepancy_charges"
+												formControlName="update_discrepancy_charges"
+												placeholder="Enter Discrepancy Charges">
+										</div>
+										<div class="col-lg-6 col-sm-12">
+											<label class="col-form-label" for="update_swift_charges">Swift Charges: </label>
+											<input type="text" class="form-control" id="update_swift_charges"
+												formControlName="update_swift_charges"
+												placeholder="Enter Swift Charges">
+										</div>
+									</div>
+									<div class="form-row">
+										<div class="col-lg-6 col-sm-12">
+											<label class="col-form-label" for="additional_header">Additional Header:
+											</label>
+											<input type="text" class="form-control" id="additional_header"
+												formControlName="additional_header"
+												placeholder="Enter Additional Header">
+										</div>
+										<div class="col-lg-6 col-sm-12">
+											<label class="col-form-label" for="additional_charges">Additional Charges:
+											</label>
+											<input type="text" class="form-control" id="additional_charges"
+												formControlName="additional_charges"
+												placeholder="Enter Additional Charges">
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary mr-1" type="submit"
+						[disabled]="updateChargesForm.pristine || updateChargesForm.invalid">
+						<i class="fa fa-dot-circle-o"></i> Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

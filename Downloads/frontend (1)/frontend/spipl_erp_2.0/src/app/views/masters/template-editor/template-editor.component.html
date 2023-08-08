@@ -1,0 +1,98 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+
+            </div>
+            <div class="card-body">
+              <div class="row" *ngIf="!selection">
+                <div class="col-6 col-md-8" >
+                  <button class="btn btn-sm btn-primary fa fa-plus" aria-hidden="true"  (click)="inputField()">&nbsp;&nbsp;{{mode}}</button> 
+                </div>
+              </div>
+              <div class="row" *ngIf="selection">
+                <div class="col-6 col-md-8" >
+                  <button class="btn btn-sm btn-primary fa fa-pencil" aria-hidden="true"  (click)="inputField()">&nbsp;&nbsp;&nbsp;{{mode}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</button> 
+                </div>
+              </div>
+              <div class="row">
+              <div class="col-6 col-md-8">
+                <label class="col-form-label" for="chq_status">Template Name</label>
+                <div class="row" *ngIf="!selection">
+                  <div class="col-md-4 form-group">
+                    <ng-select
+                    placeholder="Select"
+                    [searchable]="true"
+                    [clearable]="true"
+                    bindLabel="template_name"
+                    bindValue="id"
+                    [items]="templates"
+                    [(ngModel)]="template_id"
+                    (change)="get_template($event)"
+                    >
+                    </ng-select>
+                  </div>
+                  <div class="col-md-4 form-group">
+                  <input type="text"
+                  class="form-control"
+                  [(ngModel)]="template_name"
+                 >
+                  </div>
+                </div>
+                <div class="row" *ngIf="selection">
+                  <div class="form-group col-md-4">
+                    <input type="text"
+                    class="form-control"
+                    [(ngModel)]="name"
+                   >
+                </div>
+                </div>
+              </div>
+            </div>
+
+              <div class="row">
+              <div class="form-group col-md-4">
+                <label for="">Subject</label>
+                <input type="text"
+                    class="form-control"
+                    [(ngModel)]="subject"
+                    placeholder="Enter Subject"
+                   >
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="">From</label>
+                <input type="email"
+                    class="form-control"
+                    [(ngModel)]="from"
+                    placeholder="Enter From Mail"
+                   >
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="">Keys</label>
+                <input type="email"
+                    class="form-control"
+                    [(ngModel)]="keys"
+                    placeholder="Enter From Mail"
+                   >
+              </div>
+            </div>
+
+             <div class="row">
+              <div class="col-md-12">
+                <ck-editor name="editor" #myEditor [(ngModel)]="mycontent" [fullPage]="true" >
+
+                </ck-editor>
+                <br>
+                <button (click)="update(template_id ,mycontent,template_name, name ,subject , from , keys)" class="btn btn-primary">Save</button>
+              </div>
+             </div>
+
+        </div>
+    </div>
+   </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

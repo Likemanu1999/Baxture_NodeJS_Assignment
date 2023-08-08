@@ -1,0 +1,125 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-3">
+			<div class="card">
+				<div class="card-header">
+					<i class="fa fa-plus"></i> Add Packaging Master
+				</div>
+				<div class="card-body">
+
+					<!-- <form [formGroup]="chargesHeadsForm" novalidate (ngSubmit)="onSubmit()" class="needs-validation">
+						<div class="form-group">
+							<label class="col-form-label" for="stage_id">Stage</label>
+							<ng-select id="stage_id" formControlName="stage_id" placeholder="Select Stage"
+								[searchable]="true" [clearable]="false" bindLabel="name" bindValue="id"
+								[items]="stageList" required>
+							</ng-select>
+						</div>
+						<div class="form-group">
+							<label class="col-form-label" for="name">Name</label>
+							<input class="form-control" id="name" type="text" formControlName="name"
+								placeholder="Enter Head Name" required />
+						</div>
+						<div class="form-group">
+							<button class="btn btn-primary mr-1" type="submit"
+								[disabled]="chargesHeadsForm.pristine || chargesHeadsForm.invalid">Submit</button>
+							<button class="btn btn-danger" type="reset"
+								[disabled]="chargesHeadsForm.pristine && chargesHeadsForm.invalid">Reset</button>
+						</div>
+					</form> -->
+                    <form [formGroup]="packagingMasterForm" novalidate  (ngSubmit)="onSubmit()" class="needs-validation">
+						<!-- <div class="form-group">
+							<label class="col-form-label" for="stage_id">Stage</label>
+							<ng-select id="stage_id" formControlName="stage_id" placeholder="Select Stage"
+								[searchable]="true" [clearable]="false" bindLabel="name" bindValue="id"
+								[items]="stageList" required>
+							</ng-select>
+						</div> -->
+						<div class="form-group">
+							<label class="col-form-label" for="name">Type</label>
+							<input class="form-control" id="type" type="text" formControlName="type"
+								placeholder="Packaging Type" required />
+						</div>
+                        <div class="form-group">
+							<label class="col-form-label" for="name">Value</label>
+							<input class="form-control" id="value" type="text" formControlName="value"
+								placeholder="Packaging Value" required /><br>
+							<span *ngIf="packagingMasterForm.errors" class="pt-1 form-control alert alert-danger">Enter Valid Value</span>
+							</div>	
+						<div class="form-group">
+							<button class="btn btn-primary mr-1" type="submit"
+								[disabled]="packagingMasterForm.pristine || packagingMasterForm.invalid">Submit</button>
+							<button class="btn btn-danger" type="reset"
+								[disabled]="packagingMasterForm.pristine && packagingMasterForm.invalid">Reset</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-9">
+			<div class="card">
+				<div class="card-header">
+					<i class="fa fa-eye"></i> View Packaging Master
+				</div>
+				<div class="card-body">
+					<div class="row mb-3">
+						<div class="col-md-4 offset-md-8">
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa fa-search"></i></span>
+								</div>
+								<input type="text" class="form-control" [(ngModel)]="filterQuery"
+									placeholder="Search by name" />
+							</div>
+						</div>
+					</div>
+					<div *ngIf="isLoading" style="text-align: center;">
+						<app-loading-spinner></app-loading-spinner>
+					</div>
+					<table class="table table-striped table-hover table-responsive-lg"
+						[mfData]="data | tableFilter : filterQuery:filterArray" #mf="mfDataTable" [mfRowsOnPage]="5"
+						*ngIf="!isLoading">                     
+
+                        
+						<thead>
+							<tr>
+								<th>
+									<mfDefaultSorter by="sr_no">Sr. No.</mfDefaultSorter>
+								</th>
+								<th>Type</th>
+								<th>Value</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" [attr.id]="item.id">
+								<td>{{i+1}}</td>
+								<td>{{item.type}}</td>
+								<td>{{item.value}}</td>
+								<td>
+									<a style="cursor: pointer;" class="text-primary" (click)="onEdit(item.id)">
+										<i class="fa fa-pencil p-1"></i>
+									</a>
+									<a style="cursor: pointer;" class="text-danger" mwlConfirmationPopover
+										[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+										[confirmText]="confirmText" [cancelText]="cancelText" [placement]="placement"
+										[closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="danger"
+										cancelButtonType="success" (confirm)="onDelete(item.id)"
+										(cancel)="cancelClicked = true"><i class="fa fa-trash p-1"></i></a>
+								</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<td colspan="6">
+									<mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

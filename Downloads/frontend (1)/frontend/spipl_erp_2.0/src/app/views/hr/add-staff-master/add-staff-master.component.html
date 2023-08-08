@@ -1,0 +1,516 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<form [formGroup]="staffForm" (ngSubmit)="onSubmit()" novalidate autocomplete="off">
+				<mat-horizontal-stepper #stepper>
+					<!-- STEP 1 START -->
+					<mat-step>
+						<ng-template matStepLabel>Personal Details</ng-template>
+						<div class="card h-100">
+							<div class="card-header">
+								Personal Details
+							</div>
+							<div class="card-body">
+								<div class="row">
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="first_name">First Name<sup
+													class="text-danger">*</sup></label>
+											<input class="form-control" id="first_name" formControlName="first_name"
+												type="text" placeholder="Enter First Name">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="middle_name">Middle Name</label>
+											<input class="form-control" id="middle_name" formControlName="middle_name"
+												type="text" placeholder="Enter Middle Name">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="last_name">Last Name<sup
+													class="text-danger">*</sup></label>
+											<input class="form-control" id="last_name" formControlName="last_name"
+												type="text" placeholder="Enter Last Name">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label for="gender" class="col-form-label">Gender<sup
+													class="text-danger">*</sup></label>
+											<ng-select id="gender" formControlName="gender" bindLabel="name"
+												bindValue="id" [items]="gender_list" placeholder="Select Gender"
+												[clearable]="true">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label for="marital_status" class="col-form-label">Marital Status<sup
+													class="text-danger">*</sup></label>
+											<ng-select id="marital_status" formControlName="marital_status"
+												bindLabel="name" bindValue="id" [items]="marital_status_list"
+												placeholder="Select Marital Status" [clearable]="true">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label for="dob" class="col-form-label">Date of Birth<sup
+													class="text-danger">*</sup></label>
+											<input type="text" class="form-control" id="dob" formControlName="dob"
+												[bsConfig]="datePickerConfig" #dp="bsDatepicker" bsDatepicker
+												placeholder="Select Date" [maxDate]="maxDob" readonly>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label for="doa" class="col-form-label">Date of Anniversary</label>
+											<input type="text" class="form-control" id="doa" formControlName="doa"
+												[bsConfig]="datePickerConfig" #dp="bsDatepicker" bsDatepicker
+												placeholder="Select Date" [maxDate]="maxDate" readonly>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="qualification_id">Qualification<sup
+													class="text-danger">*</sup></label>
+											<ng-select id="qualification_id" formControlName="qualification_id"
+												placeholder="Select Qualification" [searchable]="true"
+												[clearable]="true" bindLabel="name" bindValue="id"
+												[items]="qualification_list">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="mobile">Mobile No.<sup
+													class="text-danger">*</sup></label>
+											<input class="form-control" id="mobile" formControlName="mobile" type="text"
+												placeholder="Enter Mobile No.">
+											<div
+												*ngIf="staffForm.controls['mobile'].invalid && staffForm.controls['mobile'].touched">
+												<div *ngIf="staffForm.controls['mobile'].errors.pattern"
+													class="text-danger">
+													Enter Valid Mobile Number
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="alter_mobile">Alternative Mobile
+												No.</label>
+											<input class="form-control" id="alter_mobile" formControlName="alter_mobile"
+												type="text" placeholder="Enter Alternative Mobile No.">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="email">Email<sup
+													class="text-danger">*</sup></label>
+											<input class="form-control" id="email" formControlName="email" type="text"
+												placeholder="Enter Email" email='true' (change)="checkEmail($event)">
+										</div>
+										<div [innerHTML]="emailValidation" class="text-danger"></div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="adhaar_no">Adhaar No.
+												<!-- <sup class="text-danger">*</sup> -->
+												</label> 
+											<input class="form-control" id="adhaar_no" formControlName="adhaar_no"
+												type="text" placeholder="Enter Adhaar No.">
+										</div>
+										<!-- <div
+											*ngIf="staffForm.controls['adhaar_no'].invalid && staffForm.controls['adhaar_no'].touched">
+											<div *ngIf="staffForm.controls['adhaar_no'].errors.pattern"
+												class="text-danger">
+												Enter Valid Adhaar Number
+											</div>
+										</div> -->
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="spipl_pf_no">SPIPL PF No.
+												<!-- <sup class="text-danger">*</sup> -->
+											</label>
+											<input class="form-control" id="spipl_pf_no" formControlName="spipl_pf_no"
+												type="text" placeholder="Enter PF No.">
+										</div>
+										<!-- <div
+											*ngIf="staffForm.controls['spipl_pf_no'].invalid && staffForm.controls['spipl_pf_no'].touched">
+											<div *ngIf="staffForm.controls['spipl_pf_no'].errors.pattern"
+												class="text-danger">
+												Enter Valid PF Number
+											</div>
+										</div> -->
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="pan_no">PAN No.<sup
+													class="text-danger">*</sup></label>
+											<input class="form-control" id="pan_no" formControlName="pan_no" type="text"
+												placeholder="Enter PAN No.">
+										</div>
+										<div
+											*ngIf="staffForm.controls['pan_no'].invalid && staffForm.controls['pan_no'].touched">
+											<div *ngIf="staffForm.controls['pan_no'].errors.pattern"
+												class="text-danger">
+												Enter Valid PAN Number
+											</div>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="uan_no">UAN No.</label>
+											<input class="form-control" id="uan_no" formControlName="uan_no" type="text"
+												placeholder="Enter UAN No.">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="city_id">City<sup
+													class="text-danger">*</sup></label>
+											<ng-select id="city_id" formControlName="city_id" placeholder="Select City"
+												[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+												[items]="city_list" (change)="onChangeCity($event)">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="state_id">State</label>
+											<ng-select id="state_id" formControlName="state_id" placeholder="Select state"
+												[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+												[items]="state_list" (change)="onChangeState($event)">
+											</ng-select>
+										</div>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="local_address">Local Address<sup
+													class="text-danger">*</sup></label>
+											<textarea formControlName="local_address" id="local_address" rows="2"
+												class="form-control" placeholder="Enter Local Address"
+												(change)="onChangeLocalAddress($event.target.value)"></textarea>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="permanant_address" class="col-md-12 p-0">
+												<div class="row">
+													<div class="col-md-6">
+														Permanent Address<sup class="text-danger">*</sup>
+													</div>
+													<div class="col-md-6 text-right">
+														<input type="checkbox" id="same_address"
+															[ngModelOptions]="{standalone: true}"
+															[ngModel]="same_address"
+															(ngModelChange)="onSelectSameAddress($event)"> Same
+														As
+														Local
+													</div>
+												</div>
+											</label>
+											<textarea id="permanant_address" formControlName="permanant_address"
+												rows="2" class="form-control" placeholder="Enter Permanent address"
+												[readonly]="same_address"></textarea>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<button type="button" class="btn btn-primary mr-1" mat-button matStepperNext
+							[disabled]="setDesableOnEmail">Next</button>
+
+					</mat-step>
+					<!-- STEP 1 END -->
+
+					<!-- STEP 2 START -->
+					<mat-step>
+						<ng-template matStepLabel>Department Details</ng-template>
+						<div class="card h-100">
+							<div class="card-header">
+								Department Details
+							</div>
+							<div class="card-body">
+								<div class="row">
+									<div class="col-md-3">
+										<div class="form-group">
+											<label for="appointment_date" class="col-form-label">Date of
+												Appointment<sup class="text-danger">*</sup></label>
+											<input type="text" class="form-control" id="appointment_date"
+												formControlName="appointment_date" name="appointment_date"
+												[maxDate]="maxDate" [bsConfig]="datePickerConfig" #dp="bsDatepicker"
+												bsDatepicker placeholder="Select Date" readonly
+												[disabled]="!enableEdit">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label for="company_id" class="col-form-label">Company<sup
+													class="text-danger">*</sup></label>
+											<ng-select id="company_id" formControlName="company_id" bindLabel="name"
+												bindValue="id" [items]="company_list" placeholder="Select Company"
+												[clearable]="true" [readonly]="!enableEdit">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label for="employee_type_id" class="col-form-label">Employee
+												Type<sup class="text-danger">*</sup></label>
+											<ng-select id="employee_type_id" formControlName="employee_type_id"
+												bindLabel="name" bindValue="id" [items]="employee_type_list"
+												placeholder="Select Employee Type" [clearable]="true"
+												[readonly]="!enableEdit">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="department_id">Department<sup
+													class="text-danger">*</sup></label>
+											<ng-select id="department_id" formControlName="department_id"
+												placeholder="Select Department" [searchable]="true" [clearable]="true"
+												bindLabel="dept_name" bindValue="id" [items]="department_list"
+												[readonly]="!enableEdit">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="role_id">Role<sup
+													class="text-danger">*</sup></label>
+											<ng-select id="role_id" formControlName="role_id" placeholder="Select Role"
+												[searchable]="true" [clearable]="true" bindLabel="role_name"
+												bindValue="id" [items]="roles_list" [readonly]="role_id != 1">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="job_profile_id">Job Profile<sup
+													class="text-danger">*</sup> </label>
+											<ng-select id="job_profile_id" formControlName="job_profile_id"
+												placeholder="Select Job Profile" [searchable]="true" [clearable]="true"
+												bindLabel="profile_name" bindValue="id" [items]="job_profile_list"
+												[readonly]="!enableEdit">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="machine_id">Biometric ID</label>
+											<input class="form-control" id="machine_id" formControlName="machine_id"
+												type="text" placeholder="Biometric Machine ID" numbersOnly
+												[readonly]="!enableEdit">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="telephone_extension">Telephone
+												Extension</label>
+											<input class="form-control" id="telephone_extension"
+												formControlName="telephone_extension" type="text"
+												placeholder="Telephone Extension">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="joining_ctc">Joining CTC (Annual)<sup
+													class="text-danger">*</sup></label>
+											<input class="form-control" id="joining_ctc" formControlName="joining_ctc"
+												type="text" placeholder="Joining CTC" numbersOnly
+												[readonly]="!enableEdit">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="medical_coverage">Medical
+												Coverage<sup class="text-danger">*</sup></label>
+											<input class="form-control" id="medical_coverage"
+												formControlName="medical_coverage" type="text"
+												placeholder="Medical Coverage" numbersOnly [readonly]="!enableEdit">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="notice_period">Notice Period<sup
+													class="text-danger">*</sup></label>
+											<div class="input-group">
+												<input type="text" class="form-control" id="notice_period"
+													formControlName="notice_period" placeholder="Notice Period"
+													numbersOnly [readonly]="!enableEdit">
+												<div class="input-group-append">
+													<span class="input-group-text">
+														Days
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label for="tax_type" class="col-form-label">Tax Regime<sup
+													class="text-danger">*</sup></label>
+											<ng-select id="tax_type" formControlName="tax_type" bindLabel="name"
+												bindValue="id" [items]="tax_regime_list" placeholder="Select Tax Regime"
+												[clearable]="true">
+											</ng-select>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<button type="button" mat-button class="btn btn-primary mr-1" matStepperPrevious>Back</button>
+						<button type="button" class="btn btn-primary mr-1" mat-button matStepperNext>Next</button>
+					</mat-step>
+					<!-- STEP 2 END -->
+
+					<!-- STEP 3 START -->
+					<mat-step>
+						<ng-template matStepLabel>Bank Details</ng-template>
+						<div class="card h-100">
+							<div class="card-header">
+								Bank Details
+							</div>
+							<div class="card-body">
+								<div class="row">
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="bank_id">Bank Name<sup
+													class="text-danger">*</sup></label>
+											<ng-select id="bank_id" formControlName="bank_id" placeholder="Select Bank"
+												[searchable]="true" [clearable]="true" bindLabel="bank_name"
+												bindValue="id" [items]="banks_list" [readonly]="!enableEdit">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="bank_branch_name">Bank Branch
+												Name<sup class="text-danger">*</sup></label>
+											<input class="form-control" id="bank_branch_name"
+												formControlName="bank_branch_name" type="text"
+												placeholder="Enter Bank Branch Name" [readonly]="!enableEdit">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="ifsc_code">IFSC Code<sup
+													class="text-danger">*</sup></label>
+											<input class="form-control" id="ifsc_code" formControlName="ifsc_code"
+												type="text" placeholder="Enter IFSC Code" [readonly]="!enableEdit">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="bank_account_no">Account
+												No.<sup class="text-danger">*</sup></label>
+											<input class="form-control" id="bank_account_no"
+												formControlName="bank_account_no" type="text"
+												placeholder="Enter Account No." [readonly]="!enableEdit">
+										</div>
+									</div>
+									<div class="col-md-3">
+										<div class="form-group">
+											<label class="col-form-label" for="acc_type_name">Account
+												Type<sup class="text-danger">*</sup></label>
+											<ng-select id="acc_type_name" formControlName="acc_type_name"
+												placeholder="Select Bank" [searchable]="true" [clearable]="true"
+												bindLabel="name" bindValue="id" [items]="account_type_list"
+												[readonly]="!enableEdit">
+											</ng-select>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<button type="button" mat-button class="btn btn-primary mr-1" matStepperPrevious>Back</button>
+						<button type="button" class="btn btn-primary mr-1" mat-button matStepperNext>Next</button>
+					</mat-step>
+					<!-- STEP 3 END -->
+
+					<!-- STEP 4 START -->
+					<mat-step>
+						<ng-template matStepLabel>Documents</ng-template>
+						<div class="row">
+							<div class="col-md-6">
+								<div class="card h-100">
+									<div class="card-header">
+										Upload Documents
+									</div>
+									<div class="card-body">
+										<div class="row">
+											<div class="col-md-6" *ngFor="let item of d.controls; let i = index"
+												[attr.data-index]="i" [attr.id]="item.id" [formGroup]="item">
+												<input type="hidden" id="document_id" formControlName="document_id"
+													#document_id>
+												<input type="hidden" id="document_type" formControlName="document_type"
+													#name>
+												<div class="form-group">
+													<label class="col-form-label" for="document">{{name.value}}</label>
+													<input type="file" class="form-control form-control-file"
+														id="document" formControlName="document"
+														(change)="onFileChange($event, document_id.value, name.value, i)">
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="card h-100">
+									<div class="card-header">
+										Documents Status
+									</div>
+									<div class="card-body">
+										<div class="row">
+											<div class="col-md-12">
+												<table class="table table-bordered">
+													<thead>
+														<tr>
+															<th class="text-center" width="10%">Id</th>
+															<th width="40%">Document</th>
+															<th width="15%">Status</th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr *ngFor="let item of employee_documents; let i = index">
+															<td class="text-center">{{i+1}}</td>
+															<td>{{item.document_type}}</td>
+															<td>Uploaded</td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<button type="button" mat-button class="btn btn-primary mr-1" matStepperPrevious>
+							Back
+						</button>
+						<button *ngIf="!editMode" type="button" mat-button class="btn btn-danger mr-1"
+							(click)="stepper.reset();onReset();">
+							Reset
+						</button>
+						<button class="btn btn-primary mr-1" type="submit" [disabled]="staffForm.invalid">
+							Submit
+						</button>
+					</mat-step>
+					<!-- STEP 4 END -->
+
+				</mat-horizontal-stepper>
+			</form>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

@@ -1,0 +1,146 @@
+<div class="animated fadeIn custom_body">
+    <div class="row">
+        <div class="col-md-12 p-0">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <i class="fa fa-list"></i> {{ page_title }}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p-table #dt dataKey="id" styleClass="sales_orders_table" [value]="data" [rows]="10"
+                                [showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+                                [loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+                                [globalFilterFields]="filter" (filter)="onFilter($event, dt)"
+                                (onLazyLoad)="onFilter($event, dt)"
+                                currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+                                <ng-template pTemplate="caption">
+                                    <div class="row">
+                                        <div class="col-md-10">
+                                            <div class="form-inline">
+                                                <a class="btn btn-success text-white mb-1 mr-2" data-toggle="tooltip"
+                                                    (click)="exportData('Excel')" data-placement="top" title="Excel">
+                                                    <i class="fa fa-file-excel-o"></i>
+                                                    <span class="export-text d-none">Excel</span>
+                                                </a>
+                                                <a class="btn btn-danger text-white mb-1 mr-2" data-toggle="tooltip"
+                                                    (click)="exportData('pdf')" data-placement="top" title="PDF">
+                                                    <i class="fa fa-file-pdf-o"></i>
+                                                    <span class="export-text d-none">PDF</span>
+                                                </a>
+                                                <div class="form-group mb-1 mr-1">
+                                                    <p-multiSelect [options]="cols" [(ngModel)]="cols"
+                                                        optionLabel="header" selectedItemsLabel="{0} columns selected"
+                                                        defaultLabel="Choose Columns">
+                                                    </p-multiSelect>
+                                                </div>
+                                                <div class="form-group mb-1 mr-2">
+                                                    <input pInputText [(ngModel)]="selected_date_range"
+                                                        (ngModelChange)="clearDropdown(); getData()"
+                                                        [bsConfig]="datePickerConfig" #dp="bsDaterangepicker"
+                                                        bsDaterangepicker placeholder="Choose Date Range"
+                                                        class="form-control page-filter" readonly />
+                                                    <app-dropdown-daterange (dateEvent)="receiveDate($event)"
+                                                        [uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+
+                                                </div>
+                                                <div class="form-group mb-1">
+													<p-dropdown [options]="statusList" [(ngModel)]="selected_status"
+														optionLabel="name" (onChange)="onChangeStatus($event)">
+													</p-dropdown>
+												</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="w-100 mt-1 pull-right">
+                                                <input pInputText type="text" class="form-control"
+                                                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                    placeholder="Global Search" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+                                        <th pSortableColumn="{{col.field}}" *ngFor="let col of cols"
+                                            [style.width]='col.style'>
+                                            {{col.header}}
+                                            <p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th *ngFor="let col of cols" [style.width]='col.style'>
+                                            <p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+                                                defaultLabel="All"
+                                                (onChange)="customFilter($event.value, col.field, 'in')">
+                                            </p-multiSelect>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template pTemplate="body" let-rowData let-expanded="expanded">
+                                    <tr class="ui-selectable-row ">
+                                        <td *ngFor="let col of cols" [style.width]='col.style'
+                                            [ngClass]="(rowData.is_open == 0) ? 'font-weight-bold' : ''">
+                                            <div *ngIf="getColumnPresent(col.field)">
+                                                <div *ngIf="col.field != 'id' && col.field != 'advancePayment'">
+                                                    <span class="ui-column-title">{{ col.header }}: </span>
+                                                    <div
+                                                        *ngIf="col.type == null &&col.field != 'added_by' && col.field != 'is_forward' && col.field != 'status' && col.field != 'company_id'">
+                                                        <div>
+                                                            {{ rowData[col.field] }}
+                                                        </div>
+                                                    </div>
+                                                    <div *ngIf="col.field == 'company_id'">
+                                                        {{ getCompanyName(rowData[col.field])}}
+                                                    </div>
+                                                    <div *ngIf="col.field == 'added_by'">
+                                                        {{rowData['first_name']}} {{rowData['last_name']}}
+                                                    </div>
+                                                    <div *ngIf="col.field == 'is_forward'">
+                                                        {{ rowData[col.field] ? 'Forward': 'Regular' }}
+                                                    </div>
+                                                    <div *ngIf="col.field == 'status'">
+                                                        {{ getStatus(rowData[col.field]) }}
+                                                    </div>
+                                                    <div *ngIf="col.type == 'amount'">
+                                                        ₹{{ rowData[col.field] ? rowData[col.field] : 0.00 }}
+                                                    </div>
+                                                    <div *ngIf="col.type == 'date'">
+                                                        {{ rowData[col.field] | date:'dd-MMM-yyyy HH:mm:ss' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="footer" let-columns>
+                                    <tr>
+                                        <td *ngFor="let col of cols">
+                                            <strong *ngIf="col.type == 'amount'">
+                                                Total: ₹{{col.total}}
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td [attr.colspan]="cols.length" class="text-center">
+                                            No Data Found
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

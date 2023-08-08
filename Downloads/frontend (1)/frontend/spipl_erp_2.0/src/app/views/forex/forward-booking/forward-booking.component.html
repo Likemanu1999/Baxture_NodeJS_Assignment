@@ -1,0 +1,497 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+
+					<div class="row">
+
+						<div class="col-md-6">
+							<h4> <i class="cui-chevron-right"></i> Forward Bookings</h4>
+						</div>
+
+						<div class="col-md-6">
+							<div class="text-right">
+								<button *ngIf="add_opt" class="btn btn-primary" (click)="addForwardCover()"> <i
+										class="fa fa-plus"></i>
+									Add Forward Booking </button>
+								<button class="btn btn-primary" (click)="getForwardList()"><i
+										class="fa fa-refresh"></i></button>
+							</div>
+						</div>
+					</div>
+
+
+				</div>
+
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-2">
+							<label for="">Booking Date</label>
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa fa-calendar"></i></span>
+								</div>
+								<input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+									placeholder="Booking Date" (ngModelChange)="onDateChange($event)">
+							</div>
+						</div>
+
+						<div class="col-md-2">
+							<label for="dateRange" >Due Date: </label>
+							<div class="input-group mx-sm-3">
+								<input type="text" class="form-control"
+									[bsConfig]="{containerClass: 'theme-blue' }"
+									#dp="bsDatepicker" bsDatepicker [(bsValue)]="bsValue"   [(ngModel)]="due_dt" (ngModelChange)="onDateChange($event)">
+							</div>
+						</div>
+
+						<div class="col-md-2">
+							<label for="">Bank</label>
+							<div class="form-group">
+								<ng-select placeholder="Select Bank" [searchable]="true" [clearable]="true"
+									bindLabel="bank_name" bindValue="id" [items]="spipl_bank"
+									(ngModelChange)="onSubmit($event,'forward_bank_id','id')" [(ngModel)]="forward_bank_id">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="col-md-2">
+							<label for="">Currency</label>
+							<div class="form-group ">
+								<ng-select placeholder="Currency" [searchable]="true" [clearable]="true"
+									bindLabel="name" bindValue="id" [items]="currency"
+									(change)="onSubmit($event,'currency_id','id')"  [(ngModel)]="currency_id">
+								</ng-select>
+							</div>
+						</div>
+
+
+
+
+					</div>
+
+					<div class="row">
+						<div class="col-md-12">
+
+							<p-table #dt [value]="forward_list" dataKey="id" styleClass="ui-table-customers"
+								[rowHover]="true" [rows]="10" [showCurrentPageReport]="true"
+								[rowsPerPageOptions]="[10,25,50]" [loading]="isLoading" [paginator]="true"
+								(onFilter)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+								[filterDelay]="0"
+								[globalFilterFields]="['booking_date','amount','CurrencyName','final_rate','spot_rate','from_date','to_date','margin','token','id']"
+								[resizableColumns]="true">
+
+
+								<ng-template pTemplate="caption">
+									<div style="text-align: right">
+										<input pInputText type="text"
+											(input)="dt.filterGlobal($event.target.value, 'contains')"
+											class="form-control col-md-3" placeholder="Global Search" />
+									</div>
+									<!-- <div class="ui-helper-clearfix" style="text-align: left">
+
+                <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL" (click)="exportExcel()" style="margin-right: 0.5em;" class="ui-button-success"></button>
+                <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF" (click)="exportPdf()" class="ui-button-warning"></button>
+
+            </div> -->
+								</ng-template>
+
+								<ng-template pTemplate="header">
+									<tr>
+										<th style="width: 3rem">
+											<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+										</th>
+										<th [style.width]="col.style" pSortableColumn="{{col.field}}"
+											*ngFor="let col of cols" pResizableColumn> {{col.header}} <p-sortIcon
+												field="{{col.field}}"></p-sortIcon>
+										</th>
+										<th style="width: 90px;" *ngIf="edit_opt">Edit</th>
+										<th style="width: 90px;" *ngIf="del_opt">Delete</th>
+									</tr>
+
+								</ng-template>
+								<ng-template pTemplate="body" let-item let-index="rowIndex">
+									<tr class="ui-selectable-row">
+
+										<td>
+											<input type="checkbox" [value]="item" #inputs #checkboxes>
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Currency</span>
+											{{item.currencyname}}
+
+											<span class="badge badge-success" *ngIf="(item.amount - item.UtilisedAmount - item.cancel_amount)==0">Complete</span>
+											<span class="badge badge-danger"
+											 *ngIf="(item.amount - item.UtilisedAmount - item.cancel_amount)!=0">Pending</span>
+
+										</td>
+										<td class="ui-resizable-column">{{item.id}}</td>
+
+										<td class="ui-resizable-column">
+										
+											<span class="ui-column-title">Booking Date</span>
+											<div *ngIf="add_forward_cover" class="badge badge-primary"
+												style="cursor: pointer;" (click)="forwardCovered(item.id)"
+												style="font-size:medium;">
+												{{item.booking_date| date: 'dd-MM-y E'}}
+											</div>
+
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Amount</span>
+											{{item.amount| currencyInr}}
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Spot Rate</span>
+											{{item.spot_rate.toFixed(4) }}
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Premium</span>
+											{{item.premium | currencyInr}}
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Margin</span>
+											{{item.margin }}
+										</td>
+
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Final Rate</span>
+											{{item.final_rate.toFixed(4) }}
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">From - To Date</span>
+											{{item.from_date| date: 'dd-MM-y'}} to {{item.to_date| date: 'dd-MM-y'}}
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Premium INR</span>
+											{{item.premium_inr | currencyInr}}
+										</td>
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Margin INR</span>
+											{{item.margin_inr | currencyInr}}
+										</td>
+
+
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Final Rate INR</span>
+											{{item.final_usd | currencyInr}}
+										</td>
+
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title"> Canceled Amount</span>
+											{{item.cancel_amount | currencyInr}}
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Utilized</span>
+											{{item.UtilisedAmount ? item.UtilisedAmount:0 | currencyInr}}
+										</td>
+
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Balance</span>
+											{{(item.amount - item.UtilisedAmount - item.cancel_amount) | currencyInr }}
+
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Total Expense</span>
+											{{item.totalExpense| currencyInr }}
+
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Days Maturity &FB</span>
+											{{item.dayMaturityFb}}
+
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Reval Rate</span>
+											{{item.reval_rate}}
+
+										</td>
+
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Reval amount</span>
+											{{item.reval_amount}}
+
+										</td>
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">MTM</span>
+											{{(item.final_usd) - (item.reval_amount)}}
+
+										</td>
+
+
+
+
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Token</span>
+											{{item.token}}
+										</td>
+
+
+										<td *ngIf="edit_opt"><a style="cursor: pointer;" (click)="onEdit(item)"><i
+													class="fa fa-pencil"></i></a></td>
+										<td *ngIf="del_opt"><a style="cursor: pointer;" mwlConfirmationPopover
+												[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+												[confirmText]="confirmText" [cancelText]="cancelText"
+												[placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+												confirmButtonType="danger" cancelButtonType="success"
+												(confirm)="onDelete(item.id , index)" (cancel)="cancelClicked = true"><i
+													class="fa fa-trash"></i></a></td>
+
+
+
+
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer">
+
+									<tr>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>Total</td>
+										<td>{{tot_amount | currencyInr}}</td>
+										<td></td>
+										<td>{{tot_premium | currencyInr}}</td>
+										<td>{{tot_margin}}</td>
+										<td>{{(tot_final_usd/tot_amount) | currencyInr}}</td>
+										<td></td>
+										<td>{{tot_premium_inr | currencyInr}}</td>
+										<td>{{tot_margin_inr | currencyInr}}</td>
+										<td>{{tot_final_usd | currencyInr}}</td>
+										<td>{{tot_cancel | currencyInr}}</td>
+										<td>{{tot_utilized | currencyInr}}</td>
+										<td>{{tot_balance | currencyInr}}</td>
+										<td>{{totalExpenseOnPending | currencyInr}}</td>
+										<td></td>
+										<td></td>
+										<td>{{totalRevalAmount | currencyInr}}</td>
+										<td> {{totalMTM | currencyInr}}</td>
+										
+										<td></td>
+										<td></td>
+										<td></td>
+
+									</tr>
+
+
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td colspan="15" style="text-align:left">Not Found any data</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+
+
+<div bsModal #updateForward="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+
+			<div class="modal-header">
+				<h4 class="modal-title">Add Forward Booking</h4>
+				<button type="button" class="close" (click)="onCloseModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<form [formGroup]="addForm" novalidate (ngSubmit)="onAddForm()" autocomplete="off">
+
+				<div class="modal-body">
+
+
+					<div class="row">
+						<div class="col-md-12">
+							<div class="row">
+
+								<div class="col-md-3">
+									<label for="booking_date">Forward Booking Date</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="booking_date"
+											[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+											#dp="bsDatepicker" bsDatepicker [maxDate]="today"
+											placeholder="Forward Booking Date" [(ngModel)]="book_date" readonly>
+									</div>
+								</div>
+
+
+								<div class="col-md-3" *ngIf="editFlag">
+									<label for="booking_date">Bank</label>
+									<div class="form-group">
+										<ng-select placeholder="Select Bank" formControlName="bank_id"
+											[searchable]="true" [clearable]="true" bindLabel="bank_name" bindValue="id"
+											[items]="spipl_bank" [(ngModel)]="bank_id" [readonly]="true">
+										</ng-select>
+									</div>
+								</div>
+
+
+
+								<div class="col-md-3" *ngIf="!editFlag">
+									<label for="booking_date">Bank</label>
+									<div class="form-group">
+										<ng-select placeholder="Select Bank" formControlName="bank_id"
+											[searchable]="true" [clearable]="true" bindLabel="bank_name" bindValue="id"
+											[items]="spipl_bank" [(ngModel)]="bank_id">
+										</ng-select>
+									</div>
+								</div>
+
+
+								<div class="col-md-3">
+									<label for="amount">Amount</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="amount"
+											placeholder="Enter Amount" [(ngModel)]="book_amt" numbersOnly>
+									</div>
+								</div>
+
+
+								<div class="col-md-3" *ngIf="editFlag">
+									<label for="currency_type">Currency</label>
+									<div class="form-group">
+										<ng-select placeholder="Select Currency" formControlName="currency_type"
+											[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+											[items]="currency" [(ngModel)]="book_curr" [readonly]="true">
+										</ng-select>
+									</div>
+								</div>
+
+
+								<div class="col-md-3" *ngIf="!editFlag">
+									<label for="currency_type">Currency</label>
+									<div class="form-group">
+										<ng-select placeholder="Select Currency" formControlName="currency_type"
+											[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+											[items]="currency" [(ngModel)]="book_curr">
+										</ng-select>
+									</div>
+								</div>
+
+
+								<div class="col-md-3">
+									<label for="final_rate">Final Rate</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="final_rate"
+											placeholder="Enter Final Rate" [(ngModel)]="final_rate" numbersOnly>
+									</div>
+								</div>
+
+
+
+								<div class="col-md-3">
+									<label for="spot_rate">Spot Rate</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="spot_rate"
+											placeholder="Enter Spot Rate" [(ngModel)]="spot_rate" numbersOnly>
+									</div>
+								</div>
+
+								<div class="col-md-3">
+									<label for="from_date">From Date</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="from_date"
+											placeholder="From Date"
+											[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+											#dp="bsDatepicker" bsDatepicker [(ngModel)]="from_date" readonly>
+									</div>
+								</div>
+
+								<div class="col-md-3">
+									<label for="to_date">To Date</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="to_date"
+											[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+											#dp="bsDatepicker" bsDatepicker placeholder="To Date" [(ngModel)]="to_date"
+											readonly>
+									</div>
+								</div>
+
+								<div class="col-md-3">
+									<label for="margin">Margin</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="margin"
+											placeholder="Enter Margin" [(ngModel)]="margin" numbersOnly>
+									</div>
+								</div>
+
+								<div class="col-md-3">
+									<label for="token">Token</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="token"
+											placeholder="Enter Token" [(ngModel)]="token" numbersOnly>
+									</div>
+								</div>
+
+								<div class="col-md-3" *ngIf="editFlag">
+									<label for="cancel_amount">Cancel Amount</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="cancel_amount"
+											placeholder="Enter cancel_amount" [(ngModel)]="cancel_amount" numbersOnly>
+									</div>
+								</div>
+
+
+								<div class="col-md-3">
+									<label for="reval_rate">Reval Rate</label>
+									<div class="form-group">
+										<input type="text" class="form-control" formControlName="reval_rate"
+											placeholder="Enter Reval Rate" [(ngModel)]="reval_rate" numbersOnly>
+									</div>
+								</div>
+
+
+							</div>
+						</div>
+					</div>
+
+
+
+
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="onCloseModal()">Close</button>
+					<button type="submit" class="btn btn-primary"
+						[disabled]="addForm.pristine || addForm.invalid">Update
+					</button>
+				</div>
+
+			</form>
+
+		</div>
+	</div>
+</div>

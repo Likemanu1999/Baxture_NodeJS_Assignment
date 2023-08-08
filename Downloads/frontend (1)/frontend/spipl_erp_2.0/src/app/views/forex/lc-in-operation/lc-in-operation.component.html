@@ -1,0 +1,1156 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-2">
+              <label for="">Supplier :</label>
+              <div class="form-group ">
+                <ng-select placeholder="Supplier" [searchable]="true" [clearable]="true"
+                  bindLabel="sub_org_name_address" bindValue="sub_org_id" [items]="sub_org"
+                  (change)="onSubmit($event,'supplier','sub_org_id',0)">
+
+                  <ng-template ng-option-tmp let-item="item">
+                    <div title="{{item.sub_org_name_address}}">{{item.sub_org_name_address}}
+
+                    </div>
+
+                  </ng-template>
+
+                </ng-select>
+              </div>
+            </div>
+            <div class="col-md-2">
+
+              <div class="form-group">
+                <label for="">Buyers Bank :</label>
+                <ng-select placeholder="Select Bank" [searchable]="true" [clearable]="true" bindLabel="bank_name"
+                  bindValue="id" [items]="spipl_bank" (change)="onSubmit($event,'bank','id',0)">
+                </ng-select>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <label for="">Lc Created Date :</label>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                </div>
+                <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                  placeholder="Lc Created Date" (ngModelChange)="onSubmit($event,'','',1)">
+              </div>
+            </div>
+            <div class="col-md-2">
+              <label for="">Lc Opening Date :</label>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                </div>
+                <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue2"
+                  placeholder="Openinng Date" (ngModelChange)="onSubmit($event,'','',2)">
+              </div>
+            </div>
+
+            <div class="col-md-2">
+              <p *ngIf="total_lc_amount_supplier"><strong>Total LC Amount: </strong> {{total_lc_amount_supplier}}</p>
+              <p *ngIf="total_lc_quantity_supplier"><strong> Total LC Quantity: </strong>{{total_lc_quantity_supplier}}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="email-app">
+    <nav class="scrollvertical">
+      <div class="row mb-3" *ngIf="lc_list.length >0 ">
+        <div class="col-md-8">
+          <input type="text" class="form-control" placeholder="Search " [(ngModel)]="filterQuery">
+        </div>
+
+      </div>
+
+      <ul class="nav">
+        <li class="nav-item" *ngFor="let item of lc_list |  tableFilter : filterQuery:filterArray">
+          <a style="cursor: pointer;" class="nav-link" (click)="getDetails(item.id)"
+            [ngClass]="{activeitem: isActive(item.id)}">
+            <!-- <strong> LC ID:</strong> {{item.id}} , -->
+            <strong>LC Number:</strong> {{item.bank_lc_no}} - ( {{item.lc_opening_date | date: 'dd/MM/yyyy'}})
+            <!-- <span *ngIf="item.InvNon"><strong>NON Inv:</strong>({{item.InvNon| slice:0:-1}})</span> -->
+
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+    <main>
+      <div [hidden]="!mainDetail">
+        <div class="card">
+          <div class="card-header">
+            <i class="fa fa-adjust"></i> <strong>{{supplier_name}}</strong>
+            <strong *ngIf="manufacture_name">({{manufacture_name}})</strong>
+            &nbsp;&nbsp;
+
+
+            <span class="btn-group" dropdown>
+              <button dropdownToggle type="button" class="btn btn-default dropdown-toggle">
+                Lc Operations<span class="caret"></span>
+              </button>
+              <ul *dropdownMenu class="dropdown-menu" role="menu">
+                <li role="menuitem" *ngIf="lc_opening_date == null && rese_lc"> <button style="cursor: pointer;"
+                    class="dropdown-item" (click)="resetLc()">Reset Lc</button></li>
+                <li role="menuitem" *ngIf="open_lc"> <button style="cursor: pointer;" class="dropdown-item"
+                    (click)="openLc(funding_bank)">Open LC</button></li>
+
+
+
+                <li role="menuitem" *ngIf="lc_opening_date != null  && Non_details.length == 0 "> <button
+                    style="cursor: pointer;" class="dropdown-item" (click)="discardLc()">Discard Lc</button></li>
+
+
+
+
+                <li role="menuitem" *ngIf="lc_amend"> <button (click)="ammendLc()" style="cursor: pointer;"
+                    class="dropdown-item">LC Amendment</button></li>
+                <li role="menuitem" *ngIf="lc_insurance"> <button (click)="insuranceLc()" style="cursor: pointer;"
+                    class="dropdown-item">LC Insurance</button></li>
+
+                <!-- *ngIf="(tolerance_plus_amount+tolerance_minus_amount) == 0 " -->
+                <li role="menuitem"> <button (click)="toleranceAdjust()" style="cursor: pointer;"
+                    class="dropdown-item">Knock-Off LC</button></li>
+
+                <!-- *ngIf="(tolerance_plus_amount+tolerance_minus_amount)  != 0 " -->
+                <li role="menuitem"> <button (click)="toleranceReset()" style="cursor: pointer;"
+                    class="dropdown-item">Knock-Off LC Reset</button></li>
+
+                <li role="menuitem"> <button (click)="lcCancel()" style="cursor: pointer;" class="dropdown-item">LC
+                    Cancel</button></li>
+
+
+              </ul>
+            </span>
+
+
+            <span class="btn-group" dropdown>
+              <button dropdownToggle type="button" class="btn btn-default dropdown-toggle">
+                Action<span class="caret"></span>
+              </button>
+              <ul *dropdownMenu class="dropdown-menu" role="menu">
+                <!-- && lc_opening_date == null -->
+                <li role="menuitem" *ngIf="edit_opt "><a style="cursor: pointer;" class="dropdown-item"
+                    (click)="onEditLc(lc_id)"><i class="fa fa-pencil"></i>LC Edit</a></li>
+                <li role="menuitem" *ngIf="del_opt && lc_opening_date == null"><button style="cursor: pointer;"
+                    class="dropdown-item" (click)="onDeleteLc(lc_id)"><i class="fa fa-trash"></i>LC Delete</button></li>
+                <li role="menuitem" *ngIf="lc_download"><button style="cursor: pointer;" class="dropdown-item"
+                    (click)="generateWord(lc_id)"><i class="fa fa-file"></i>LC Doc Download</button></li>
+
+              </ul>
+            </span>
+
+            <span *ngIf="lc_opening_date != null && create_non">
+              <button class="btn btn-primary btn-sm" (click)="createNon()">Create Non</button>
+            </span>
+
+
+            <button class="btn btn-sm btn-light pull-right" (click)="isCollapsed = !isCollapsed">
+              <i *ngIf="isCollapsed" class="fa fa-chevron-down"></i>
+              <i *ngIf="!isCollapsed" class="fa fa-chevron-up"></i>
+            </button>
+          </div>
+          <div class="card-body" (collapsed)="collapsed($event)" (expanded)="expanded($event)" [collapse]="isCollapsed">
+
+            <div class="row " *ngIf="supplier_name">
+              <div class="col-md-3">
+                <p><strong>Lc Number :</strong>{{bank_lc_no}} <span *ngIf="openingdoc !=[]"> <a
+                      *ngFor="let opdoc of openingdoc " href="{{opdoc}}" target="_blank"><i
+                        class="fa fa-file"></i></a></span>
+                </p>
+                <p><strong>Lc Opening Date</strong> <span *ngIf="lc_opening_date">{{lc_opening_date | date :
+                    "dd-MM-y"}}</span></p>
+                <p>
+                  <strong>Lc Opening Bank</strong> {{bank_name}}
+                </p>
+                <p><strong>Funding Bank</strong> {{funding_bank_name}}</p>
+
+              </div>
+              <div class="col-md-3">
+                <p><strong>LC Creation Date:-</strong> {{lc_date | date : "dd-MM-y"}}</p>
+                <p><strong>Shipment Date:-</strong> {{date_of_shipment | date : "dd-MM-y"}}</p>
+                <p><strong>Expiry Date:-</strong> {{expiry_date | date : "dd-MM-y"}}</p>
+              </div>
+              <div class="col-md-3">
+                <p><strong>LC Amount:-</strong> {{tot_lc_amount | currencyInr}} </p>
+                <p><strong>LC Tolerance:-</strong> {{tot_lc_amount * (toleranceper)}}</p>
+                <p><strong>Total Quantity:-</strong> {{totquantity}}</p>
+                <p><strong>Lc Rate:-</strong> {{lc_rate}}</p>
+              </div>
+
+              <div class="col-md-3">
+                <!-- <p><strong>Date of Ammendment:-</strong> {{lc_ammed_date | date : "dd-MM-y"}} <span
+                    *ngIf="ammenddoc !=[]"> <a *ngFor="let amdoc of ammenddoc " href="{{amdoc}}" target="_blank"><i
+                        class="fa fa-file"></i></a></span></p> -->
+                <p><strong>Date of Insurance:-</strong> {{lc_insurance_date | date : "dd-MM-y"}} <span
+                    *ngIf="isurancedoc !=[]"><a *ngFor="let indoc of isurancedoc " href="{{indoc}}" target="_blank"> <i
+                        class="fa fa-file"></i></a></span></p>
+
+                <p><strong>LC Cancellation Date :-</strong> {{lc_cancellation_date | date : "dd-MM-y"}}
+                  <span *ngIf="lcCancellation !=[]"> <a *ngFor="let lccanceldoc of lcCancellation "
+                      href="{{lccanceldoc}}" target="_blank"><i class="fa fa-file"></i></a></span>
+                </p>
+                <p><strong>LC Cancellation Remark:-</strong> {{lc_cancellation_remark }} </p>
+
+
+
+
+              </div>
+
+
+
+              <!-- <div class="col-md-3">
+                <p><strong>LC Cancellation Date :-</strong> {{lc_cancellation_date | date : "dd-MM-y"}} 
+                  <span
+                    *ngIf="lcCancellation !=[]"> <a *ngFor="let lccanceldoc of lcCancellation " href="{{lccanceldoc}}" target="_blank"><i
+                        class="fa fa-file"></i></a></span></p>
+                
+              </div> -->
+
+
+
+
+              <!-- <div class="col-md-3">
+                <p><strong>LC Cancellation Remark:-</strong> {{lc_cancellation_remark }} </p>
+              </div> -->
+
+
+
+
+            </div>
+
+            <div class="row" style="overflow-x: scroll;">
+
+              <div *ngIf="ammendDetails.length">
+                <table class="table table-striped table-hover table-responsive-lg">
+                  <tr>
+                    <th>Ammendment Date</th>
+                    <th>Ammendment Value</th>
+                    <th>Ammendment Days</th>
+                    <th>Ammendment Clause</th>
+                    <th>LC Ammendment Value</th>
+                    <th>Ammendment Shipment </th>
+                    <th>Ammendment Expiry </th>
+                    <th>Ammendment PayTerm </th>
+                    <th>Ammendment Remarks </th>
+                    <th>Edit </th>
+                    <th>Delete </th>
+                  </tr>
+
+                  <tr *ngFor="let ammendItem of ammendDetails">
+                    <td>{{ammendItem.lc_ammed_date | date :'dd-MM-y'}}
+
+                      <span *ngIf="ammendItem.lc_ammend_copy"> <a
+                          *ngFor="let val of getDocsArray(ammendItem.lc_ammend_copy) " href="{{val}}" target="_blank"><i
+                            class="fa fa-file"></i></a></span>
+
+                    </td>
+                    <td>
+                      <!-- {{ammendItem.ammendment_value}}   -->
+                      <i *ngIf="ammendItem.ammendment_value" class="fa fa-check" style="color:green;"
+                        aria-hidden="true"></i>
+                    </td>
+                    <td>
+                      <!-- {{ammendItem.ammendment_days}} -->
+                      <i *ngIf="ammendItem.ammendment_days" class="fa fa-check" style="color:green;"
+                        aria-hidden="true"></i>
+
+                    </td>
+                    <td>
+
+                      <!-- {{ammendItem.ammendment_clause}} -->
+                      <i *ngIf="ammendItem.ammendment_clause" class="fa fa-check" style="color:green;"
+                        aria-hidden="true"></i>
+
+
+                    </td>
+                    <td>{{ammendItem.ammend_lc_value}}</td>
+                    <td>{{ammendItem.ammend_shipment_date}}</td>
+                    <td>{{ammendItem.ammend_lc_expiry_date}}</td>
+                    <td>
+                      <div *ngIf="ammendItem.payment_term_master != null">
+                        {{ammendItem.payment_term_master.ammend_payment_term }}
+                      </div>
+                    </td>
+                    <td>{{ammendItem.ammend_remark}}</td>
+                    <td><a style="cursor: pointer;" (click)="onEditAmmendment(ammendItem)"><i
+                          class="fa fa-pencil"></i></a></td>
+                    <td><a style="cursor: pointer;" mwlConfirmationPopover [popoverTitle]="popoverTitle"
+                        [popoverMessage]="popoverMessageDelete" [confirmText]="confirmText" [cancelText]="cancelText"
+                        [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="success"
+                        cancelButtonType="danger" (confirm)="onDeleteAmmendment(ammendItem.id)"
+                        (cancel)="cancelClicked = true"><i class="fa fa-trash"></i></a></td>
+
+                  </tr>
+                </table>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+
+        <div class="row mt-3" *ngIf="lc_pi">
+
+          <div class="col-md-12">
+            <form [formGroup]="addNonForm" novalidate (ngSubmit)="onSubmitNon()" autocomplete="off">
+              <div class="row" [hidden]="!addNon">
+                <div class="col-md-12">
+                  <div class="row">
+                    <div class="col-md-2">
+                      <label for="">Date of shipment</label>
+
+                      <div class="form-group">
+                        <input type="text" class="form-control" formControlName="date_of_shipment" id="date_of_shipment"
+                          [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                          #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter Date " readonly
+                          style="background-color: white;">
+                      </div>
+
+
+                    </div>
+                    <div class="col-md-2">
+                      <label for="">Invoice Date</label>
+
+                      <div class="form-group">
+                        <input type="text" class="form-control" formControlName="invoice_date" id="invoice_date"
+                          [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                          #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter Date " readonly
+                          style="background-color: white;">
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <label for="">Non Received On</label>
+
+                      <div class="form-group">
+                        <input type="text" class="form-control" formControlName="non_received_date"
+                          id="non_received_date"
+                          [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                          #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter Date " readonly
+                          style="background-color: white;">
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <label for="">Invoice No</label>
+
+                      <div class="form-group">
+                        <input type="text" formControlName="invoice_no" id="invoice_no" class="form-control"
+                          placeholder="Enter Number ">
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <label for="">Upload Doc</label>
+
+                      <div class="form-group">
+                        <input type="file" formControlName="non_copy" id="non_copy" class="form-control" [multiple]=true
+                          placeholder="Enter Date " (change)="addNonDocs($event)">
+                      </div>
+                    </div>
+
+                    <div class="col-md-3">
+                      <label for="">Remark</label>
+
+                      <div class="form-group">
+                        <textarea class="form-control" placeholder="Enter Remark" formControlName="non_rmk"
+                          id="non_rmk"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+
+                <div class="col-md-12 mt-3 " style="overflow-x: scroll;">
+                  <h4>PI List</h4>
+                  <table class="table table-striped table-hover table-responsive-lg" [mfData]="lc_pi" #mf="mfDataTable"
+                    [mfRowsOnPage]="5" *ngIf="!isLoading">
+                    <thead>
+                      <tr>
+                        <th>
+                          <mfDefaultSorter by="sr_no">Sr.No.</mfDefaultSorter>
+                        </th>
+                        <th>
+                          <mfDefaultSorter by="proform_invoice_no">PI Invoice Number</mfDefaultSorter>
+                        </th>
+                        <th>Shipment Month</th>
+                        <th>PI Date</th>
+                        <th>PI Quantity</th>
+                        <th>Rate</th>
+                        <th>Amount</th>
+                        <th>Grade</th>
+                        <th>Port</th>
+                        <th>Covered Quantity</th>
+                        <th>Pending Quantity</th>
+                        <th [hidden]="!addNon">Non To cover</th>
+                        <th>KnockOff</th>
+
+
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr formArrayName="pidetail" *ngFor="let item of mf.data; let i = index" [attr.data-index]="i"
+                        [attr.id]="item.sub_org_id">
+                        <ng-container [formGroupName]="i">
+                          <td>{{i+1}}</td>
+                          <td>{{item.proform_invoice_no}}
+
+
+                          </td>
+                          <td>{{ getMonth(item.shipment_month )}} - {{item.shipment_year}}</td>
+                          <td> {{item.proform_invoice_date | date: 'dd/MM/yyyy'}}</td>
+                          <td>{{item.pi_quantity}}</td>
+                          <td>{{item.pi_rate}}</td>
+                          <td>{{(item.total_pi_amount)}}</td>
+                          <td>{{item.gradeName}}</td>
+                          <td>{{item.destinationPort}}</td>
+                          <td>{{item.nonqty_cover_against_pi}}</td>
+                          <td>{{item.pi_quantity - item.nonqty_cover_against_pi}}</td>
+                          <td [hidden]="!addNon">
+                            <div *ngIf="item.pi_quantity - item.nonqty_cover_against_pi != 0"><input type="text"
+                                formControlName="pi_id_qty" (keyup)="checkQuantity($event , item, i)">
+                              <input type="hidden" formControlName="grade_id">
+                              <input type="hidden" formControlName="port_id">
+
+                              <input type="hidden" formControlName="pi_id">
+                              <input type="hidden" formControlName="pi_rate">
+                              <input type="hidden" formControlName="high_seas_pi">
+
+                            </div>
+
+                          </td>
+                          <td><button (click)="updatePiQtyTolerance(item.id,item.pi_quantity)" style="cursor: pointer;"
+                            class="btn btn-primary mr-1">Knock-Off</button></td>
+                        </ng-container>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="10">
+                          <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+
+
+                </div>
+              </div>
+
+              <div class="row mb-3" [hidden]="!addNon">
+                <div class="col-md-12 col-6">
+                  <button type="submit" class="btn btn-sm btn-info"
+                    [disabled]="addNonForm.pristine || addNonForm.invalid">Submit Non</button>
+                </div>
+
+              </div>
+            </form>
+
+
+          </div>
+
+          <div class="col-md-12">
+            <div *ngIf="Non_details.length > 0" style="overflow-x: scroll;">
+              <h4>Non List </h4>
+              <div class="col-xs-12 col-12 offset-md-2 col-md-3 pull-right  mb-2">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fa fa-search"></i></span>
+                  </div>
+                  <input type="text" class="form-control" [(ngModel)]="filterQuery_non" placeholder="Search" />
+                </div>
+              </div>
+
+              <table class="table table-striped table-hover table-responsive-lg"
+                [mfData]="Non_details | tableFilter : filterQuery_non:filterArray_non" #mf="mfDataTable"
+                [mfRowsOnPage]="5" *ngIf="!isLoading">
+                <thead>
+                  <tr>
+                    <th>
+                      <mfDefaultSorter by="sr_no">Sr.No.</mfDefaultSorter>
+                    </th>
+                    <th>PI No</th>
+
+                    <th style="width: 50px;">
+                      <mfDefaultSorter by="proform_invoice_no">Non Invoice Number</mfDefaultSorter>
+                    </th>
+                    <th>Invoice Date</th>
+                    <th>Non Received Date</th>
+                    <th>Shipment Date</th>
+                    <th>Total Amount</th>
+                    <th>Total Quantity</th>
+                    <th *ngIf="revise_non">Revise Non</th>
+                    <th>Revise Doc</th>
+                    <th *ngIf="edit_non">Edit</th>
+                    <th *ngIf="delete_non">Delete</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" [attr.id]="item.sub_org_id">
+
+                    <td>{{i+1}}</td>
+                    <td>{{item.allPiOneNon}}</td>
+                    <td>{{item.invoice_no}} <span *ngIf="item.non_copy"> <a
+                          *ngFor="let val of getDocsArray(item.non_copy) " href="{{val}}" target="_blank"><i
+                            class="fa fa-file"></i></a></span></td>
+                    <td>{{item.invoice_date | date : "dd-MM-y"}}</td>
+                    <td>{{item.non_received_date | date : "dd-MM-y"}}</td>
+                    <td>{{item.date_of_shipment | date : "dd-MM-y"}}</td>
+                    <td>{{item.tot_non_amt | currencyInr}}</td>
+                    <td> {{item.tot_non_qty}}
+                    </td>
+                    <td *ngIf="revise_non"><button class="btn btn-sm btn-info" (click)="ReviseNon(item)"><i
+                          class="fa fa-reply-all"></i></button></td>
+                    <td>
+                      <span *ngIf="item.non_revised_copy">
+                        <span *ngFor="let val of item.non_revised_copy">
+                          <table>
+                            <tr>
+                              <td><a href="{{val.non_revised_copy}}" target="_blank">
+                                  <i class="fa fa-file"></i></a></td>
+                              <td><a style="cursor: pointer;" mwlConfirmationPopover [popoverTitle]="popoverTitle"
+                                  [popoverMessage]="popoverMessage" [confirmText]="confirmText"
+                                  [cancelText]="cancelText" [placement]="placement"
+                                  [closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="success"
+                                  cancelButtonType="danger" (confirm)="delete_revise_non_path(val.id)"
+                                  (cancel)="cancelClicked = true"><i class="fa fa-trash"></i></a></td>
+                            </tr>
+                          </table>
+
+
+                        </span>
+                      </span>
+                    </td>
+                    <td *ngIf="edit_non"><a style="cursor: pointer;" (click)="onEditNon(item)"><i
+                          class="fa fa-pencil"></i></a></td>
+                    <td *ngIf="delete_non"><a style="cursor: pointer;" mwlConfirmationPopover
+                        [popoverTitle]="popoverTitle" [popoverMessage]="popoverMessageDelete"
+                        [confirmText]="confirmText" [cancelText]="cancelText" [placement]="placement"
+                        [closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="success"
+                        cancelButtonType="danger" (confirm)="onDeleteNon(item.id)" (cancel)="cancelClicked = true"><i
+                          class="fa fa-trash"></i></a></td>
+
+
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="12">
+                      <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+
+
+
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form>
+
+        <div class="modal-header">
+          <h4 class="modal-title">Reset Lc PI</h4>
+          <button type="button" class="close" (click)="myModal.hide()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <table class="table table-striped table-hover table-responsive-lg" [mfData]="reset_pi_list" #mf="mfDataTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Invoice Number</th>
+                <th>PI Quantity</th>
+                <th>Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" [attr.id]="item.sub_org_id">
+                <td>
+                  <div *ngIf="pi_id_list.includes(item.id) ; else notcheck">
+                    <input type="checkbox" checked (change)="onChange($event.target.checked, item.id)">
+                  </div>
+                  <ng-template #notcheck>
+                    <input type="checkbox" (change)="onChange($event.target.checked, item.id)"
+                      [checked]="checked(item.id)">
+                  </ng-template>
+                </td>
+                <td>{{item.proform_invoice_no}}</td>
+                <td>{{item.pi_quantity}}</td>
+                <td>{{item.pi_rate}}</td>
+              </tr>
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="myModal.hide()">Close</button>
+          <button type="submit" class="btn btn-primary" mwlConfirmationPopover [popoverTitle]="popoverTitle"
+            [popoverMessage]="popoverMessage" [confirmText]="confirmText" [cancelText]="cancelText"
+            [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="success"
+            cancelButtonType="danger" (confirm)="resetLcPi()" (cancel)="cancelClicked = true">Update</button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div bsModal #openLcModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form [formGroup]="addOpenLcForm" novalidate (ngSubmit)="onSubmitOpenLcForm()" autocomplete="off">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Open Lc </h4>
+          <button type="button" class="close" (click)="openLcModal.hide()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="form-group row">
+
+            <div class="col-md-6 mb-2">
+              <label>LC No.</label>
+              <input type="text" class="form-control" id="bank_lc_no" formControlName="bank_lc_no"
+                placeholder="Enter LC Number " [(ngModel)]="bank_lc_no">
+            </div>
+
+            <div class="col-md-6 mb-2">
+              <label>Opening Date</label>
+              <input type="text" class="form-control" id="lc_opening_date" formControlName="lc_opening_date"
+                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                bsDatepicker [maxDate]="today" placeholder="Enter Opening Date " [(ngModel)]="lc_opening_date" readonly>
+            </div>
+
+            <div class="col-md-6 mb-2">
+              <label>Rate</label>
+              <input type="text" class="form-control" id="lc_rate" formControlName="lc_rate" placeholder="Enter Rate "
+                [(ngModel)]="lc_rate" numbersOnly>
+            </div>
+
+
+
+            <div class="col-md-6 mb-2">
+              <label>Upload Copy</label>
+              <input type="file" class="form-control" id="lc_copy_path" formControlName="lc_copy_path"
+                (change)="addDocs($event)" [multiple]=true>
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+              <label>Supplier Usance Charges</label>
+              <input type="text" class="form-control" id="supplier_usance_charges"
+                formControlName="supplier_usance_charges" placeholder="Supplier Usance Charges "
+                [(ngModel)]="supplier_usance_charges">
+            </div>
+
+
+
+            <div class="col-md-6 mb-2">
+              <label>Manufacturers Name</label>
+              <input type="text" class="form-control" id="manufacture_name" formControlName="manufacture_name"
+                placeholder="Manufacturers Name " [(ngModel)]="manufacture_name">
+            </div>
+
+
+
+            <div class="col-md-6 mb-2">
+              <label>Remark</label>
+              <input type="text" class="form-control" id="lc_remark" formControlName="lc_remark"
+                placeholder="Enter Remark " [(ngModel)]="lc_remark">
+            </div>
+
+
+            <div *ngIf="third_party_lc == 1; then thenBlock else elseBlock"></div>
+
+            <ng-template #thenBlock>
+              <div class="col-md-4 mt-4">
+                <label>Third Party</label>
+                <input type="checkbox" id="third_party_lc" formControlName="third_party_lc" [checked]=true>
+              </div>
+            </ng-template>
+            <ng-template #elseBlock>
+              <div class="col-md-4 mt-4">
+                <label>Third Party</label>
+                <input type="checkbox" id="third_party_lc" formControlName="third_party_lc">
+              </div>
+            </ng-template>
+
+
+            <div class="col-md-6 mb-2">
+              <label for="">Funding Bank :</label>
+              <ng-select id="funding_bank" formControlName="funding_bank" placeholder="Select Bank" [searchable]="true"
+                [clearable]="true" bindLabel="bank_name" bindValue="id" [items]="funding_bank_list">
+              </ng-select>
+            </div>
+
+          </div>
+
+
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="openLcModal.hide()">Close</button>
+          <button type="submit" class="btn btn-primary"
+            [disabled]="addOpenLcForm.pristine || addOpenLcForm.invalid">Submit</button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div bsModal #lcAmmendModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog " role="document">
+    <div class="modal-content">
+      <form [formGroup]="addLcammend" novalidate (ngSubmit)="onSubmitLcAmmend()" autocomplete="off">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Ammend Lc </h4>
+          <button type="button" class="close" (click)="lcAmmendModal.hide()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="form-group row">
+
+
+            <div class="col-md-6 mb-2">
+              <label>Ammendment Date</label>
+              <input type="text" class="form-control" id="lc_ammed_date" formControlName="lc_ammed_date"
+                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                bsDatepicker [maxDate]="today" placeholder="Enter  Date " [(ngModel)]="lc_ammed_date" readonly>
+            </div>
+
+
+
+            <div class="col-md-6 mb-2">
+              <label>Upload Copy</label>
+              <input type="file" class="form-control" id="lc_ammend_copy" formControlName="lc_ammend_copy"
+                (change)="addAmmendDocs($event)" [multiple]=true>
+            </div>
+
+            <!-- <div class="col-md-6 mb-2">
+              <div class="form-check">
+
+
+                <input class="form-check-input" type="checkbox" value="" (click)="onAmmendValue($event.target.checked)">
+                <label class="col-form-label" for="ammend_value">Value Ammendment</label>
+              </div>
+
+            </div> -->
+
+
+
+            <div class="col-md-4 mb-2" *ngIf="ammend_value == 1">
+              <div class="form-check">
+                <label>Value Ammendment</label>
+                <input type="checkbox" (click)="onAmmendValue($event.target.checked)" id="ammend_value"
+                  formControlName="ammend_value" [(ngModel)]="ammendValueFlag" [checked]=true>
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-2" *ngIf="ammend_value == 0">
+              <div class="form-check">
+                <label>Value Ammendment</label>
+                <input type="checkbox" (click)="onAmmendValue($event.target.checked)" id="ammend_value"
+                  formControlName="ammend_value" [(ngModel)]="ammendValueFlag">
+              </div>
+            </div>
+
+
+            <div class="col-md-4 mb-2" *ngIf="ammend_days == 1">
+              <div class="form-check">
+                <label>Days Ammendment</label>
+                <input type="checkbox" (click)="onAmmendDays($event.target.checked)" id="ammend_days"
+                  formControlName="ammend_days" [(ngModel)]="ammendDaysFlag" [checked]=true>
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-2" *ngIf="ammend_days == 0">
+              <div class="form-check">
+                <label>Days Ammendment</label>
+                <input type="checkbox" (click)="onAmmendDays($event.target.checked)" id="ammend_days"
+                  formControlName="ammend_days" [(ngModel)]="ammendDaysFlag">
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-2" *ngIf="ammend_clause == 1">
+              <div class="form-check">
+                <label>Clause Ammendment</label>
+                <input type="checkbox" (click)="onAmmendClause($event.target.checked)" id="ammend_clause"
+                  formControlName="ammend_clause" [(ngModel)]="ammendClauseFlag" [checked]=true>
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-2" *ngIf="ammend_clause == 0">
+              <div class="form-check">
+                <label>Clause Ammendment</label>
+                <input type="checkbox" (click)="onAmmendClause($event.target.checked)" id="ammend_clause"
+                  formControlName="ammend_clause" [(ngModel)]="ammendClauseFlag">
+              </div>
+            </div>
+
+
+
+            <div class="col-md-12 mb-2" *ngIf="ammendValueFlag">
+              <label>LC Ammendment Amount</label>
+              <input type="text" class="form-control" id="ammend_lc_value" formControlName="ammend_lc_value"
+                placeholder="Enter LC Value " [(ngModel)]="lc_ammed_db_value">
+            </div>
+
+            <div class="col-md-6 mb-2" *ngIf="ammendDaysFlag">
+              <label>Ammendment In Shipment Date</label>
+              <input type="text" class="form-control" id="ammend_shipment_date" formControlName="ammend_shipment_date"
+                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                bsDatepicker placeholder="Enter  Date " [(ngModel)]="ammend_shipment_date" readonly>
+            </div>
+
+            <div class="col-md-6 mb-2" *ngIf="ammendDaysFlag">
+              <label>Ammendment In LC Expiry Date</label>
+              <input type="text" class="form-control" id="ammend_lc_expiry_date" formControlName="ammend_lc_expiry_date"
+                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                bsDatepicker placeholder="Enter  Date " [(ngModel)]="ammend_lc_expiry_date" readonly>
+            </div>
+
+
+            <div class="col-md-12 mb-2" *ngIf="ammendDaysFlag">
+              <label class="col-md-4 col-form-label"><strong>Payment Term</strong></label>
+              <ng-select id="ammend_payment_term_id" formControlName="ammend_payment_term_id" placeholder="Payment Term"
+                [searchable]="true" [clearable]="true" bindLabel="pay_term" bindValue="pt_id"
+                [items]="paymentTermListAmmend" [(ngModel)]="ammend_payment_term_id">
+              </ng-select>
+            </div>
+
+
+
+            <div class="col-md-12 mb-2">
+              <label>Remark</label>
+              <textarea class="form-control" id="ammend_remark" formControlName="ammend_remark"
+                placeholder="Enter Remark " [(ngModel)]="lc_ammed_remark"></textarea>
+            </div>
+
+
+
+
+          </div>
+
+
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="lcAmmendModal.hide()">Close</button>
+          <button type="submit" class="btn btn-primary"
+            [disabled]="addLcammend.pristine || addLcammend.invalid">Submit</button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+
+
+<div bsModal #lcInsuranceModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog " role="document">
+    <div class="modal-content">
+      <form [formGroup]="addLcinsurance" novalidate (ngSubmit)="onSubmitLcInsurance()" autocomplete="off">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Insurance Lc </h4>
+          <button type="button" class="close" (click)="lcInsuranceModal.hide()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="form-group row">
+
+
+            <div class="col-md-6 mb-2">
+              <label>Insurance Date</label>
+              <input type="text" class="form-control" id="lc_insurance_date" formControlName="lc_insurance_date"
+                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                bsDatepicker [maxDate]="today" placeholder="Enter  Date " [(ngModel)]="lc_insurance_date" readonly>
+            </div>
+
+
+
+            <div class="col-md-6 mb-2">
+              <label>Upload Copy</label>
+              <input type="file" class="form-control" id="lc_insurance_copy" formControlName="lc_insurance_copy"
+                (change)="addInsuranceDocs($event)" [multiple]=true>
+            </div>
+
+            <div class="col-md-12 mb-2">
+              <label>Remark</label>
+              <textarea type="text" class="form-control" id="insurance_remark" formControlName="insurance_remark"
+                placeholder="Enter Remark " [(ngModel)]="lc_insurance_remark"></textarea>
+            </div>
+
+
+          </div>
+
+
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="lcInsuranceModal.hide()">Close</button>
+          <button type="submit" class="btn btn-primary"
+            [disabled]="addLcinsurance.pristine || addLcinsurance.invalid">Submit</button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div bsModal #lcCancelModel="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog " role="document">
+    <div class="modal-content">
+      <form [formGroup]="updateLcCancelStatus" novalidate (ngSubmit)="onSubmitlcCancel()" autocomplete="off">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Lc Cancel </h4>
+          <button type="button" class="close" (click)="lcCancelModel.hide()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="form-group row">
+
+
+            <div class="col-md-6 mb-2">
+              <label>LC Cancel Date</label>
+              <input type="text" class="form-control" id="lc_cancel_date" formControlName="lc_cancel_date"
+                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                bsDatepicker [maxDate]="today" placeholder="Enter  Date " [(ngModel)]="lc_cancel_date" readonly>
+            </div>
+
+
+
+            <div class="col-md-6 mb-2">
+              <label>LC Cancel Documents</label>
+              <input type="file" class="form-control" id="lc_cancel_documents" formControlName="lc_cancel_documents"
+                (change)="addLcCancelDocs($event)" [multiple]=true>
+            </div>
+
+            <div class="col-md-12 mb-2">
+              <label>Remark</label>
+              <textarea type="text" class="form-control" id="lc_cancel_remark" formControlName="lc_cancel_remark"
+                placeholder="Enter Remark " [(ngModel)]="lc_cancel_remark"></textarea>
+            </div>
+
+
+          </div>
+
+
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="lcCancelModel.hide()">Close</button>
+          <button type="submit" class="btn btn-primary"
+            [disabled]="updateLcCancelStatus.pristine || updateLcCancelStatus.invalid">Submit</button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+
+<div bsModal #nonModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog " role="document">
+    <div class="modal-content">
+      <form [formGroup]="addNonForm" novalidate (ngSubmit)="updateNon()" autocomplete="off">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Update Non </h4>
+          <button type="button" class="close" (click)="nonModal.hide()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="col-md-12">
+            <div class="row">
+              <div class="col-md-6">
+                <label for="">Date of shipment</label>
+
+                <div class="form-group">
+                  <input type="text" class="form-control" formControlName="date_of_shipment" id="date_of_shipment"
+                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                    bsDatepicker [maxDate]="today" placeholder="Enter Date " [(ngModel)]='shipmentDate'
+                    style="background-color: white;" readonly>
+                </div>
+
+
+              </div>
+              <div class="col-md-6">
+                <label for="">Invoice Date</label>
+
+                <div class="form-group">
+                  <input type="text" class="form-control" formControlName="invoice_date" id="invoice_date"
+                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                    bsDatepicker [maxDate]="today" placeholder="Enter Date " [(ngModel)]="invoiceDate" readonly
+                    style="background-color: white;">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="">Non Received On</label>
+
+                <div class="form-group">
+                  <input type="text" class="form-control" formControlName="non_received_date" id="non_received_date"
+                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                    bsDatepicker [maxDate]="today" placeholder="Enter Date " [(ngModel)]='receivedDate' readonly
+                    style="background-color: white;">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="">Invoice No</label>
+
+                <div class="form-group">
+                  <input type="text" formControlName="invoice_no" id="invoice_no" class="form-control"
+                    placeholder="Enter Number " [(ngModel)]='invoiceNo'>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="">Upload Doc</label>
+
+                <div class="form-group">
+                  <input type="file" formControlName="non_copy" id="non_copy" class="form-control" [multiple]=true
+                    placeholder="Enter Date " (change)="addNonDocs($event)">
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="">Remark</label>
+
+                <div class="form-group">
+                  <textarea class="form-control" placeholder="Enter Remark" formControlName="non_rmk" id="non_rmk"
+                    [(ngModel)]='remark'></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="nonModal.hide()">Close</button>
+          <button type="submit" class="btn btn-primary" [disabled]="addNonForm.pristine ">Submit</button>
+          <!-- || addNonForm.invalid -->
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+
+<div bsModal #ReviseNonModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog " role="document">
+    <div class="modal-content">
+      <form [formGroup]="reviseNonForm" novalidate (ngSubmit)="onSubmitReviseCopy()" autocomplete="off">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Revise Non</h4>
+          <button type="button" class="close" (click)="ReviseNonModal.hide()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="form-group row">
+
+
+
+            <div class="col-md-6 mb-2">
+              <label>Upload Copy</label>
+              <input type="file" class="form-control" id="non_revised_copy" formControlName="non_revised_copy"
+                (change)="addRevisedCopy($event)" [multiple]=true>
+            </div>
+
+            <div class="col-md-12 mb-2">
+              <label>Discripancy Note</label>
+              <textarea type="text" class="form-control" id="discrepancy_note" formControlName="discrepancy_note"
+                placeholder="Enter Note "></textarea>
+            </div>
+
+
+          </div>
+
+
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="ReviseNonModal.hide()">Close</button>
+          <button type="submit" class="btn btn-primary"
+            [disabled]="reviseNonForm.pristine || reviseNonForm.invalid">Submit</button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

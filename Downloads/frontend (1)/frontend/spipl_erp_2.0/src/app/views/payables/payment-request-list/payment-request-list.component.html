@@ -1,0 +1,236 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h4><i class="fa fa-inr"></i> Payment Request List
+
+
+          <button class="btn btn-outline-primary active pull-right" (click)="onDataRefresh()"><i class="fa fa-refresh"
+              [ngClass]="{'fa-spin': isLoading}"></i></button>
+        </h4>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="row">
+
+              <div class="form-group col-6 col-md-3">
+                <label for="">Request Date</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                  </div>
+                  <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                    (ngModelChange)="onchange()" placeholder="From Date - To Date" readonly>
+                </div>
+              </div>
+              <div class="form-group col-6 col-md-2">
+                <label for="">Staus</label>
+                <ng-select placeholder="Select Status" [searchable]="true" [clearable]="true" bindLabel="status"
+                  bindValue="id" [items]="statusOptions" (change)="statusFilter()" [(ngModel)]="currentStatus">
+                </ng-select>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-2 offset-5" *ngIf="isLoading">
+            <app-loading-spinner></app-loading-spinner>
+          </div>
+        </div>
+        <div class="row wrapper" *ngIf="!isLoading">
+
+          <div class="col-md-12">
+            <p-table #dt [value]="paymentReqList" styleClass="ui-table-payment-req-list" [rowHover]="true" [rows]="10"
+              [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading" [paginator]="false"
+              [autoLayout]="true" [resizableColumns]="true" (onFilter)="onFilter($event, dt)" [scrollable]="true"
+              scrollHeight="400px" [filterDelay]="0" [globalFilterFields]="['category','org_emp_name','record_id']">
+              <ng-template pTemplate="caption">
+                <div class="row">
+                  <div class="col-md-3">
+                    <input type="text" class="form-control" (input)="dt.filterGlobal($event.target.value, 'contains')"
+                      placeholder="Global Search" />
+                  </div>
+
+                  <div class="col-md-2">
+
+                    <ng-select placeholder="Company " [searchable]="true" [clearable]="true" bindLabel="label"
+                      bindValue="id" [items]="company" [(ngModel)]="company_id" style="font-size: 10px;"
+                      (ngModelChange)="onchange()">
+                    </ng-select>
+                  </div>
+                </div>
+
+              </ng-template>
+
+              <ng-template pTemplate="header">
+                <tr>
+                  <th [style.width]="col.width" pSortableColumn="{{col.field}}" *ngFor="let col of cols"
+                    [ngClass]="col.field == 'org_emp_name' ? 'sticky-col second-col' : ''"> {{col.header}}</th>
+
+                </tr>
+
+                <tr>
+                  <th></th>
+                  <th>
+                    <div *ngIf="supplier_list.length">
+                      <p-multiSelect [options]="supplier_list" placeholder="All" appendTo="body"
+                        (onChange)="onchangeFilter($event,'org_emp_name')" optionLabel="org_emp_name">
+                        <ng-template let-option pTemplate="item">
+
+                          <span>&#123;&#123;option.label&#125;&#125;</span>
+
+                        </ng-template>
+                      </p-multiSelect>
+                    </div>
+                  </th>
+                  <th colspan="5"></th>
+                  <th>
+                    <div *ngIf="request_by.length">
+                      <p-multiSelect [options]="request_by" placeholder="All" appendTo="body"
+                        (onChange)="onchangeFilter($event,'added_by_name')" optionLabel="added_by_name">
+                        <ng-template let-option pTemplate="item">
+
+                          <span>&#123;&#123;option.label&#125;&#125;</span>
+
+                        </ng-template>
+                      </p-multiSelect>
+                    </div>
+                  </th>
+                  <th colspan="10"></th>
+
+                </tr>
+              </ng-template>
+
+
+
+
+              <ng-template pTemplate="body" let-payableRequest let-index="rowIndex">
+                <tr class="ui-selectable-row">
+                  <td style="width:100px">
+                    <span class="ui-column-title">Req.No.</span>
+                    {{payableRequest.id}}
+                  </td>
+                  <td class="sticky-col second-col" style="width:200px">
+                    <span class="ui-column-title ">Beneficiary</span>
+                    {{payableRequest.org_emp_name}}
+                  </td>
+                  <td style="width:200px">
+                    <span class="ui-column-title">Req. Category</span>
+                    {{payableRequest.category}}
+                  </td>
+
+
+                  <td style="width:200px">
+                    <span class="ui-column-title">Amount</span>
+                    {{payableRequest.req_amount | currencyInr}}
+                  </td>
+
+                  <td style="width:200px">
+                    <span class="ui-column-title">Invoice No.</span>
+                    {{payableRequest.invoice_no}}
+                  </td>
+
+                  <td style="width:200px">
+                    <span class="ui-column-title">Reference ID</span>
+                    {{payableRequest.record_id}}
+                  </td>
+
+                  <td style="width:200px">
+                    <span class="ui-column-title">UTR NO.</span>
+                    {{payableRequest.utr_no}}
+                  </td>
+                  <td style="width:200px">
+                    <span class="ui-column-title">Added Date</span>
+                    {{payableRequest.added_date | date:'dd/MM/yyyy h:mm:ss a'}}
+                  </td>
+                  <td style="width:200px">
+                    <span class="ui-column-title">Added By</span>
+                    {{payableRequest.added_by_name}}
+                  </td>
+                  <td style="width:200px">
+                    <span class="ui-column-title">Approve Date</span>
+                    {{payableRequest.approved_date | date:'dd/MM/yyyy h:mm:ss a'}}
+                  </td>
+                  <td style="width:200px">
+                    <span class="ui-column-title">Advanced/Against Bill</span>
+                    {{getRequestText(payableRequest.advanced_agnst_bill)}}
+                  </td>
+                  <td style="width:200px">
+                    <span class="ui-column-title">Priority</span>
+                    {{getPriorityText(payableRequest.normal_priority)}}
+                  </td>
+                  <td style="width:200px">
+                    <span class="ui-column-title">Approve By</span>
+                    {{payableRequest.approved_by_name}}
+                  </td>
+                  <td style="width:200px">
+                    <span class="ui-column-title">Remark</span>
+                    {{payableRequest.remark}}
+                  </td>
+
+                  <td style="width:200px">
+                    <span class="ui-column-title">Status</span>
+
+                    <div *ngIf="approve">
+                      <span class="btn btn-pill btn-sm btn-warning"
+                        *ngIf="payableRequest.request_status === null || payableRequest.request_status === 0"
+                        (click)="confirm(payableRequest)">Pending</span>
+                    </div>
+
+                    <span class="btn btn-pill btn-sm btn-warning" *ngIf="!approve">Pending</span>
+                    <span class="btn btn-pill btn-sm btn-success"
+                      *ngIf="payableRequest.request_status === 1">Approved</span>
+                    <span class="btn btn-pill btn-sm btn-danger"
+                      *ngIf="payableRequest.request_status === 2">Rejected</span>
+                    <span class="btn btn-pill btn-sm btn-secondary"
+                      *ngIf="payableRequest.request_status === 3">Cancelled </span>
+                  </td>
+
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="footer">
+                <tr>
+                  <td colspan="3" style="text-align: right; width:700px"> Total Amount: </td>
+                  <td style="width: 200px;">{{totalAmount | currencyInr}}</td>
+                  <td style="width: 1800px;" colspan="9"></td>
+                </tr>
+
+                <tr>
+
+                  <td colspan="14" style="text-align:left">{{filteredValuess.length}}</td>
+                </tr>
+
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+
+                  <td colspan="14" style="text-align:left">No Records found.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-info-triangle" [style]="{width: '40vw'}" [visible]="displayPop">
+  <p-footer>
+    <strong>Update Req. Amount</strong>
+    <input type="text" [(ngModel)]="req_amount" numbersOnly required>
+    <button type="button" pButton class="ui-button-danger" icon="pi pi-times" label="Reject"
+      (click)="onReject()"></button>
+
+    <button type="button" class="ui-button-success" pButton icon="pi pi-check" label="Approve"
+      (click)="cd.accept()"></button>
+  </p-footer>
+</p-confirmDialog>
+
+
+
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

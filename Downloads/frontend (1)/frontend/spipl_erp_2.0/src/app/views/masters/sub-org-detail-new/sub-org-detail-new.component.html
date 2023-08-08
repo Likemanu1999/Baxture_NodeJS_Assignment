@@ -1,0 +1,990 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12 p-0">
+
+			<!-- ORG DETAILS START -->
+			<div class="card" *ngIf="org_data != null">
+				<div class="card-header bg-info text-dark">
+					<div class="row">
+						<div class="col-md-3">
+							<h5>
+								{{org_data.company}} - {{org_data.sub_org_name}} ({{org_data.unit_type}})
+							</h5>
+							{{org_data.org_address}}
+						</div>
+					</div>
+				</div>
+				<div class="card-body table-responsive">
+					<div class="row">
+						<div class="col-md-4 mb-2">
+							<strong>PAN No.:</strong> {{org_data.pan_no}}
+						</div>
+						<div class="col-md-4 mb-2">
+							<strong>GST No.:</strong> {{org_data.gst_no}}
+						</div>
+						<div class="col-md-4 mb-2">
+							<strong>Virtual Account No.:</strong> {{org_data.virtual_acc_no}}
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4 mb-2">
+							<strong>Sales Account Holder:</strong> {{org_data.sales_acc_holder}}
+						</div>
+						<div class="col-md-4 mb-2">
+							<strong>Purchase Account Holder:</strong> {{org_data.purchase_acc_holde}}
+						</div>
+						<div class="col-md-4 mb-2">
+							<strong>Payment Term:</strong> {{org_data.payment_term}}
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4 mb-2">
+							<strong>Base Limit:</strong> {{org_data.base_limit}}
+						</div>
+						<div class="col-md-4 mb-2">
+							<strong>Adhoc Limit:</strong> {{org_data.adhoc_limit}}
+						</div>
+						<div class="col-md-4 mb-2">
+							<strong>Overdue Limit:</strong> {{org_data.overdue_limit}}
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4 mb-0">
+							<strong>Categories:</strong>
+							<br>
+							<ul class="org_data_list">
+								<li *ngFor="let item of org_data.category_list">{{item}}</li>
+							</ul>
+						</div>
+						<div class="col-md-4 mb-0">
+							<strong>Products:</strong>
+							<ul class="org_data_list">
+								<li *ngFor="let item of org_data.product_list">{{item}}</li>
+								</ul>
+						</div>			
+						<div class="col-md-4 mb-0">
+							<strong>Document: </strong>
+							<div *ngIf="org_data.documents != null">
+								<a *ngFor="let item of org_data.documents" class="btn btn-danger btn-sm action-btn mr-1"
+									href="{{item}}" target="_blank">
+									<i class="fa fa-file-pdf-o"></i>
+								</a>
+							</div>	
+							<div class="form-group" *ngIf="gst_logo_list.length > 0">
+								<table>
+								  <ng-container *ngFor="let item of gst_logo_list">
+									<tr *ngIf="item.gst_certificate && item.gst_certificate !== 'null'">
+									  <th><label for="gst_certificate">GST Certificate:</label></th>
+									  <td style="padding-left: 20px;">
+										<a href="{{item.gst_certificate}}" target="_blank" data-placement="top"
+										  title="Download {{ item.gst_certificate }}" class="btn btn-outline-success btn-sm action-btn mr-1 mb-1"
+										  [class.disabled]="!item.gst_certificate"><i class="fa fa-download"></i></a>
+									  </td>
+									</tr>
+									<tr *ngIf="item.chq_scan_copy && item.chq_scan_copy !== 'null'">
+									  <th><label for="chq_scan_copy">Cheque Scan Copy:</label></th>
+									  <td style="padding-left: 20px;">
+										<a href="{{item.chq_scan_copy}}" target="_blank" data-placement="top"
+										  title="Download {{ item.chq_scan_copy }}" class="btn btn-outline-success btn-sm action-btn mr-1 mb-1"
+										  [class.disabled]="!item.chq_scan_copy"><i class="fa fa-download"></i></a>
+									  </td>
+									</tr>
+									<tr *ngIf="item.logo && item.logo !== 'null'">
+									  <th><label for="logo">Logo:</label></th>
+									  <td style="padding-left: 20px;">
+										<a href="{{item.logo}}" target="_blank" data-placement="top"
+										  title="Download {{ item.logo }}" class="btn btn-outline-success btn-sm action-btn mr-1 mb-1"
+										  [class.disabled]="!item.logo"><i class="fa fa-download"></i></a>
+									  </td>
+									</tr>
+								</ng-container>
+								</table>
+							</div>
+						</div>
+						
+						
+					</div>
+				</div>
+			</div>
+			<!-- ORG DETAILS END -->
+
+
+
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-3">
+							<strong>Upload File</strong>
+						</div>
+					</div>
+				</div>		
+
+				<div class="card-body">
+					<form [formGroup]="fileUploadForm" novalidate (ngSubmit)="fileUploadFormSubmit()" class="needs-">
+						<div class="row">
+							<div class="col-md-4">
+								<div class="form-group">
+									<label for="gst_certificate">GST Certificate:</label>
+									<input type="file" class="form-control" id="gst_certificate" formControlName="gst_certificate"
+										(change)="onChangeSubOrgFiles($event)">
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="form-group">
+									<label for="chq_scan_copy">Cheque Scan Copy:</label>
+									<input type="file" class="form-control" id="chq_scan_copy"
+										formControlName="chq_scan_copy" (change)="onChangeSubOrgFiles($event)">
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="form-group">
+									<label for="logo">Logo:</label>
+									<input type="file" class="form-control" id="logo" formControlName="logo"
+										(change)="onChangeSubOrgFiles($event)">
+								</div>
+							</div>
+						</div>
+						<button class="btn btn-primary" [disabled]="fileUploadForm.invalid || fileUploadForm.pristine ">
+							Submit
+						</button>
+					</form>
+				</div>
+				
+			</div>
+
+			<!-- ORG CONTACTS START -->
+			<div class="card" *ngIf="org_data != null">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-3">
+							<strong>Contacts</strong>
+						</div>
+						<div class="col-md-9 text-right">
+							<button type="button" class="btn btn-primary" (click)="onAction(null, null, 'Add_Contact')">
+								<i class="fa fa-plus"></i> Add New Contact
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="card-body table-responsive">
+					<p-table #dt1 dataKey="id" styleClass="contact_table" [value]="contact_data" [rows]="10"
+						[showCurrentPageReport]="true" [rowHover]="false" [rowsPerPageOptions]="[10,25,50,100]"
+						[loading]="isLoadingContact" [autoLayout]="true" [paginator]="true" [columns]="contact_cols"
+						[globalFilterFields]="contact_filter"
+						currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+						<ng-template pTemplate="caption">
+							<div class="row">
+								<div class="col-md-9">
+								</div>
+								<div class="col-md-3">
+									<div class="w-100 mt-1 pull-right">
+										<input pInputText type="text" class="form-control"
+											(input)="dt1.filterGlobal($event.target.value, 'contains')"
+											placeholder="Global Search" />
+									</div>
+								</div>
+							</div>
+						</ng-template>
+						<ng-template pTemplate="header" let-columns>
+							<tr>
+								<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+									{{col.header}}
+									<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+								</th>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="body" let-rowData>
+							<tr class="ui-selectable-row">
+								<td>
+									<span class="ui-column-title"># </span>
+									{{ rowData.cont_id }}
+									<span class="badge badge-dark" style="cursor: pointer;"
+										(click)="copyData(rowData)">Copy</span>
+								</td>
+								<td>
+									<span class="ui-column-title">Person Name: </span>
+									<ul class="list-group contact_list">
+										<li class="list-group-item d-flex justify-content-between align-items-center">
+											{{rowData.person_name}}
+											<div class="contact-action">
+												<a class="fa fa-pencil text-primary mr-2"
+													(click)="onAction(rowData, null, 'Edit_Contact')"></a>
+											</div>
+										</li>
+									</ul>
+									<div class="mt-2">
+										<a class="btn btn-outline-dark btn-sm action-btn mr-2"
+											(click)="onAction(rowData, null, 'Add_Phone')">
+											<i class="fa fa-plus"></i> Phone
+										</a>
+										<a class="btn btn-outline-dark btn-sm action-btn"
+											(click)="onAction(rowData, null, 'Add_Email')">
+											<i class="fa fa-plus"></i> Email
+										</a>
+									</div>
+								</td>
+								<td>
+									<span class="ui-column-title">Designation: </span>
+									<ul class="list-group contact_list">
+										<li class="list-group-item d-flex justify-content-between align-items-center">
+											{{rowData.designation}}
+										</li>
+									</ul>
+								</td>
+								<td>
+									<span class="ui-column-title">Phone: </span>
+									<ul class="list-group contact_list">
+										<li class="list-group-item d-flex justify-content-between align-items-center"
+											*ngFor="let item of rowData.phone">
+											{{item.phone_no}}
+											<div class="contact-action">
+												<a class="fa fa-pencil text-primary mr-2"
+													(click)="onAction(rowData, item, 'Edit_Phone')"></a>
+												<a class="fa fa-trash text-danger" style="cursor: pointer;"
+													mwlConfirmationPopover [popoverTitle]="popoverTitle"
+													[popoverMessage]="popoverMessage" [confirmText]="confirmText"
+													[cancelText]="cancelText" [placement]="placement"
+													[closeOnOutsideClick]="closeOnOutsideClick"
+													confirmButtonType="danger" cancelButtonType="success"
+													(confirm)="onAction(rowData, item, 'Delete_Phone')"
+													(cancel)="cancelClicked = true"></a>
+											</div>
+										</li>
+									</ul>
+								</td>
+								<td>
+									<span class="ui-column-title">Email: </span>
+									<ul class="list-group contact_list">
+										<li class="list-group-item d-flex justify-content-between align-items-center"
+											*ngFor="let item of rowData.email">
+											{{item.email_id}}
+											<div class="contact-action">
+												<a class="fa fa-pencil text-primary mr-2"
+													(click)="onAction(rowData, item, 'Edit_Email')"></a>
+												<a class="fa fa-trash text-danger" style="cursor: pointer;"
+													mwlConfirmationPopover [popoverTitle]="popoverTitle"
+													[popoverMessage]="popoverMessage" [confirmText]="confirmText"
+													[cancelText]="cancelText" [placement]="placement"
+													[closeOnOutsideClick]="closeOnOutsideClick"
+													confirmButtonType="danger" cancelButtonType="success"
+													(confirm)="onAction(rowData, item, 'Delete_Email')"
+													(cancel)="cancelClicked = true"></a>
+											</div>
+										</li>
+									</ul>
+								</td>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="emptymessage">
+							<tr>
+								<td [attr.colspan]="contact_cols.length" class="text-center">
+									No Data Found
+								</td>
+							</tr>
+						</ng-template>
+					</p-table>
+				</div>
+			</div>
+			<!-- ORG CONTACTS END -->
+
+			<!-- ORG BANKS START -->
+			<div class="card" *ngIf="org_data != null">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-3">
+							<strong>Banks</strong>
+						</div>
+						<div class="col-md-9 text-right">
+							<button type="button" class="btn btn-primary" (click)="onAction(null, null, 'Add_Bank')">
+								<i class="fa fa-plus"></i> Add New Bank
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="card-body table-responsive">
+					<p-table #dt2 dataKey="id" styleClass="bank_table" [value]="bank_data" [rows]="10"
+						[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+						[loading]="isLoadingBank" [autoLayout]="true" [paginator]="true" [columns]="bank_cols"
+						[globalFilterFields]="bank_filter"
+						currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+						<ng-template pTemplate="caption">
+							<div class="row">
+								<div class="col-md-9">
+									<!--  -->
+								</div>
+								<div class="col-md-3">
+									<div class="w-100 mt-1 pull-right">
+										<input pInputText type="text" class="form-control"
+											(input)="dt2.filterGlobal($event.target.value, 'contains')"
+											placeholder="Global Search" />
+									</div>
+								</div>
+							</div>
+						</ng-template>
+						<ng-template pTemplate="header" let-columns>
+							<tr>
+								<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+									{{col.header}}
+									<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+								</th>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="body" let-rowData>
+							<tr class="ui-selectable-row">
+								<td *ngFor="let col of bank_cols">
+									<div *ngIf="col.field != 'action'">
+										<span class="ui-column-title">{{ col.header }}: </span>
+										<div *ngIf="col.type == null">
+											{{ rowData[col.field] }}
+										</div>
+										<div *ngIf="col.type == 'Quantity'">
+											{{ rowData[col.field] }} {{ rowData.unit_type }}
+										</div>
+										<div *ngIf="col.type == 'Amount'">
+											{{ rowData[col.field] | currency:'INR' }}
+										</div>
+										<div *ngIf="col.type == 'Date'">
+											{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+										</div>
+									</div>
+									<div *ngIf="col.field == 'action'">
+										<a class="text-info mb-2 mr-1" data-toggle="tooltip" data-placement="top"
+											title="Edit Bank" (click)="onAction(rowData, null, 'Edit_Bank')">
+											<i class="fa fa-pencil"></i>
+										</a>
+										<a class="text-danger" style="cursor: pointer;" mwlConfirmationPopover
+											[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+											[confirmText]="confirmText" [cancelText]="cancelText"
+											[placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+											confirmButtonType="danger" cancelButtonType="success"
+											(confirm)="onAction(rowData, null, 'Delete_Bank')"
+											(cancel)="cancelClicked = true">
+											<i class="fa fa-trash"></i>
+										</a>
+									</div>
+								</td>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="emptymessage">
+							<tr>
+								<td [attr.colspan]="bank_cols.length" class="text-center">
+									No Data Found
+								</td>
+							</tr>
+						</ng-template>
+					</p-table>
+				</div>
+			</div>
+			<!-- ORG BANKS END -->
+
+
+			<!-- ORG DCA/CS START -->
+			<div class="card" *ngIf="org_data != null && org_data.product_type == 2">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-3">
+							<strong>DCA/CS</strong>
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-3">
+							<form [formGroup]="dcaCsForm" novalidate (ngSubmit)="submitDcaCsForm()">
+								<div class="row">
+									<div class="col-md-12">
+										<div class="form-group">
+											<label for="dcscs">Select DCA/CS</label>
+											<ng-select placeholder="Select DCA / CS" [searchable]="true"
+												[clearable]="true" bindLabel="sub_org_name" bindValue="sub_org_id"
+												formControlName=dca_cs [items]="dca_cs_list">
+											</ng-select>
+										</div>
+									</div>
+								</div>
+								<button class="btn btn-primary" type="submit"
+									[disabled]="dcaCsForm.invalid">Submit</button>
+							</form>
+						</div>
+						<div class="col-md-9 table-responsive">
+							<p-table #dt3 dataKey="id" styleClass="dca_table" [value]="dca_data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoadingDca" [autoLayout]="true" [paginator]="true" [columns]="dca_cols"
+								[globalFilterFields]="dca_filter"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<!--  -->
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt3.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData>
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of dca_cols">
+											<div *ngIf="col.field != 'action'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													{{ rowData[col.field] }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'action'">
+												<a class="text-danger" style="cursor: pointer;" mwlConfirmationPopover
+													[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+													[confirmText]="confirmText" [cancelText]="cancelText"
+													[placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+													confirmButtonType="danger" cancelButtonType="success"
+													(confirm)="onAction(rowData, null, 'Delete_DCA')"
+													(cancel)="cancelClicked = true">
+													<i class="fa fa-trash"></i>
+												</a>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="dca_cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- ORG DCA/CS END -->
+		</div>
+	</div>
+</div>
+
+<!-- Add Contact Person -->
+<div bsModal #addContactPersonModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Add New Contact Person" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="addContactPersonForm" novalidate (ngSubmit)="submitAddContactPersonForm()"
+				autocomplete="off" class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">Add New Contact Person</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="person_name">
+									<strong>
+										Person Name <sup class="text-danger">*</sup>
+									</strong>
+								</label>
+								<input type="text" id="person_name" class="form-control" formControlName="person_name"
+									placeholder="Person Name">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="designation_id">
+									<strong>Designation</strong>
+								</label>
+								<ng-select id="designation_id" formControlName="designation_id"
+									placeholder="Select Designation " [searchable]="true" [clearable]="true"
+									bindLabel="profile_name" bindValue="id" [items]="job_list">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="contact_number">
+									<strong>Contact Number</strong>
+								</label>
+								<div class="row">
+									<div class="col-md-4">
+										<ng-select id="country_code" formControlName="country_code"
+											placeholder="Country Code" [searchable]="true" [clearable]="true"
+											bindLabel="name" bindValue="phonecode" [items]="countryList" autofocus>
+										</ng-select>
+									</div>
+									<div class="col-md-3">
+										<input class="form-control" id="area_code" type="text"
+											formControlName="area_code" placeholder="Area Code. Eg. 020"
+											(change)="disableChecks($event.target.value)" autofocus />
+									</div>
+									<div class="col-md-5">
+										<input class="form-control" id="contact_no" type="text"
+											formControlName="contact_no" placeholder="Enter Contact Number" required
+											autofocus />
+									</div>
+								</div>
+								<div class="row mt-2">
+									<div class="col-md-2" *ngIf="!disableCheckOptions">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_phone_finance"
+												formControlName="check_phone_finance">
+											<label for="check_phone_finance">Finance</label>
+										</div>
+									</div>
+									<div class="col-md-2" *ngIf="!disableCheckOptions">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_phone_logistics"
+												formControlName="check_phone_logistics">
+											<label for="check_phone_logistics">Logistics</label>
+										</div>
+									</div>
+									<div class="col-md-2" *ngIf="!disableCheckOptions">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_phone_sales"
+												formControlName="check_phone_sales">
+											<label for="check_phone_sales">Sales</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="email">
+									<strong>Email</strong>
+								</label>
+								<div class="row">
+									<div class="col-md-12">
+										<input type="email" id="email" class="form-control" formControlName="email"
+											placeholder="Email">
+									</div>
+								</div>
+								<div class="row mt-2">
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_email_finance"
+												formControlName="check_email_finance">
+											<label for="check_email_finance">Finance</label>
+										</div>
+									</div>
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_email_logistics"
+												formControlName="check_email_logistics">
+											<label for="check_email_logistics">Logistics</label>
+										</div>
+									</div>
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_email_sales"
+												formControlName="check_email_sales">
+											<label for="check_email_sales">Sales</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary"
+						[disabled]="addContactPersonForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Edit Contact Person -->
+<div bsModal #editContactPersonModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Edit Contact Person" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-md" role="document">
+		<div class="modal-content">
+			<form [formGroup]="editContactPersonForm" novalidate (ngSubmit)="submitEditContactPersonForm()"
+				autocomplete="off" class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">Edit Contact Person</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="person_name">
+									<strong>
+										Person Name <sup class="text-danger">*</sup>
+									</strong>
+								</label>
+								<input type="text" id="person_name" class="form-control" formControlName="person_name"
+									placeholder="Person Name">
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="designation_id">
+									<strong>Designation</strong>
+								</label>
+								<ng-select id="designation_id" formControlName="designation_id"
+									placeholder="Select Designation " [searchable]="true" [clearable]="true"
+									bindLabel="profile_name" bindValue="id" [items]="job_list">
+								</ng-select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary"
+						[disabled]="editContactPersonForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<!-- Add / Edit Contact Number -->
+<div bsModal #updateContactNumberModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Update Contact Number" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="contactNumberForm" novalidate (ngSubmit)="submitContactNumberForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title"><i class="fa fa-phone"></i> Contact Number</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="contact_number">
+									<strong>Contact Number</strong>
+								</label>
+								<div class="row">
+									<div class="col-md-4">
+										<ng-select id="country_code" formControlName="country_code"
+											placeholder="Country Code" [searchable]="true" [clearable]="true"
+											bindLabel="name" bindValue="phonecode" [items]="countryList" autofocus>
+										</ng-select>
+									</div>
+									<div class="col-md-3">
+										<input class="form-control" id="area_code" type="text"
+											formControlName="area_code" placeholder="Area Code. Eg. 020"
+											(change)="disableChecks($event.target.value)" autofocus />
+									</div>
+									<div class="col-md-5">
+										<input class="form-control" id="contact_no" type="text"
+											formControlName="contact_no" placeholder="Enter Contact Number" required
+											autofocus />
+									</div>
+									
+								</div>
+								<div class="row mt-2">
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_phone_finance"
+												formControlName="check_phone_finance">
+											<label for="check_phone_finance">Finance</label>
+										</div>
+									</div>
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_phone_logistics"
+												formControlName="check_phone_logistics">
+											<label for="check_phone_logistics">Logistics</label>
+										</div>
+									</div>
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_phone_sales"
+												formControlName="check_phone_sales">
+											<label for="check_phone_sales">Sales</label>
+										</div>
+									</div>
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_phone_sales"
+												formControlName="check_phone_offers">
+											<label for="check_phone_offers">Offers</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" [disabled]="contactNumberForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Add / Edit Email -->
+<div bsModal #updateContactEmailModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Update Email" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="contactEmailForm" novalidate (ngSubmit)="submitContactEmailForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title"><i class="fa fa-envelope"></i> Email</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="email">
+									<strong>Email</strong>
+								</label>
+								<div class="row">
+									<div class="col-md-12">
+										<input type="email" id="email" class="form-control" formControlName="email"
+											placeholder="Email">
+									</div>
+								</div>
+								<div class="row mt-2">
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_email_finance"
+												formControlName="check_email_finance">
+											<label for="check_email_finance">Finance</label>
+										</div>
+									</div>
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_email_logistics"
+												formControlName="check_email_logistics">
+											<label for="check_email_logistics">Logistics</label>
+										</div>
+									</div>
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_email_sales"
+												formControlName="check_email_sales">
+											<label for="check_email_sales">Sales</label>
+										</div>
+									</div>
+									<div class="col-md-2">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="check_email_offers"
+												formControlName="check_email_offers">
+											<label for="check_email_offers">Offers</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" [disabled]="contactEmailForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<!-- Add / Edit Bank -->
+<div bsModal #updateBankModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Update Bank"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="bankForm" novalidate (ngSubmit)="submitBankForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title"><i class="fa fa-bank"></i> Add / Edit Bank</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="bank_name">
+									<strong>Bank Name</strong>
+								</label>
+								<input type="text" id="bank_name" class="form-control" formControlName="bank_name"
+									placeholder="Bank Name">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="account_no">
+									<strong>Account Number</strong>
+								</label>
+								<input type="text" id="account_no" class="form-control" formControlName="account_no"
+									placeholder="Account Number">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="account_name">
+									<strong>Account Name</strong>
+								</label>
+								<input type="text" id="account_name" class="form-control" formControlName="account_name"
+									placeholder="Account Name">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="branch_name">
+									<strong>Branch Name</strong>
+								</label>
+								<input type="text" id="branch_name" class="form-control" formControlName="branch_name"
+									placeholder="Branch Name">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="swift_code">
+									<strong>Swift Code</strong>
+								</label>
+								<input type="text" id="swift_code" class="form-control" formControlName="swift_code"
+									placeholder="Swift Code">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="ifsc_code">
+									<strong>IFSC Code</strong>
+								</label>
+								<input type="text" id="ifsc_code" class="form-control" formControlName="ifsc_code"
+									placeholder="IFSC Code">
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="bank_address">
+									<strong>Bank Address</strong>
+								</label>
+								<input type="text" id="bank_address" class="form-control" formControlName="bank_address"
+									placeholder="Bank Address">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" [disabled]="bankForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<div bsModal #copyContactsModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Copy Contacts" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title"><i class="fa fa-bank"></i> Add / Edit Bank</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-4">
+						<div class="form-group">
+							<input type="radio" class="radioinputbox" id="pvc" value="1" name="type"
+								(change)="onChange($event.target.value, 'Product_Type')">
+							<label class="col-form-label" for="pvc">PVC</label>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<input type="radio" class="radioinputbox" id="pe" value="2" name="type"
+								(change)="onChange($event.target.value, 'Product_Type')">
+							<label class="col-form-label" for="pe">PE & PP</label>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<input type="radio" class="radioinputbox" id="surisha" value="3" name="type"
+								(change)="onChange($event.target.value, 'Product_Type')">
+							<label class="col-form-label" for="surisha">Surisha</label>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<p-table #dt4 dataKey="id" styleClass="product_type_list" [value]="copy_contacts_data"
+							[columns]="copy_contacts_cols" [rows]="10" [showCurrentPageReport]="true" [rowHover]="true"
+							[rowsPerPageOptions]="[10,25,50,100]" [autoLayout]="true" [paginator]="true"
+							[globalFilterFields]="copy_contacts_filter" [loading]="isLoadingCopy"
+							currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+							<ng-template pTemplate="caption">
+								<div class="row">
+									<div class="col-md-3">
+										<div class="w-100 mt-1 pull-right">
+											<input pInputText type="text" class="form-control"
+												(input)="dt4.filterGlobal($event.target.value, 'contains')"
+												placeholder="Global Search" />
+										</div>
+									</div>
+								</div>
+							</ng-template>
+							<ng-template pTemplate="header" let-columns>
+								<tr>
+									<th></th>
+									<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+										{{col.header}}
+										<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+									</th>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="body" let-rowData>
+								<tr>
+									<td>
+										<p-checkbox value="rowData" [value]="rowData" [inputId]="rowData.sub_org_id"
+											[(ngModel)]="checked_org" (ngModelChange)="onCheckOrg($event)">
+										</p-checkbox>
+									</td>
+									<td>{{rowData.sub_org_id}}</td>
+									<td>{{rowData.sub_org_name}} ({{rowData.unit_type}})</td>
+									<td>{{rowData.org_address}}</td>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="emptymessage">
+								<tr>
+									<td [attr.colspan]="copy_contacts_cols.length + 1" class="text-center">
+										No Data Found
+									</td>
+								</tr>
+							</ng-template>
+						</p-table>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer text-left">
+				<button type="button" class="btn btn-primary" (click)="onSubmitCopyContact()"
+					[disabled]="checked_org.length == 0">Submit
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

@@ -1,0 +1,23 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+      <mat-horizontal-stepper (selectionChange)="setIndex($event)" [selectedIndex]="selectedIndex" #stepper>
+        <mat-step [editable]="!this.isPastPayments " *ngIf="this.role_id != 24">
+            <ng-template matStepLabel >Approved Request</ng-template>
+            <app-approved-list *ngIf="firstStepFlag"></app-approved-list>
+        </mat-step>
+        <mat-step >
+            <ng-template matStepLabel>Process Payment</ng-template>
+            <app-process-list (disableEvent)="changeStatus($event)" *ngIf="secondStepFlag"></app-process-list>
+        </mat-step>
+        <!-- <mat-step >
+            <ng-template matStepLabel>Past Payments</ng-template>
+            <app-past-payments-list *ngIf="thirdStepFlag"></app-past-payments-list>
+              <div class="row">
+              </div>
+        </mat-step> -->
+      </mat-horizontal-stepper>
+    </div>
+  </div>
+</div>
+

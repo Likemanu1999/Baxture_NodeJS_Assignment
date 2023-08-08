@@ -1,0 +1,226 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><em class="fa fa-truck"></em> Import Logistics Reports
+
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mt-4">
+                            <h5>Pallet Count Report</h5>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control " bsDaterangepicker
+                                        [(ngModel)]="bsRangeValue" placeholder="">
+                                </div>
+                                <div class="col-md-1">
+                                    <button class="btn btn-primary btn-sm" (click)="getDataPallet()">Search</button>
+                                </div>
+                            </div>
+
+
+
+                            <p-table [value]="data_pallet">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th *ngFor="let col of cols_pallete">
+                                            {{col.header}}
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-car>
+                                    <tr>
+                                        <td *ngFor="let col of cols_pallete">
+                                            {{car[col.field]}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+
+                        <div class="col-md-6 mt-4">
+                            <h5>Logistics charges Report</h5>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control " bsDaterangepicker
+                                        [(ngModel)]="bsRangeValue1" placeholder="">
+                                </div>
+                                <div class="col-md-1">
+                                    <button class="btn btn-primary btn-sm" (click)="getDataCharges()">Search</button>
+                                </div>
+                            </div>
+
+                            <p-table [value]="data_charges">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th *ngFor="let col of cols_charges">
+                                            {{col.header}}
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-car>
+                                    <tr>
+                                        <td *ngFor="let col of cols_charges">
+                                            {{car[col.field]}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+
+
+
+                        <div class="col-md-12 mt-4">
+                            <h5>CFS Moment Report</h5>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control " bsDaterangepicker
+                                        [(ngModel)]="bsRangeValue2" placeholder="">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <ng-select placeholder="Select Port" [searchable]="true" [clearable]="true"
+                                        bindLabel="port_name" bindValue="id" [items]="port_list" [(ngModel)]="port"
+                                        multiple="true">
+                                    </ng-select>
+
+
+                                </div>
+
+
+                                <div class="col-md-1">
+                                    <button class="btn btn-primary btn-sm" (click)="cfsMomentReport()">Search</button>
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <input pInputText class='form-control' type="text"
+                                        (input)="cfs.filterGlobal($event.target.value, 'contains')"
+                                        placeholder="Global Search" />
+
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="ui-helper-clearfix" style="text-align: left">
+                                        <!-- <button type="button"  pButton icon="pi pi-file-excel" iconPos="left"
+                                         label="EXCEL" (click)="exportExcel(cols_cfs ,cfs_data ,  'cfs-'+bsRangeValue2[0]+'-'+ +bsRangeValue2[1])" style="margin-right: 0.5em;"
+                                         class="ui-button-success"></button> -->
+                                        <!-- <button  type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+                                         label="PDF" (click)="exportPdf(cols_cfs , cfs_data ,  'cfs-'+bsRangeValue2[0]+'-'+ +bsRangeValue2[1])" class="ui-button-warning"></button>  -->
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <span [innerHTML]="display"></span>
+                                </div>
+                            </div>
+
+                            <p-table #cfs [value]="cfs_data" [rows]="10" [showCurrentPageReport]="true"
+                                [rowsPerPageOptions]="[10,25,50]" [paginator]="true"
+                                [globalFilterFields]="['sub_org_name']">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th *ngFor="let col of cols_cfs">
+                                            {{col.header}}
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-car>
+                                    <tr>
+                                        <td *ngFor="let col of cols_cfs">
+                                            {{car[col.field]}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+
+
+
+                        <div class="col-md-12 mt-4">
+                            <h5>Bill of Entry Statistics</h5>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control " bsDaterangepicker
+                                        [(ngModel)]="bsRangeValue3" placeholder="">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <ng-select placeholder="Select Port" [searchable]="true" [clearable]="true"
+                                        bindLabel="port_name" bindValue="id" [items]="port_list" [(ngModel)]="port_be"
+                                        multiple="true">
+                                    </ng-select>
+
+                                </div>
+
+
+                                <div class="col-md-1">
+                                    <button class="btn btn-primary btn-sm"
+                                        (click)="billOfEntryStatistics()">Search</button>
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <input pInputText class='form-control' type="text"
+                                        (input)="statistics.filterGlobal($event.target.value, 'contains')"
+                                        placeholder="Global Search" />
+
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="ui-helper-clearfix" style="text-align: left">
+                                        <!-- <button type="button"  pButton icon="pi pi-file-excel" iconPos="left"
+                                         label="EXCEL" (click)="exportExcel(cols_be,be_data ,  'Be-statistics-'+bsRangeValue3[0]+'-'+ +bsRangeValue3[1])" style="margin-right: 0.5em;"
+                                         class="ui-button-success"></button> -->
+                                        <!-- <button  type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+                                         label="PDF" (click)="exportPdf(cols_be , be_data ,  'Be-statistics-'+bsRangeValue3[0]+'-'+ +bsRangeValue3[1])" class="ui-button-warning"></button>  -->
+
+                                        <!-- <button  type="button" pButton icon="fa fa-envelope-square " iconPos="left"
+                                         label="Send Mail"  class="ui-button-warning" (click)="sendMail(cols_be , be_data ,  'Be-statistics')"></button>  -->
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- <div class="row mb-3">
+                               <div class="col-md-12">
+                                <span [innerHTML]="display"></span>
+                               </div>
+                            </div> -->
+
+
+
+                            <p-table #statistics [value]="be_data" [rows]="10" [showCurrentPageReport]="true"
+                                [rowsPerPageOptions]="[10,25,50]" [paginator]="true" [globalFilterFields]="['be_no']">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th *ngFor="let col of cols_be">
+                                            {{col.header}}
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-car>
+                                    <tr>
+                                        <td *ngFor="let col of cols_be">
+                                            {{car[col.field]}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

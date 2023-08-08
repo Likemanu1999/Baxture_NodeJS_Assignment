@@ -1,0 +1,238 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-6">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="sales_lc_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div>
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getCols()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly style="padding: 19px 5px !important" />
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"
+														style="margin-left: 10px;padding: 19px 5px !important"></app-dropdown-daterange>
+												</div>
+												<div class="form-group mb-1">
+													<p-dropdown [options]="statusList" [(ngModel)]="selected_status"
+														optionLabel="name" (onChange)="onChangeStatus($event)">
+													</p-dropdown>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != 'action'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													<div *ngIf="col.field == 'days_left'">
+														<span class="badge badge-warning round-badge">
+															{{ rowData[col.field] }}
+														</span>
+													</div>
+													<div *ngIf="col.field != 'days_left'">
+														{{ rowData[col.field] }}
+													</div>
+												</div>
+												<div *ngIf="col.type == 'Quantity'">
+													{{ rowData[col.field] | number: '1.2-3' }} {{ rowData.unit_type }}
+												</div>
+												<div *ngIf="col.type == 'Amount'">
+													{{ rowData[col.field] | number: '1.2-2' }}
+												</div>
+												<div *ngIf="col.type == 'Rate'">
+													{{ rowData[col.field] | number: '1.1-2' }}%
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'action'">
+												<a class="btn btn-dark text-white custom-action-btn"
+													data-toggle="tooltip" data-placement="left"
+													title="View Bill of Exchange" (click)="onAction(rowData, 'View')">
+													<i class="fa fa-eye"></i>
+												</a>
+												<a *ngIf="rowData.is_payment_done == 0"
+													class="btn btn-success text-white custom-action-btn"
+													data-toggle="tooltip" data-placement="left"
+													title="Proceed for Payment" (click)="onAction(rowData, 'Payment')">
+													<i class="fa fa-inr"></i>
+												</a>
+												<a class="btn btn-primary text-white custom-action-btn"
+													data-toggle="tooltip" data-placement="left"
+													title="Create Bill of Exchange"
+													(click)="onAction(rowData, 'Create')">
+													<i class="fa fa-plus"></i>
+												</a>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total | number }} MT
+											</strong>
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #createBexModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Create Bill of Exchange" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="bexForm" novalidate (ngSubmit)="submitBexForm()" class="needs-validation"
+				autocomplete="off">
+				<div class="modal-header">
+					<h4 class="modal-title">Create Bill of Exchage</h4>
+					<button type="button" class="close" (click)="createBexModal.hide()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body overflow-auto">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="sales_invoice_no">Sales Invoice No</label>
+								<ng-select id="sales_invoice_no" formControlName="sales_invoice_no"
+									placeholder="Sales Invoice No" [searchable]="true" [clearable]="true"
+									bindLabel="invoice_no" bindValue="invoice_no" [items]="invoice_no_list"
+									(change)="onChangeInvoice($event)">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="bex_no">Bill of Exchange No</label>
+								<input type="text" id="bex_no" class="form-control" formControlName="bex_no"
+									placeholder="Bill of Exchange No">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="bex_date">Bill of Exchange Date</label>
+								<input type="text" id="bex_date" class="form-control" [maxDate]="maxDate"
+									formControlName="bex_date" placeholder="Bill of Exchange Date"
+									[bsConfig]="datePickerConfig" readonly bsDatepicker>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="due_date">Due Date</label>
+								<input type="text" id="due_date" class="form-control" [minDate]="minDate"
+									formControlName="due_date" placeholder="Due Date" [bsConfig]="datePickerConfig"
+									readonly bsDatepicker>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="bex_amount">Bill of Exchange Amount</label>
+								<input type="text" id="bex_amount" class="form-control" formControlName="bex_amount"
+									placeholder="Bill of Exchange Amount" numbersOnly readOnly>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="discounting_by_bank">Discounting By Bank</label>
+								<ng-select id="discounting_by_bank" formControlName="discounting_by_bank"
+									placeholder="Discounting By Bank" [searchable]="true" [clearable]="true"
+									bindLabel="bank_name" bindValue="id" [items]="spipl_banks">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="remark">Remark</label>
+								<input type="text" id="remark" class="form-control" formControlName="remark"
+									placeholder="Remark">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary"
+						[disabled]="bexForm.pristine || bexForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

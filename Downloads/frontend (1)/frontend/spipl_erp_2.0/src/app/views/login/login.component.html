@@ -1,0 +1,191 @@
+<div class="app-body bg-white">
+	<main class="main d-flex align-items-center">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+					<div class="outer_box">
+						<img src="assets/img/brand/parmar_logo.png" alt="" class="logo mb-2">
+						<h1 class="text-center text-primary heading">ERP 2.0</h1>
+						<ul>
+							<li style="transform: rotate(0deg);">
+								<img src="assets/img/icons/2-Employee.png" alt="" class="box_icons"
+									style="transform: rotate(0deg);">
+							</li>
+							<li style="transform: rotate(45deg);">
+								<img src="assets/img/icons/3-Planning.png" alt="" class="box_icons"
+									style="transform: rotate(315deg);">
+							</li>
+							<li style="transform: rotate(90deg);">
+								<img src="assets/img/icons/4-Purchase.png" alt="" class="box_icons"
+									style="transform: rotate(270deg);">
+							</li>
+							<li style="transform: rotate(135deg);">
+								<img src="assets/img/icons/5-Godown.png" alt="" class="box_icons"
+									style="transform: rotate(225deg);">
+							</li>
+							<li style="transform: rotate(180deg);">
+								<img src="assets/img/icons/6-Sales.png" alt="" class="box_icons"
+									style="transform: rotate(180deg);">
+							</li>
+							<li style="transform: rotate(225deg);">
+								<img src="assets/img/icons/7-Finance.png" alt="" class="box_icons"
+									style="transform: rotate(135deg);">
+							</li>
+							<li style="transform: rotate(270deg);">
+								<img src="assets/img/icons/8-Logistic.png" alt="" class="box_icons"
+									style="transform: rotate(90deg);">
+							</li>
+							<li style="transform: rotate(315deg);">
+								<img src="assets/img/icons/9-Calendar.png" alt="" class="box_icons"
+									style="transform: rotate(45deg);">
+							</li>
+						</ul>
+					</div>
+					<div class="outer_box_mobile">
+						<img src="assets/img/brand/parmar_logo.png" alt="" class="logo mb-2">
+						<h1 class="text-center text-primary mb-3">ERP 2.0</h1>
+						<ul class="list-inline text-center">
+							<li class="list-inline-item">
+								<img src="assets/img/icons/2-Employee.png" alt="" class="box_icons">
+							</li>
+							<li class="list-inline-item">
+								<img src="assets/img/icons/3-Planning.png" alt="" class="box_icons">
+							</li>
+							<li class="list-inline-item">
+								<img src="assets/img/icons/4-Purchase.png" alt="" class="box_icons">
+							</li>
+							<li class="list-inline-item">
+								<img src="assets/img/icons/5-Godown.png" alt="" class="box_icons">
+							</li>
+							<li class="list-inline-item">
+								<img src="assets/img/icons/6-Sales.png" alt="" class="box_icons">
+							</li>
+							<li class="list-inline-item">
+								<img src="assets/img/icons/7-Finance.png" alt="" class="box_icons">
+							</li>
+							<li class="list-inline-item">
+								<img src="assets/img/icons/8-Logistic.png" alt="" class="box_icons">
+							</li>
+							<li class="list-inline-item">
+								<img src="assets/img/icons/9-Calendar.png" alt="" class="box_icons">
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 m-auto">
+					<div class="card-group" *ngIf="login_flag">
+						<div class="card">
+							<div class="card-body">
+								<div *ngIf="isLoading" style="text-align: center;">
+									<app-loading-spinner></app-loading-spinner>
+								</div>
+								<div class="alert alert-danger" *ngIf="error">
+									<span><strong>Error!</strong> {{ error }}.</span>
+								</div>
+								<form class="container" [formGroup]="loginForm" (ngSubmit)="onSubmit()"
+									*ngIf="!isLoading">
+									<h1 class="login-text">Login</h1>
+									<p class="text-muted login-text">Sign In to your account</p>
+									<div class="input-group mb-3">
+										<div class="input-group-prepend">
+											<span class="input-group-text">
+												<i class="fa fa-user"></i>
+											</span>
+										</div>
+										<input type="email" class="form-control" placeholder="Email"
+											autocomplete="email" name="email" formControlName="email" required>
+									</div>
+									<div class="input-group mb-4">
+										<div class="input-group-prepend">
+											<span class="input-group-text">
+												<i class="fa fa-lock"></i>
+											</span>
+										</div>
+										<input [type]="showPassword ? 'text' : 'password'" class="form-control" placeholder="Password"
+											autocomplete="current-password" name="password" formControlName="password"
+											required>
+										<div class="input-group-prepend">
+											<span class="input-group-text" (click)="showHidePassword()">
+												<i [ngClass]="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
+											</span>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-6">
+											<button type="submit" class="btn btn-primary px-4"
+												[disabled]="!loginForm.valid">Login</button>
+										</div>
+										<div class="col-6 text-right">
+											<!-- <button type="button" class="btn btn-link px-0">Forgot password?</button> -->
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+						<div class="card text-white bg-primary py-5 d-md-down-none" style="width:44%;display:none">
+							<div class="card-body text-center">
+								<div>
+									<h2>Sign up</h2>
+									<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+										incididunt ut labore et dolore magna aliqua.</p>
+									<button type="button" class="btn btn-primary active mt-3">Register Now!</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="card-group" *ngIf="token_flag">
+						<div class="card">
+							<div class="card-body">
+								<div *ngIf="isLoading" style="text-align: center;">
+									<app-loading-spinner></app-loading-spinner>
+								</div>
+								<div class="alert alert-danger" *ngIf="error">
+									<span><strong>Error!</strong> {{ error }}.</span>
+								</div>
+								<form class="container" [formGroup]="tokenForm" (ngSubmit)="onSubmitoken()"
+									*ngIf="!isLoading">
+									<h1 class="login-text">Verification</h1>
+									<!-- <p class="text-muted login-text">Enter OTP</p> -->
+									<div class="input-group mb-3">
+										<div class="input-group-prepend">
+											<span class="input-group-text">
+												<i class="fa fa-key" aria-hidden="true"></i>
+											</span>
+										</div>
+										<input type="allow_2fa" class="form-control" placeholder="Enter OTP"
+											autocomplete="allow_2fa" name="allow_2fa" formControlName="allow_2fa" required>
+									</div>
+									
+									<div class="row">
+										<div class="col-3">
+											<button type="submit" class="btn btn-primary px-4"
+												[disabled]="!tokenForm.valid">Verify</button>
+										</div>
+										<div class="col-3">
+											<button class="btn btn-primary px-4" *ngIf="timer_display">{{display}}</button>
+											<!-- <span >{{display}}</span> -->
+										</div>
+
+										<div class="col-6" *ngIf="show_resend_otp">
+											<button class="btn btn-primary px-4" (click)="resend_otp()">Resend OTP</button>
+										</div>
+									</div>
+
+									
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</main>
+
+</div>
+<app-footer>
+	<span><a href="https://parmarglobal.com">Parmar</a> &copy; {{ currentYear }} SPIPL.</span>
+	<span class="ml-auto">Powered by <a href="#">ERP 2.0</a></span>
+</app-footer>

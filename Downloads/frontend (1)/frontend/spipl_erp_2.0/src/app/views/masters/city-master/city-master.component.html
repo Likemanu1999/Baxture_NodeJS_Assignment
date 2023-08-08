@@ -1,0 +1,95 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-4">
+			<div class="card">
+				<div class="card-header">
+					<i class="fa fa-plus"></i> Add City
+				</div>
+				<div class="card-body">
+					<form [formGroup]="cityForm" novalidate (ngSubmit)="onSubmit()" class="needs-validation">
+						<div class="form-group">
+							<label class="col-form-label" for="city_name">City Name</label>
+							<input class="form-control" id="city_name" type="text" formControlName="city_name"
+								placeholder="Enter City Name" required autofocus />
+						</div>
+						<div class="form-group">
+							<button class="btn btn-primary mr-1" type="submit"
+								[disabled]="cityForm.pristine || cityForm.invalid">Submit</button>
+							<button class="btn btn-danger" type="reset" 
+							[disabled]="cityForm.pristine && cityForm.invalid">Reset</button>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">
+					<i class="fa fa-plus"></i> Add Multiple Cities
+				</div>
+				<div class="card-body">
+					<form [formGroup]="fileForm" novalidate (ngSubmit)="onFileSubmit()" class="needs-validation">
+						<div class="form-group">
+							<input type="file" class="form-control custom-file-input" id="file" name="file"
+								placeholder="Select Excel File" (change)="onFileSelect($event)">
+						</div>
+						<div class="form-group">
+							<button class="btn btn-primary mr-1" type="submit"
+								[disabled]="citiesList.length == 0">Submit</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-8">
+			<div class="card">
+				<div class="card-header">
+					<i class="fa fa-eye"></i> View Cities
+				</div>
+				<div class="card-body">
+					<div class="row mb-3">
+						<div class="col-md-4 offset-md-8">
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa fa-search"></i></span>
+								</div>
+								<input type="text" class="form-control" [(ngModel)]="filterQuery"
+									placeholder="Search by name" />
+							</div>
+						</div>
+					</div>
+					<div *ngIf="isLoading" style="text-align: center;">
+						<app-loading-spinner></app-loading-spinner>
+					</div>
+					<table class="table table-striped table-hover table-responsive-lg"
+						[mfData]="data | tableFilter : filterQuery:filterArray" #mf="mfDataTable" 
+						[mfRowsOnPage]="5" *ngIf="!isLoading">
+						<thead>
+							<tr>
+								<th>
+									<mfDefaultSorter by="sr_no">#</mfDefaultSorter>
+								</th>
+								<th>
+									<mfDefaultSorter by="city_name">City Name</mfDefaultSorter>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" 
+							[attr.id]="item.id">
+								<td>{{i+1}}</td>
+								<td>{{item.name}}</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<td colspan="6">
+									<mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

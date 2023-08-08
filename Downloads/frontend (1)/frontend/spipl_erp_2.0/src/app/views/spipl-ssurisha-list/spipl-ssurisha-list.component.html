@@ -1,0 +1,751 @@
+<div class="animated fadeIn" style="overflow-x: hidden !important;">
+    <div class="row">
+        <div class="col-md-12">
+
+
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fa fa-bar-chart" aria-hidden="true"></i> TDS/TCS Charges Data Analysis
+                        <button class="btn btn-outline-primary active pull-right" (click)="add_spip_ssurisha_form()">
+                            +
+                            Add New Form</button>
+                    </h4>
+
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label for=""><b>Financial Year Date:</b></label>
+                                </div>
+
+                                <div class="col-md-9">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control " bsDaterangepicker
+                                            [(ngModel)]="bsRangeValue" (ngModelChange)="onSelect($event)"
+                                            placeholder="Date Range " style="background-color: white;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <button class="btn btn-primary " mwlConfirmationPopover [popoverTitle]="popoverTitle"
+                                [popoverMessage]="popoverMessage" [confirmText]="confirmText" [cancelText]="cancelText"
+                                [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+                                confirmButtonType="danger" cancelButtonType="success" (confirm)="sendEmailBulk()"
+                                (cancel)="cancelClicked = true" *ngIf="send_bulk_email"><i class="fa fa-envelope"></i>
+                                Bulk TDS/TCS Mail</button>
+
+                            <button class="btn btn-success " mwlConfirmationPopover [popoverTitle]="popoverTitle"
+                                [popoverMessage]="popoverMessage" [confirmText]="confirmText" [cancelText]="cancelText"
+                                [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+                                confirmButtonType="danger" cancelButtonType="success" (confirm)="sendWhatsApp()"
+                                (cancel)="cancelClicked = true" *ngIf="send_bulk_whatsapp"><i
+                                    class="fa fa-whatsapp"></i> Bulk TDS/TCS Whatsapp</button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <mat-tab-group (selectedTabChange)="onChangtab($event)" #tabGroup>
+                                <mat-tab label="SPIPL LIST">
+
+                                    <p-table #dt [value]="spipl_list" styleClass="spipl-ssurisha-list" [rowHover]="true"
+                                        [rows]="1" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]"
+                                        (onFilter)="onFilter($event, dt)"
+                                        [globalFilterFields]="['org_name','gst_no','pan_number','vendor_customer','tally_transfer']">
+
+                                        <ng-template pTemplate="caption">
+
+                                            <div class="row">
+
+
+
+
+                                                <div class="col-md-3">
+                                                    <input pInputText class='form-control' type="text"
+                                                        (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                        placeholder="Global Search" />
+                                                </div>
+
+                                                <div class="col-md-1">
+
+                                                    <button type="button"
+                                                        class="btn btn-outline-primary active pull-right mr-1"
+                                                        label="EXCEL" (click)="exportExcel_spipl()">Excel</button>
+
+                                                </div>
+
+                                                <div class="col-md-2">
+
+                                                    <button type="button" class="btn btn-success  pull-left mr-1"
+                                                        (click)="sendMail()"> Send Mail</button>
+
+
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    {{selectedYear}}
+                                                </div>
+
+
+
+
+                                            </div>
+
+                                        </ng-template>
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 3rem">
+                                                    <p-tableHeaderCheckbox (click)="onCheckAll(a.checked)" #a>
+                                                    </p-tableHeaderCheckbox>
+                                                </th>
+                                                <th style="width: 150px">Orgnization Name</th>
+                                                <th style="width: 150px">Incorporation Date</th>
+                                                <th style="width: 150px">GST No.</th>
+                                                <th style="width: 150px">Pan No.</th>
+                                                <th style="width: 90px">Vendor/Customer</th>
+                                                <!-- <th>Turn Over 19-20</th> -->
+                                                <th style="width: 90px">Turn Over {{PreviousFinacialYear}}</th>
+                                                <th style="width: 90px">Tan No.</th>
+                                                <th style="width: 90px">ITR 18-19<br>(ITR)</th>
+                                                <th style="width: 90px">ITR {{
+                                                    PreviousofPreviousFinacialYear
+                                                    }}<br>(ITR)</th>
+                                                <!-- <th>TDS/TCS 19-20</th>
+                                                <th>TDS/TCS 20-21</th> -->
+                                                <th style="width: 90px">TDS %</th>
+                                                <th style="width: 90px">TCS %</th>
+                                                <th style="width: 90px">Remark</th>
+                                                <th style="width: 90px">Transfer To Tally</th>
+                                                <th style="width: 150px">Email</th>
+                                                <th style="width: 90px">Edit</th>
+
+                                            </tr>
+                                        </ng-template>
+
+
+                                        <ng-template pTemplate="body" let-item>
+                                            <tr>
+                                                <td>
+                                                    <div *ngIf="item.email_id">
+                                                        <input type="checkbox" [value]="item" #inputs #checkboxes
+                                                            (click)="onChange(checkboxes.checked,item)">
+                                                    </div>
+
+                                                </td>
+
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.org_name}}</span>
+
+
+                                                    <span *ngIf="item.tds_declation_form">
+                                                        <span *ngFor="let val of getDocsArray(item.tds_declation_form)">
+                                                            <a href="{{val}}" target="_blank"><i
+                                                                    class="fa fa-file"></i></a>
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.incorporation_date | date :
+                                                        'dd-MM-y'}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.gst_no}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.pan_number}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.vendor_customer}}</span>
+                                                </td>
+                                                <!-- <td>
+                                                    <span style="font-weight:bold">{{item.turnover_19_20_status}}</span>
+                                                </td> -->
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.turnover_20_21_status}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.tan_no}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.roi_18_19_status}}</span>
+
+                                                    <span *ngIf="item.ack_proof_18_19!=null">
+                                                        <span *ngFor="let val of getDocsArray(item.ack_proof_18_19)">
+                                                            <a href="{{val}}" target="_blank"><i
+                                                                    class="fa fa-file"></i></a>
+                                                        </span>
+                                                    </span>
+
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.roi_19_20_status}}</span>
+
+                                                    <span *ngIf="item.ack_proof_19_20!=null">
+                                                        <span *ngFor="let val of getDocsArray(item.ack_proof_19_20)">
+                                                            <a href="{{val}}" target="_blank"><i
+                                                                    class="fa fa-file"></i></a>
+                                                        </span>
+                                                    </span>
+
+                                                </td>
+                                                <!-- <td>
+                                                    <span style="font-weight:bold">{{item.tds_tcs_19_20_status}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.tds_tcs_20_21_status}}</span>
+                                                </td> -->
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.tds}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.tcs}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.remark}}</span>
+                                                </td>
+
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.tally_transfer}}</span>
+                                                </td>
+
+                                                <td pEditableColumn>
+
+                                                    <p-cellEditor>
+                                                        <ng-template pTemplate="input">
+                                                            <input pInputText class="form-control" type="email"
+                                                                [(ngModel)]="item.email_id"
+                                                                (keydown.enter)="updateEmail($event,1, item.id)">
+                                                        </ng-template>
+                                                        <ng-template pTemplate="output">
+
+                                                            {{item.email_id}}
+
+                                                        </ng-template>
+                                                    </p-cellEditor>
+
+
+                                                </td>
+                                                <td><span (click)="editForm(item)" style="cursor: pointer;"><em
+                                                            class="fa fa-pencil"></em></span></td>
+
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+
+
+
+                                </mat-tab>
+                                <mat-tab label="SSURISHA LIST">
+
+                                    <p-table #dt2 [value]="ssurisha_list" styleClass="spipl-ssurisha-list"
+                                        [rowHover]="true" [rows]="10" [showCurrentPageReport]="true"
+                                        [rowsPerPageOptions]="[10,25,50]"
+                                        [globalFilterFields]="['org_name','gst_no','pan_number','vendor_customer','tally_transfer']">
+                                        <ng-template pTemplate="caption">
+
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <input pInputText class='form-control' type="text"
+                                                        (input)="dt2.filterGlobal($event.target.value, 'contains')"
+                                                        placeholder="Global Search" />
+                                                </div>
+
+                                                <div class="col-md-1">
+
+                                                    <button type="button"
+                                                        class="btn btn-outline-primary active pull-right mr-1"
+                                                        label="EXCEL" (click)="exportExcel_ssurisha()">Excel</button>
+
+                                                </div>
+
+                                                <div class="col-md-2">
+
+                                                    <button type="button" class="btn btn-success  pull-left mr-1"
+                                                        (click)="sendMail()"> Send Mail</button>
+
+
+                                                </div>
+                                            </div>
+
+                                        </ng-template>
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 3rem">
+                                                    <p-tableHeaderCheckbox (click)="onCheckAllSurish(a.checked)" #a>
+                                                    </p-tableHeaderCheckbox>
+                                                </th>
+                                                <th style="width: 150px">Orgnization Name</th>
+                                                <th style="width: 150px">Incorporation Date</th>
+                                                <th style="width: 150px">GST No.</th>
+                                                <th style="width: 150px">Pan No.</th>
+                                                <th style="width: 90px">Vendor/Customer</th>
+                                                <!-- <th>Turn Over 19-20</th> -->
+                                                <th style="width: 90px">Turn Over 20-21</th>
+                                                <th style="width: 90px">ROI 18-19<br>(ITR)</th>
+                                                <th style="width: 90px">ROI 19-20<br>(ITR)</th>
+                                                <!-- <th>TDS/TCS 19-20</th>
+                                                <th>TDS/TCS 20-21</th> -->
+                                                <th style="width: 90px">TDS %</th>
+                                                <th style="width: 90px">TCS %</th>
+                                                <th style="width: 90px">Remark</th>
+                                                <th style="width: 90px">Transfer To Tally</th>
+                                                <th style="width: 150px">Email</th>
+                                                <th style="width: 90px">Edit</th>
+
+                                            </tr>
+                                        </ng-template>
+
+
+                                        <ng-template pTemplate="body" let-item>
+                                            <tr>
+
+                                                <td>
+                                                    <div *ngIf="item.email_id">
+                                                        <input type="checkbox" [value]="item" #inputs #checkboxes
+                                                            (click)="onChange(checkboxes.checked,item)">
+                                                    </div>
+
+                                                </td>
+
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.org_name}}</span>
+                                                    <span *ngIf="item.tds_declation_form">
+                                                        <span *ngFor="let val of getDocsArray(item.tds_declation_form)">
+                                                            <a href="{{val}}" target="_blank"><i
+                                                                    class="fa fa-file"></i></a>
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.incorporation_date | date :
+                                                        'dd-MM-y'}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.gst_no}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.pan_number}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.vendor_customer}}</span>
+                                                </td>
+                                                <!-- <td>
+                                                    <span style="font-weight:bold">{{item.turnover_19_20_status}}</span>
+                                                </td> -->
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.turnover_20_21_status}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.roi_18_19_status}}</span>
+
+                                                    <span *ngIf="item.ack_proof_18_19!=null">
+                                                        <span *ngFor="let val of getDocsArray(item.ack_proof_18_19)">
+                                                            <a href="{{val}}" target="_blank"><i
+                                                                    class="fa fa-file"></i></a>
+                                                        </span>
+                                                    </span>
+
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.roi_19_20_status}}</span>
+                                                    <span *ngIf="item.ack_proof_19_20!=null">
+                                                        <span *ngFor="let val of getDocsArray(item.ack_proof_19_20)">
+                                                            <a href="{{val}}" target="_blank"><i
+                                                                    class="fa fa-file"></i></a>
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <!-- <td>
+                                                    <span style="font-weight:bold">{{item.tds_tcs_19_20_status}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.tds_tcs_20_21_status}}</span>
+                                                </td> -->
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.tds}} </span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.tcs}}</span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.remark}}</span>
+                                                </td>
+
+                                                <td>
+                                                    <span style="font-weight:bold">{{item.tally_transfer}}</span>
+                                                </td>
+
+                                                <td pEditableColumn>
+
+                                                    <p-cellEditor>
+                                                        <ng-template pTemplate="input">
+                                                            <input pInputText class="form-control" type="email"
+                                                                [(ngModel)]="item.email_id"
+                                                                (keydown.enter)="updateEmail($event,2, item.id)">
+                                                        </ng-template>
+                                                        <ng-template pTemplate="output">
+
+                                                            {{item.email_id}}
+
+                                                        </ng-template>
+                                                    </p-cellEditor>
+
+
+                                                </td>
+
+                                                <td><span (click)="editForm(item)" style="cursor: pointer;"><em
+                                                            class="fa fa-pencil"></em></span></td>
+
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </mat-tab>
+                            </mat-tab-group>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Details</h4>
+                <button type="button" class="close" (click)="myModal.hide()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <form [formGroup]="addformspiplssurisha" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+
+
+                                        <div class="card-body">
+
+                                            <div class="form-row centered">
+
+                                                <div class="col-3 ">
+                                                    <label for="org_name" class="font-weight-bold">Enter your
+                                                        Organization name :</label>
+                                                </div>
+                                                <div class="col-3 ">
+                                                    <input required type="text" formControlName="org_name" id="org_name"
+                                                        class="form-control" placeholder="Enter Organization Name">
+                                                </div>
+                                            </div>
+                                            <hr>
+
+                                            <div class="form-row centered">
+
+                                                <div class="col-3 ">
+                                                    <label for="org_name" class="font-weight-bold">Incorporation
+                                                        Date</label>
+                                                </div>
+                                                <div class="col-3 ">
+                                                    <input type="text" class="form-control"
+                                                        formControlName="incorporation_date"
+                                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                                        #dp="bsDatepicker" bsDatepicker style="background-color: white;"
+                                                        readonly>
+
+                                                </div>
+                                            </div>
+                                            <hr>
+
+                                            <div class="form-row centered">
+                                                <div class="col-3 ">
+                                                    <label for="org_name" class="font-weight-bold">Are You Vendor or
+                                                        Customer :</label>
+                                                </div>
+                                                <div class="col-3 ">
+                                                    <div class="form-row ">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio"
+                                                                formControlName="vendor_customer" id="vendor"
+                                                                value="Vendor" required="">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                Vendor
+                                                            </label>
+                                                        </div> &nbsp;&nbsp;
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio"
+                                                                formControlName="vendor_customer" id="customer"
+                                                                value="Customer" required="">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                Customer
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="form-row centered">
+                                                <div class="col-3 ">
+                                                    <label for="gst_no" class="font-weight-bold">GST No.:</label>
+                                                </div>
+                                                <div class="col-3 ">
+                                                    <input type="text" formControlName="gst_no" id="gst_no"
+                                                        class="form-control" placeholder="Enter GST No."
+                                                        [ngClass]="{ 'is-invalid':f.gst_no.errors && f.gst_no.touched}">
+
+                                                    <div *ngIf="f.gst_no.errors && f.gst_no.touched"
+                                                        class="invalid-feedback">
+                                                        <div *ngIf="f.gst_no.errors.required">GST No. is required</div>
+                                                        <div *ngIf="f.gst_no.errors.pattern">Enter Valid GST number.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <hr>
+
+                                            <div class="form-row centered ">
+                                                <div class="col-3">
+                                                    <label class="font-weight-bold">Please Enter PAN :</label>
+                                                </div>
+                                                <div class="col-3 ">
+                                                    <input type="text" class="form-control" formControlName="pan_number"
+                                                        id="pan_number" placeholder="Enter PAN No.">
+                                                </div>
+                                            </div>
+                                            <hr>
+
+                                            <div class="form-row centered">
+                                                <div class="col-3 ">
+                                                    <label class="font-weight-bold">Is your turnover in FY
+                                                        {{PreviousFinacialYear}} is
+                                                        more than INR 10 Crore
+                                                        :</label>
+                                                </div>
+                                                <div class="col-3 ">
+                                                    <div class="form-row ">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio"
+                                                                formControlName="turnover_20_21_status"
+                                                                id="turnover_20_21_yes" value="yes" required=""
+                                                                (change)="CheckTurnOver($event)">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                Yes
+                                                            </label>
+                                                        </div> &nbsp;&nbsp;
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio"
+                                                                formControlName="turnover_20_21_status"
+                                                                id="turnover_20_21_no" value="no" required=""
+                                                                (change)="CheckTurnOver($event)">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                No
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <hr>
+
+                                            <div>
+                                                <div class="form-row centered ">
+                                                    <div class="col-3">
+                                                        <label class="font-weight-bold">Please Enter TAN :</label>
+                                                    </div>
+                                                    <div class="col-3 ">
+                                                        <input type="text" class="form-control" formControlName="tan_no"
+                                                            id="tan_no" placeholder="Enter TAN No.">
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                            </div>
+
+                                            <!-- <div class="form-row centered">
+                                                <div class="col-3">
+                                                    <label class="font-weight-bold">Have You Filed ROI for FY 2018-19
+                                                        :</label>
+                                                </div>
+                                                <div class="col-3">
+                                                    <div class="form-row ">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input roistatus3" type="radio"
+                                                                formControlName="roi_18_19_status" id="roi_18_19_yes"
+                                                                value="yes" required="">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                Yes
+                                                            </label>
+                                                        </div> &nbsp;&nbsp;
+                                                        <div class="form-check">
+                                                            <input class="form-check-input roistatus3" type="radio"
+                                                                formControlName="roi_18_19_status" id="roi_18_19_no"
+                                                                value="no" required="">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                No
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <hr> -->
+
+                                            <div class="form-row centered">
+                                                <div class="col-3 ">
+                                                    <label class="font-weight-bold">Have You Filed ROI for FY
+                                                        {{PreviousofPreviousFinacialYear}}
+                                                        :</label>
+                                                </div>
+                                                <div class="col-3 ">
+                                                    <div class="form-row ">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input roistatus" type="radio"
+                                                                id="roi_19_20_yes" formControlName="roi_19_20_status"
+                                                                value="yes" required="">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                Yes
+                                                            </label>
+                                                        </div> &nbsp;&nbsp;
+                                                        <div class="form-check">
+                                                            <input class="form-check-input roistatus" type="radio"
+                                                                id="roi_19_20_no" formControlName="roi_19_20_status"
+                                                                value="no" required="">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                No
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <hr>
+
+                                            <div class="form-row centered mb-4">
+                                                <div class="col-3 ">
+                                                    <label for="org_name" class="font-weight-bold">Remark :</label>
+                                                </div>
+                                                <div class="col-3 ">
+                                                    <div class="form-row ">
+
+                                                        <textarea class="form-check-input" type="text"
+                                                            formControlName="remark" class="form-control"
+                                                            id="remark"></textarea>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-row centered">
+                                                <div class="col-3 ">
+                                                    <label class="font-weight-bold">Declaration form
+                                                        :</label>
+                                                </div>
+                                                <div class="col-3 ">
+                                                    <div class="form-row ">
+
+                                                        <div class="">
+                                                            <input type="file" class="form-control"
+                                                                formControlName="tds_declation_form"
+                                                                (change)="declaration($event)" multiple>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+
+                                            <div class="form-row centered">
+                                                <div *ngIf="docs.length > 0">
+                                                    <div *ngFor="let doc of docs ; let i = index ">
+                                                        <div>
+                                                            <span> <a href="{{doc}}"><em
+                                                                        class="fa fa-file"></em></a></span> <span
+                                                                style="cursor: pointer;" (click)="deleteFile(i)"><em
+                                                                    class="fa fa-trash"></em></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                            <hr>
+
+
+
+                                            <div class="form-row centered">
+                                                <div class="col-3">
+                                                    <label class="font-weight-bold">Transfer To Tally</label>
+                                                </div>
+                                                <div class="col-3">
+                                                    <div class="form-row ">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio"
+                                                                formControlName="tally_transfer" id="tally_transfer_yes"
+                                                                value="Complete" required="">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                Yes
+                                                            </label>
+                                                        </div> &nbsp;&nbsp;
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio"
+                                                                formControlName="tally_transfer" id="tally_transfer_no"
+                                                                value="Pending" required="">
+                                                            <label class="form-check-label" for="gridCheck">
+                                                                No
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="card-footer text-center" style="background-color: white;">
+                                                <button class="btn btn-primary btn-lg" type="submit"
+                                                    [disabled]="addformspiplssurisha.pristine || addformspiplssurisha.invalid">
+                                                    Submit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+
+
+            </div>
+
+
+
+            <div class="modal-footer">
+
+            </div>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

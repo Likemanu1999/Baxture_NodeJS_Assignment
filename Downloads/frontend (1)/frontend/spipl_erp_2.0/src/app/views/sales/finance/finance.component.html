@@ -1,0 +1,272 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0" *ngIf="view_opt">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-3">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="finance_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getCols()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly style="padding: 19px 5px !important" />
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"
+														style="margin-left: 10px;padding: 19px 5px !important"></app-dropdown-daterange>
+												</div>
+												<div class="form-group mb-1">
+													<p-dropdown [options]="statusList" [(ngModel)]="selected_status"
+														optionLabel="name" (onChange)="onChangeStatus($event)">
+													</p-dropdown>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th *ngIf="approve_sales_order"></th>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != 'action'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													{{ rowData[col.field] }}
+												</div>
+												<div *ngIf="col.type == 'Quantity'">
+													{{ rowData[col.field] }} {{ rowData.unit_type }}
+												</div>
+												<div *ngIf="col.type == 'Amount'">
+													{{ rowData[col.field] | currency:rowData.currency }}
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'action'">
+												<a class="btn btn-outline-dark btn-sm action-btn mb-1 mr-1"
+													data-toggle="tooltip" data-placement="top" title="View Order"
+													(click)="onAction(rowData, 'View')">
+													<i class="fa fa-eye"></i>
+												</a>
+												<a *ngIf="rowData.grade_request_status == 1"
+													class="btn btn-outline-dark btn-sm request-btn mb-1"
+													data-toggle="tooltip" data-placement="top" mwlConfirmationPopover
+													[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+													[confirmText]="confirmText" [cancelText]="cancelText"
+													[placement]="placement" closeOnOutsideClick="true"
+													confirmButtonType="success" cancelButtonType="danger"
+													title="Accept Grade Change Request"
+													(confirm)="onAction(rowData, 'Grade_Request')"
+													(cancel)="cancelClicked = true">
+													<strong>Accept Grade Request</strong>
+												</a>
+												<button *ngIf="rowData.grade_request_status == 2"
+													class="btn btn-primary btn-sm custom-badge-new">
+													Grade Request Accepted
+												</button>
+												<a *ngIf="rowData.category_request_status == 1"
+													class="btn btn-outline-dark btn-sm request-btn mb-1"
+													data-toggle="tooltip" data-placement="top" mwlConfirmationPopover
+													[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+													[confirmText]="confirmText" [cancelText]="cancelText"
+													[placement]="placement" closeOnOutsideClick="true"
+													confirmButtonType="success" cancelButtonType="danger"
+													title="Accept Category Change Request"
+													(confirm)="onAction(rowData, 'Category_Request')"
+													(cancel)="cancelClicked = true">
+													<strong>Accept Category Request</strong>
+												</a>
+												<button *ngIf="rowData.category_request_status == 2"
+													class="btn btn-primary btn-sm custom-badge-new">
+													Category Request Accepted
+												</button>
+												<button class="btn btn-secondary btn-sm custome-expand-btn expand-btn"
+													[pRowToggler]="rowData">
+													<i
+														[ngClass]="expanded ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+												</button>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="rowexpansion" let-rowData let-columns="columns">
+									<td [attr.colspan]="columns.length + 1" class="expanded_row">
+										<div class="ui-g ui-fluid mt-2">
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Con ID: </strong>
+														{{ rowData.id }}
+													</div>
+													<div class="col-md-5">
+														<strong>Customer: </strong>
+														{{ rowData.customer }}
+													</div>
+													<div class="col-md-4">
+														<strong>Zone: </strong>
+														{{ rowData.zone }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Godown: </strong>
+														{{ rowData.godown_name }}
+													</div>
+													<div class="col-md-5">
+														<strong>Grade Name: </strong>
+														{{ rowData.grade_name }}
+													</div>
+													<div class="col-md-4">
+														<strong>Main Grade: </strong>
+														{{ rowData.main_grade }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Plan Quantity: </strong>
+														{{ rowData.plan_quantity }} {{ rowData.unit_type }}
+													</div>
+													<div class="col-md-5">
+														<strong>Deal Rate: </strong>
+														{{ rowData.final_rate | currency:rowData.currency }}
+													</div>
+													<div class="col-md-4">
+														<strong>Delivery Term: </strong>
+														{{ rowData.delivery_term }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>N.B.: </strong>
+														{{ rowData.nb | currency:rowData.currency }}
+													</div>
+													<div class="col-md-5">
+														<strong>Freight Rate: </strong>
+														{{ rowData.freight_rate | currency:rowData.currency }}
+													</div>
+													<div class="col-md-4">
+														<strong>Booking Date: </strong>
+														{{ rowData.booking_date | date:'dd-MMM-yyyy' }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Added On: </strong>
+														{{ rowData.added_date | date:'dd-MMM-yyyy' }}
+													</div>
+													<div class="col-md-5">
+														<strong>Payment Term: </strong>
+														{{ rowData.payment_term_label }}
+													</div>
+													<div class="col-md-4"></div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Added By: </strong>
+														{{ rowData.added_by_name }}
+													</div>
+													<div class="col-md-5">
+														<strong>Remark: </strong>
+														{{ rowData.remark }}
+													</div>
+													<div class="col-md-4">
+														<strong>SO Remark: </strong>
+														{{ rowData.soremark }}
+													</div>
+												</div>
+											</div>
+										</div>
+									</td>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total | number }} MT
+											</strong>
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

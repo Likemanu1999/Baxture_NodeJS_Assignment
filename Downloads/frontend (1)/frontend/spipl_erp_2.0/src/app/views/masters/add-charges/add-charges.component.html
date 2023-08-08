@@ -1,0 +1,91 @@
+<div class="animated fadeIn">
+	<form [formGroup]="chargesForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-header">
+						<i class="fa fa-plus"></i> Add Charges
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="bank_id">Bank</label>
+									<ng-select id="bank_id" formControlName="bank_id" placeholder="Select Bank"
+										[searchable]="true" [clearable]="false" bindLabel="bank_name" bindValue="id"
+										[items]="banksList" (change)="onChangeBank($event)" required>
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="from_date">From Date</label>
+									<i class="fa fa-calendar"></i>
+									<input type="text" class="form-control" id="from_date" formControlName="from_date"
+										placeholder="Enter From Date" [bsConfig]="datePickerConfig" bsDatepicker
+										readonly>
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="to_date">To Date</label>
+									<i class="fa fa-calendar"></i>
+									<input type="text" class="form-control" id="to_date" formControlName="to_date"
+										placeholder="Enter To Date" [bsConfig]="datePickerConfig" bsDatepicker readonly>
+								</div>
+							</div>
+						</div>
+						<div class="row mt-3">
+							<div class="col-md-12">
+								<table class="table table-bordered">
+									<thead>
+										<tr>
+											<th>#</th>
+											<th>Charges Stage</th>
+											<th>Charges Head</th>
+											<th>Charges</th>
+											<th>Charges Type</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr *ngFor="let item of c.controls; let i = index" [attr.data-index]="i"
+											[attr.id]="item.id" [formGroup]="item">
+											<td>{{i + 1}}</td>
+											<td>
+												<input type="text" class="custom-form form-control bg-white border-0 p-0"
+													formControlName="stage_name" readonly>
+											</td>
+											<td>
+												<input type="hidden" class="form-control"
+													formControlName="head_id">
+												<input type="text" class="custom-form form-control bg-white border-0 p-0"
+													formControlName="head_name" readonly>
+											</td>
+											<td>
+												<input type="text" class="form-control" formControlName="charges"
+													placeholder="Enter Charges" numbersOnly>
+											</td>
+											<td>
+												<ng-select formControlName="charges_type"
+													placeholder="Select Charges Type" [clearable]="false"
+													bindLabel="name" bindValue="id" [items]="chargesTypesList" required>
+												</ng-select>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<button type="submit" class="btn btn-primary">Submit</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

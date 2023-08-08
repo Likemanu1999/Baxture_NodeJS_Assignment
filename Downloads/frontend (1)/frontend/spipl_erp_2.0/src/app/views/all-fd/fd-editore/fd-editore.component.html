@@ -1,0 +1,28 @@
+<div class="animated fadeIn">
+    <div class="row">
+      <div class="col-md-12">
+          <div class="card">
+              <div class="card-header">
+
+              </div>
+              <div class="card-body">
+
+                  <div class="form-group has-feedback">
+                      <div *ngIf="myContent">
+                        <ck-editor name="editor" #myEditor [(ngModel)]="myContent" [fullPage]="true" [config]="ckeConfig"></ck-editor>
+                      </div>
+
+                      <br>
+
+                      <!-- <span *ngFor="let item of arr | keyvalue"> [{{item.key}}]  ,</span> -->
+                      <br><br>
+
+
+                    <button (click)="download()" class="btn btn-primary">Download</button>
+                    <button (click)="onBack()" class="btn btn-primary">Back</button>
+
+                    </div>
+          </div>
+      </div>
+     </div>
+  </div>

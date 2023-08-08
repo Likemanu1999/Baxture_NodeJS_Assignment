@@ -1,0 +1,100 @@
+
+<div class="animated fadeIn">
+    <form [formGroup]="OtherChargesForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-university"></i> Other Charges Details - {{mode}}</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="bank_id">Bank Name</label>
+                                    <ng-select id="bank_id" formControlName="bank_id" placeholder="Select Bank"
+                                        [searchable]="true" [clearable]="true" bindLabel="bank_name" bindValue="id"
+                                        [items]="spipl_bank">
+                                    </ng-select>
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="charges_stage_id">Charges Category</label>
+                                    <ng-select id="charges_stage_id" formControlName="charges_stage_id"
+                                        placeholder="Select Category" [searchable]="true" [clearable]="true"
+                                        bindLabel="name" bindValue="id" [items]="charges_category">
+                                    </ng-select>
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="charges_date">Date</label>
+                                    <i class="fa fa-calendar"></i>
+                                    <input type="text" class="form-control" id="charges_date"
+                                        formControlName="charges_date"
+                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                        #dp="bsDatepicker" bsDatepicker readonly [maxDate]="today"
+                                        placeholder="Enter From Date ">
+                                </div>
+
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="header">Charges Header
+                                    </label>
+                                    <input type="text" class="form-control" id="header" formControlName="header"
+                                        placeholder="Enter Charges Header">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="charges_description">Charges Description
+                                    </label>
+                                    <input type="text" class="form-control" id="charges_description"
+                                        formControlName="charges_description" placeholder="Enter Charges Description">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="charges_value">Charges Value
+                                    </label>
+                                    <input type="text" class="form-control" id="charges_value"
+                                        formControlName="charges_value" placeholder="Enter Charges Description">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="gst_flag">GST
+                                    </label>
+                                    <input type="checkbox" id="gst_flag" formControlName="gst_flag"
+                                        [(ngModel)]="gstFlag">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+						<button class="btn btn-primary mr-1" type="submit"
+							[disabled]="OtherChargesForm.pristine || OtherChargesForm.invalid">
+							<i class="fa fa-dot-circle-o"></i>Submit</button>
+						
+						<button class="btn btn-primary" type="button" (click)="onBack()"><i
+								class="fa fa-undo"></i>Back</button>
+					</div>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

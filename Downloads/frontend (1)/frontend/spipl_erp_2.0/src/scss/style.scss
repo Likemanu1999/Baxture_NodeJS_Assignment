@@ -1,0 +1,473 @@
+// If you want to override variables do it here
+@import "variables";
+
+// Import styles with default layout.
+// If you are going to use dark layout please comment next line
+@import "~@coreui/coreui-pro/scss/coreui";
+
+// Import styles with dark layout
+// If you want to use dark layout uncomment next line
+//@import "~@coreui/coreui-pro/scss/themes/dark/coreui-dark";
+
+// If you want to add something do it here
+@import "custom";
+
+// Spinkit
+$spinkit-spinner-color: $body-color;
+@import "~spinkit/scss/spinkit.scss";
+@import "~@ng-select/ng-select/themes/default.theme.css";
+@import "vendors/toastr/toastr.scss";
+@import "~ngx-bootstrap/datepicker/bs-datepicker.scss";
+
+@import "../../node_modules/primeng/resources/primeng.css";
+@import "../../node_modules/primeng/resources/primeng.min.css";
+@import "../../node_modules/primeng/resources/themes/nova-light/theme.css";
+@import "../../node_modules/primeicons/primeicons.css";
+@import "../../node_modules/quill/dist/quill.snow.css";
+@import "../../node_modules/primeflex/primeflex.css";
+@import "../../node_modules/@fullcalendar/core/main.min.css";
+@import "../../node_modules/@fullcalendar/daygrid/main.min.css";
+@import "../../node_modules/@fullcalendar/timegrid/main.min.css";
+
+@import "../../node_modules/angular-calendar/css/angular-calendar.css";
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.today {
+	background-color: #5bc0de;
+	color: #fff;
+}
+
+.today:hover {
+	color: #444;
+}
+
+.btn-outline-custom-blue {
+	color: #1266f1 !important;
+	border-color: #1266f1 !important;
+}
+
+.btn-outline-custom-blue:hover {
+	color: #fff !important;
+	background-color: #1266f1 !important;
+}
+
+.btn-outline-dark:hover,
+.btn-outline-info:hover,
+.btn-outline-danger:hover,
+.btn-outline-success:hover {
+	color: #fff !important;
+}
+
+.btn-outline-danger {
+	color: #f86c6b !important;
+}
+
+.btn-outline-info {
+	color: #63c2de !important;
+}
+
+.btn-outline-success {
+	color: #4dbd74 !important;
+}
+
+body .ui-table .ui-table-caption {
+	border: 1px solid #ccc !important;
+	border-bottom: none !important;
+	background: #f0f3f5 !important;
+	color: #495057 !important;
+	font-weight: 600 !important;
+}
+
+body .ui-table .ui-table-thead>tr>th {
+	border: 1px solid #ccc !important;
+	background: #f0f3f5 !important;
+	color: #495057 !important;
+	font-weight: 600 !important;
+}
+
+body .ui-table .ui-table-tbody>tr>td {
+	text-align: left;
+	border: 1px solid #ccc;
+	padding: 1rem 1rem;
+}
+
+.ui-inputtext {
+	font-size: 1rem !important;
+	color: #495057 !important;
+	background: #ffffff !important;
+	padding: 4px !important;
+	border: 0px !important;
+	transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s !important;
+	appearance: none !important;
+	border-radius: 3px !important;
+}
+
+.ui-table-fin-plan {
+	box-shadow: none !important;
+}
+
+body .ui-paginator {
+	background-color: #fff !important;
+}
+
+.custom-action-btn {
+	padding: 0 6px !important;
+	margin-right: 3px !important;
+	margin-bottom: 3px !important;
+}
+
+.ui-table p-sorticon {
+	float: left !important;
+}
+
+.pi-sort:before {
+	content: "\e99e" !important;
+	font-size: 12px !important;
+}
+
+.pi-sort-up:before {
+	content: "\e9a2" !important;
+	font-size: 12px !important;
+}
+
+.pi-sort-down:before {
+	content: "\e9a0" !important;
+	font-size: 12px !important;
+}
+
+.p-filtericon {
+	float: right !important;
+	font-size: 16px !important;
+}
+
+body .ui-table .ui-sortable-column.ui-state-highlight {
+	background-color: #ccc !important;
+}
+
+body .ui-table .ui-sortable-column.ui-state-highlight .ui-sortable-column-icon {
+	color: #444;
+}
+
+.ui-multiselect .ui-multiselect-panel {
+	min-width: max-content !important;
+	// width: auto !important;
+}
+
+.ui-multiselect {
+	border: none !important;
+	background: transparent !important;
+}
+
+.ui-multiselect .ui-multiselect-trigger {
+	background: transparent !important;
+}
+
+.pi-chevron-down:before {
+	content: "\e94c" !important;
+	font-size: 12px !important;
+}
+
+.p-mainfilter {
+	background-color: #fff !important;
+	padding: 0px 0px 0px 0px !important;
+	position: absolute !important;
+	height: 36px !important;
+	top: 11px !important;
+	border: 1px solid #e4e7ea !important;
+	border-radius: 4px !important;
+}
+
+.card-header {
+	line-height: 30px !important;
+}
+
+.fc-day-grid-event .fc-content {
+	color: white;
+}
+
+@media screen and (max-width: 64em) {
+
+	// .ui-table-fin-plan .ui-table-globalfilter-container {
+	// 	float: none !important;
+	// }
+	// .ui-table-fin-plan .ui-table-globalfilter-container input {
+	// 	width: 100% !important;
+	// 	margin-bottom: 10px !important;
+	// }
+	.ui-helper-clearfix {
+		text-align: center !important;
+	}
+}
+
+.popover {
+	position: absolute !important;
+}
+
+
+.box-content {
+	display: table-cell;
+	vertical-align: top;
+	height: auto;
+	width: 100%;
+	color: white;
+	background-color: #009688;
+	padding: 10px 10px 10px 10px;
+}
+
+input.ng-invalid.ng-touched {
+	border: 1px solid red;
+}
+
+ng-select.ng-invalid.ng-touched .ng-select-container {
+	border-color: #dc3545;
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
+}
+
+select.ng-pristine.ng-invalid.ng-touched {
+	border-color: #dc3545;
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
+}
+
+
+
+
+
+
+
+
+.ui-table {
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 2px 1px -1px rgba(0, 0, 0, 0.12);
+	overflow: scroll;
+
+	.customer-badge {
+		border-radius: 2px;
+		padding: 0.25em 0.5em;
+		text-transform: uppercase;
+		font-weight: 700;
+		font-size: 12px;
+		letter-spacing: 0.3px;
+
+		&.status-0 {
+			background-color: #c8e6c9;
+			color: #256029;
+		}
+
+		&.status-1 {
+			background-color: #ffcdd2;
+			color: #c63737;
+		}
+
+		&.status-2 {
+			background-color: #feedaf;
+			color: #8a5340;
+		}
+
+		&.status-3 {
+			background-color: #b3e5fc;
+			color: #23547b;
+		}
+
+		&.status-renewal {
+			background-color: #eccfff;
+			color: #694382;
+		}
+
+		&.status-proposal {
+			background-color: #ffd8b2;
+			color: #805b36;
+		}
+	}
+
+	.flag {
+		vertical-align: middle;
+		width: 30px;
+		height: 20px;
+	}
+
+	.ui-multiselect-representative-option {
+		display: inline-block;
+		vertical-align: middle;
+
+		img {
+			vertical-align: middle;
+			width: 24px;
+		}
+
+		span {
+			margin-top: 0.125em;
+			vertical-align: middle;
+			margin-left: 0.5em;
+		}
+	}
+
+	.ui-paginator {
+		.ui-dropdown {
+			float: left;
+		}
+
+		.ui-paginator-current {
+			float: right;
+		}
+	}
+
+	.ui-progressbar {
+		height: 8px;
+		background-color: #d8dadc;
+
+		.ui-progressbar-value {
+			background-color: #00acad;
+		}
+	}
+
+	.ui-column-filter {
+		display: block;
+
+		input {
+			width: 100%;
+		}
+	}
+
+	.ui-table-globalfilter-container {
+		float: right;
+
+		input {
+			width: 200px;
+		}
+	}
+
+	.ui-datepicker {
+		min-width: 25em;
+
+		td {
+			font-weight: 400;
+		}
+	}
+
+	.ui-table-caption {
+		border: 0 none;
+		padding: 12px;
+		text-align: left;
+		font-size: 20px;
+	}
+
+	.ui-paginator {
+		border: 0 none;
+		padding: 1em;
+	}
+
+	.ui-table-thead>tr>th {
+		border: 0 none;
+		text-align: left;
+
+		&.ui-filter-column {
+			border-top: 1px solid #c8c8c8;
+		}
+
+		// &:first-child {
+		// 	text-align: center;
+		// }
+		// &:last-child {
+		// 	text-align: center;
+		// }
+	}
+
+	.ui-dropdown-label:not(.ui-placeholder) {
+		text-transform: uppercase;
+	}
+
+	.ui-table-tbody>tr>td .ui-column-title {
+		display: none;
+	}
+
+	.ui-table-thead>tr>th>.pt-filter-dropdown>.ui-multiselect {
+		width: -webkit-fill-available;
+	}
+}
+
+/* Responsive */
+@media screen and (max-width: 64em) {
+	.ui-table {
+
+		.ui-table-thead>tr>th,
+		.ui-table-tfoot>tr>td {
+			display: none !important;
+		}
+
+		.ui-table-tbody>tr {
+			border-bottom: 1px solid black;
+		}
+
+		.ui-table-tbody>tr>td {
+			text-align: left;
+			display: block;
+			border: 0 none !important;
+			width: 100% !important;
+			float: left;
+			clear: left;
+			border: 0 none;
+
+			.ui-column-title {
+				padding: 0.4em;
+				min-width: 30%;
+				display: inline-block;
+				margin: -0.4em 1em -0.4em -0.4em;
+				font-weight: bold;
+			}
+		}
+	}
+
+	.ui-table-globalfilter-container {
+		margin-bottom: 5px;
+	}
+}
+
+.popover {
+	position: inherit;
+	top: 0;
+	left: 0;
+	z-index: 1060;
+	display: block;
+	max-width: 276px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+		"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	font-style: normal;
+	font-weight: 400;
+	line-height: 1.5;
+	text-align: left;
+	text-align: start;
+	text-decoration: none;
+	text-shadow: none;
+	text-transform: none;
+	letter-spacing: normal;
+	word-break: normal;
+	word-spacing: normal;
+	white-space: normal;
+	line-break: auto;
+	font-size: 0.765625rem;
+	word-wrap: break-word;
+	background-color: #fff;
+	background-clip: padding-box;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	border-radius: 0.3rem;
+}
+
+body .ui-table .ui-table-tbody>tr>td {
+	padding: 0.571em 0.857em !important;
+}
+
+.breadcrumb {
+	margin-bottom: 1rem !important;
+}
+
+.sidebar .nav-dropdown.open>.nav-dropdown-items {
+	max-height: 2500px !important;
+}
+
+.sidebar .nav-link.active .nav-icon {
+	color: #ffffff !important;
+}

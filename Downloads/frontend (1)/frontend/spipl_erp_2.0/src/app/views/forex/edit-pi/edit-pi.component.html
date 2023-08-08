@@ -1,0 +1,572 @@
+<div class="animated fadeIn">
+	<form [formGroup]="addPIForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+		<div class="row">
+
+
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-header">
+						<i class="icon-list"></i> Proforma Invoice Details
+
+					</div>
+
+					<div class="card-body">
+
+						<input type="hidden" class="form-control" id="id" formControlName="id">
+
+						<input type="hidden" class="form-control" id="grade_assort_id"
+							formControlName="grade_assort_id">
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Messrs/Applicant</strong></label>
+							<div class="col-md-6">
+								<ng-select id="buyer_id" formControlName="buyer_id" placeholder="Select Organization"
+									[searchable]="true" [clearable]="true" bindLabel="sub_org_name"
+									bindValue="sub_org_id" [items]="sub_org" [(ngModel)]="buyer_company"
+									(change)="setSelectedStatus($event,sub_org,'sub_org_name','buyer','sub_org_id')">
+								</ng-select>
+							</div>
+						</div>
+
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Applicant's Bank</strong></label>
+							<div class="col-md-6">
+								<ng-select id="buyer_bank_id" formControlName="buyer_bank_id" placeholder="Select Bank"
+									[searchable]="true" [clearable]="true" bindLabel="bank_name" bindValue="id"
+									[items]="spipl_bank"
+									(change)="setSelectedStatus($event,spipl_bank,'bank_name','spiplbank','id')">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Proforma Invoice No.</strong></label>
+							<div class="col-md-6">
+								<input type="text" class="form-control" id="proform_invoice_no"
+									formControlName="proform_invoice_no" placeholder="Enter Invoice Number "
+									[(ngModel)]="invoice_no">
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Invoice Date</strong> <i
+									class="fa fa-calendar"></i></label>
+							<div class="col-md-6">
+								<input type="text" class="form-control" id="proform_invoice_date"
+									formControlName="proform_invoice_date"
+									[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+									#dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter Date "
+									[(ngModel)]="invoice_date" style="background-color: white;">
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Sales Contract Type</strong></label>
+							<div class="col-md-6">
+								<ng-select id="pi_flag" formControlName="pi_flag" placeholder="PI Flag"
+									[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+									[items]="pi_flag" (change)="setSelectedStatus($event,pi_flag,'name','flag','id')">
+								</ng-select>
+							</div>
+						</div>
+
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Supplier</strong></label>
+							<div class="col-md-6">
+								<ng-select id="supplier_id" formControlName="supplier_id" placeholder="Select Supplier"
+									[searchable]="true" [clearable]="true" bindLabel="sub_org_name"
+									bindValue="sub_org_id" [items]="sub_org" [readonly]=true>
+								</ng-select>
+								<p>{{org_address}}</p>
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Advising Bank</strong></label>
+							<div class="col-md-6">
+								<ng-select id="first_advising_bank_id" formControlName="first_advising_bank_id"
+									placeholder="Select Bank" [searchable]="true" [clearable]="true"
+									bindLabel="bank_name" bindValue="bank_id" [items]="org_bank"
+									(change)="setSelectedStatus($event,org_bank,'bank_name','first_adv_bank','bank_id')">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Second Advising Bank</strong></label>
+							<div class="col-md-6">
+								<ng-select id="second_advising_bank_id" formControlName="second_advising_bank_id"
+									placeholder="Select Bank" [searchable]="true" [clearable]="true"
+									bindLabel="bank_name" bindValue="bank_id" [items]="org_bank"
+									(change)="setSelectedStatus($event,org_bank,'bank_name','second_adv_bank','bank_id')">
+								</ng-select>
+							</div>
+						</div>
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Estimated Shipment Date</strong></label>
+							<div class="col-md-3">
+								<ng-select id="shipment_month" formControlName="shipment_month"
+									placeholder="Select Month" [searchable]="true" [clearable]="true" bindLabel="name"
+									bindValue="id" [items]="month" [(ngModel)]="currentMonth"
+									(change)="setSelectedStatus($event,month,'name','month_name','id')">
+								</ng-select>
+
+							</div>
+							<div class="col-md-3">
+								<input type="text" class="form-control" id="shipment_year"
+									formControlName="shipment_year" placeholder="Enter Year " [(ngModel)]="currentYear"
+									[textMask]="{mask: yearMask}">
+
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Payment Term</strong></label>
+							<div class="col-md-6" *ngIf="payTermBasedOnFlag">
+								<ng-select id="payment_term" formControlName="payment_term" placeholder="Payment Term"
+									[searchable]="true" [clearable]="true" bindLabel="pay_term" bindValue="pt_id"
+									[items]="paymentTerm" [multiple]=true (change)="setTerm($event)">
+								</ng-select>
+							</div>
+
+							<div class="col-md-6" *ngIf="!payTermBasedOnFlag">
+								<ng-select id="payment_term" formControlName="payment_term" placeholder="Payment Term"
+									[searchable]="true" [clearable]="true" bindLabel="pay_term" bindValue="pt_id"
+									[items]="paymentTerm"
+									(change)="setSelectedStatus($event,paymentTerm,'pay_term','pay','pt_id')">
+								</ng-select>
+							</div>
+						</div>
+
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Port of Loading</strong></label>
+							<div class="col-md-6">
+								<ng-select id="material_load_port" formControlName="material_load_port"
+									placeholder="Select Load Port" [searchable]="true" [clearable]="true"
+									bindLabel="load_port" bindValue="id" [items]="import_load_port"
+									(change)="setSelectedStatus($event,'load_port','material_load_port','load_port','id')">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Port Of Discharge</strong></label>
+							<div class="col-md-6">
+								<ng-select id="destination_port_id" formControlName="destination_port_id"
+									placeholder="Port Of Discharge" [searchable]="true" [clearable]="true"
+									bindLabel="port_name" bindValue="id" [items]="port_list"
+									(change)="setSelectedStatus($event,port_list,'port_name','port','id')">
+								</ng-select>
+							</div>
+						</div>
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Quantity</strong></label>
+							<div class="col-md-6">
+								<input type="number" class="form-control" id="pi_quantity" formControlName="pi_quantity"
+									placeholder="Enter Quantity " [(ngModel)]="pi_qty" (keyup)="calculate_total()"
+									numbersOnly>
+							</div>
+						</div>
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Rate</strong></label>
+
+							<div class="col-md-3">
+								<input type="number" class="form-control" id="pi_rate" formControlName="pi_rate"
+									placeholder=" Rate " [(ngModel)]="pirate" (keyup)="calculate_total()" numbersOnly>
+
+							</div>
+
+							<div class="col-md-3">
+								<ng-select id="unit_id" formControlName="unit_id" placeholder="Select Unit"
+									[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+									[items]="unit_list"
+									(change)="setSelectedStatus($event,unit_list,'name','unit','id')">
+								</ng-select>
+
+							</div>
+						</div>
+
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Total Amount</strong></label>
+							<div class="col-md-4">
+								<input type="number" class="form-control" id="total_pi_amount"
+									formControlName="total_pi_amount" placeholder="Total amount "
+									[(ngModel)]="total_amt">
+							</div>
+							<div class="col-md-2">
+								<ng-select id="currency_id" formControlName="currency_id" placeholder=" Currency"
+									[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+									[items]="currency" (change)="setSelectedStatus($event,currency,'name','curr','id')">
+								</ng-select>
+
+							</div>
+						</div>
+
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Grade</strong></label>
+							<div class="col-md-6">
+								<ng-select id="grade_id" formControlName="grade_id" placeholder="Grade"
+									[searchable]="true" [clearable]="true" bindLabel="grade_name" bindValue="grade_id"
+									[items]="grade_list"
+									(change)="setSelectedStatus($event,grade_list,'grade_name','grade_value','grade_id')">
+								</ng-select>
+							</div>
+						</div>
+
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Incoterms</strong></label>
+							<div class="col-md-6">
+								<ng-select id="pi_insurance_id" formControlName="pi_insurance_id"
+									placeholder="Incoterms" [searchable]="true" [clearable]="true" bindLabel="type"
+									bindValue="id" [items]="pi_insurance"
+									(change)="setSelectedStatus($event,pi_insurance,'type','insurance','id')">
+								</ng-select>
+							</div>
+						</div>
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Packing</strong></label>
+							<div class="col-md-6">
+								<ng-select id="material_pack_id" formControlName="material_pack_id"
+									placeholder="Packing" [searchable]="true" [clearable]="true" bindLabel="type"
+									bindValue="id" [items]="packing"
+									(change)="setSelectedStatus($event,packing,'type','packing_mat','id')">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>ETD</strong> <i
+									class="fa fa-calendar"></i></label>
+							<div class="col-md-6">
+								<input type="text" class="form-control" id="tentitive_departure_date"
+									formControlName="tentitive_departure_date"
+									[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+									#dp="bsDatepicker" bsDatepicker placeholder="Enter Departure Date "
+									[(ngModel)]="dep_date" style="background-color: white;">
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>ETA</strong> <i
+									class="fa fa-calendar"></i></label>
+							<div class="col-md-6">
+								<input type="text" class="form-control" id="tentitive_arrival_date"
+									formControlName="tentitive_arrival_date"
+									[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+									#dp="bsDatepicker" bsDatepicker placeholder="Enter Arrival Date "
+									[(ngModel)]="arv_date" style="background-color: white;">
+							</div>
+						</div>
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Upload Scan Document</strong></label>
+							<div class="col-md-6">
+								<input type="file" class="form-control" id="pi_copy" formControlName="pi_copy"
+									(change)="addDocs($event)" [multiple]=true>
+							</div>
+						</div>
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Remark</strong></label>
+							<div class="col-md-6">
+								<textarea class="form-control" id="remark" formControlName="remark"
+									placeholder="Enter Remark " cols="30" rows="7" [(ngModel)]="rmk"></textarea>
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-2 col-form-label"><strong>High Seas PI</strong></label>
+							<div class="col-md-2">
+								<input type="checkbox" name="high_seas_pi" formControlName="high_seas_pi"
+									[checked]="highSeasPi" (change)="checkType($event.target)">
+							</div>
+							<label class="col-md-2 col-form-label"><strong>Import Surisha PI</strong></label>
+							<div class="col-md-2">
+								<input type="checkbox" name="forward_sale_pi" formControlName="forward_sale_pi"
+									[checked]="forwardSalePi" (change)="checkType($event.target)">
+							</div>
+							<label class="col-md-2 col-form-label"><strong>Transnational Sale PI</strong></label>
+							<div class="col-md-2">
+								<input type="checkbox" name="transnational_sale_pi"
+									formControlName="transnational_sale_pi" [checked]="transnationalSalePi"
+									(change)="checkType($event.target)">
+							</div>
+						</div>
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Sales PI List</strong></label>
+							<div class="col-md-6">
+								<ng-select id="pi_high_seas_id" formControlName="pi_high_seas_id"
+									placeholder="Select High Seas PI" [searchable]="true" [clearable]="true"
+									bindLabel="soid_custname" bindValue="id" [items]="highseas_orders">
+								</ng-select>
+							</div>
+						</div>		
+
+						 <div class="form-group row">
+							<label class="col-md-4 col-form-label" for="no_of_pallet"><strong>No of Pallets</strong></label>
+							<div class="col-md-4">
+							  <input type="number" class="form-control" id="no_of_pallet" formControlName="no_of_pallet"
+									 placeholder="Enter no of pallet" [(ngModel)]="no_of_pallet" numbersOnly>
+							</div>
+						</div>		 		
+						
+						
+						<!-- <div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Forward Sale PI</strong></label>
+							<div class="col-md-6">
+								<input type="checkbox" name="forward_sale_pi" formControlName="forward_sale_pi"
+									[checked]="forwardSalePi" (change)="checkType($event.target)">
+							</div>
+						</div>
+
+
+
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label"><strong>Transnational Sale PI</strong></label>
+							<div class="col-md-6">
+								<input type="checkbox" name="transnational_sale_pi"
+									formControlName="transnational_sale_pi" [checked]="transnationalSalePi"
+									(change)="checkType($event.target)">
+							</div>
+						</div> -->
+
+
+					</div>
+					<div class="card-footer">
+						<!-- <button class="btn btn-primary mr-1" type="button"
+                       [disabled]="addPIForm.pristine || addPIForm.invalid"
+                      >
+                      <i class="fa fa-dot-circle-o"></i>Preview</button>
+                    -->
+						<!-- <button class="btn btn-danger" (click)="onReset()"
+                      ><i class="fa fa-ban"></i>Reset</button> -->
+						<button class="btn btn-primary" type="button" (click)="onBack()"><i
+								class="fa fa-undo"></i>Back</button>
+					</div>
+
+
+
+
+				</div>
+			</div>
+
+			<div class="col-md-6">
+
+				<div class="card">
+					<div class="card-header">
+						<i class="icon-list"></i> Form Preview
+
+					</div>
+
+					<div class="card-body">
+
+						<table class="table table-bordered table-responsive-lg">
+							<thead>
+								<tr>
+									<th style="width: 30%;">Messrs/Applicant</th>
+									<td>{{buyer}}</td>
+								</tr>
+							</thead>
+
+							<tbody>
+
+
+								<tr>
+									<th style="width:20%">Messrs/Applicant Address</th>
+									<td>
+										<p class="form-control-static">31, SHREE ADINATH SHOPPING CENTRE,
+											PUNE SATARA ROAD, PUNE - 411037,MAHARASHTRA ,INDIA</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>Applicant's Bank</th>
+									<td>
+										<p>{{ spiplbank}}</p>
+									</td>
+								</tr>
+
+
+								<tr>
+									<th>Invoice No.</th>
+									<td>
+										<p>{{invoice_no}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>Invoice Date</th>
+									<td>
+										<p>{{invoice_date}}</p>
+									</td>
+								</tr>
+
+
+								<tr>
+									<th>Supplier</th>
+									<td>
+										<p>{{sub_org_name}}</p>
+										<p>{{org_address}}</p>
+									</td>
+								</tr>
+
+
+								<tr *ngIf="docsview">
+									<th>Uploaded Docs</th>
+									<td [innerHtml]="docsview"></td>
+								</tr>
+
+								<tr>
+									<th>Advising Bank</th>
+									<td>
+										<p>{{first_adv_bank}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>Second Advising Bank</th>
+									<td>
+										<p>{{second_adv_bank}}</p>
+									</td>
+								</tr>
+
+
+								<tr>
+									<th>Estimated Shipment Date</th>
+									<td> <span>{{month_name}}</span> - <span>{{currentYear}}</span></td>
+
+								</tr>
+
+								<tr>
+									<th>Payment Term</th>
+									<td>
+										<p>{{pay}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>Port of Loading</th>
+									<td>
+										<p>{{load_port}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>Port of Discharge</th>
+									<td>
+										<p>{{port}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th><strong>Quantity</strong></th>
+									<td>
+										<p>{{pi_qty}}</p>
+									</td>
+								</tr>
+
+
+								<tr>
+									<th>Rate</th>
+									<td><span>{{curr}}</span> /<span>{{pirate}}</span> /<span>{{unit}}</span></td>
+								</tr>
+
+								<tr>
+									<th>Total Amount</th>
+									<td>
+										<p>{{total_amt}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>Grade</th>
+									<td>
+										<p>{{grade_value}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>Incoterms</th>
+									<td>
+										<p>{{insurance}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>Packing</th>
+									<td>
+										<p>{{packing_mat}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>ETD</th>
+									<td>
+										<p>{{getDate(dep_date)}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>ETA</th>
+									<td>
+										<p>{{getDate(arv_date)}}</p>
+									</td>
+								</tr>
+								<tr>
+									<th>Sales Contract Type</th>
+									<td>
+										<p>{{flag}}</p>
+									</td>
+								</tr>
+
+								<tr>
+									<th>Remark</th>
+									<td>
+										<p>{{rmk}}</p>
+									</td>
+								</tr>
+
+
+
+							</tbody>
+
+						</table>
+
+					</div>
+
+					<div class="card-footer">
+						<button class="btn btn-primary mr-1" type="submit">
+							<i class="fa fa-dot-circle-o"></i>Submit</button>
+
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</form>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

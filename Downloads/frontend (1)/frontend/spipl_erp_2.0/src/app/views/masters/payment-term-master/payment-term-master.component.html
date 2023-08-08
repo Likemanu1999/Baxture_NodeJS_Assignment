@@ -1,0 +1,273 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-4" *ngIf="add_opt">
+			<div class="card">
+				<div class="card-header">
+					<i class="icon-list"></i> Payment Term Master
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<form [formGroup]="paymentTermForm" novalidate (ngSubmit)="onSubmit()"
+								class="needs-validation">
+								<div class="row">
+									<div class="form-group col-12 col-md-6">
+										<label for="pay_type">Payment Type</label>
+										<ng-select id="pay_type" formControlName="pay_type" placeholder="Select"
+											[searchable]="true" [clearable]="true" bindLabel="label" bindValue="value"
+											[items]="pay_type">
+										</ng-select>
+									</div>
+									<div class="form-group col-12 col-md-6">
+										<label class="col-form-label" for="advance_credit_payment">
+											Advance/Credit/Balance</label>
+										<ng-select id="advance_credit_payment" formControlName="advance_credit_payment"
+											placeholder="Select" [searchable]="true" [clearable]="true"
+											bindLabel="label" bindValue="value" [items]="advance_credit_payment"
+											(change)="adv_credit($event)">
+										</ng-select>
+									</div>
+
+									<div class="form-group col-12 col-md-6" *ngIf="usanceatsight">
+										<label class="col-form-label" for="usance_sight"> Usance/At Sight</label>
+										<ng-select id="usance_sight" formControlName="usance_sight" placeholder="Select"
+											[searchable]="true" [clearable]="true" bindLabel="label" bindValue="value"
+											[items]="usance_sight" (change)="usance_sight_change($event)">
+										</ng-select>
+									</div>
+
+
+
+									<div class="form-group col-12 col-md-6" *ngIf="within || nonlc_balance">
+										<label class="col-form-label" for="on_within"> Within/On/ After</label>
+										<ng-select id="on_within" formControlName="on_within" placeholder="Select"
+											[searchable]="true" [clearable]="true" bindLabel="label" bindValue="value"
+											[items]="on_within">
+										</ng-select>
+									</div>
+
+									<div class="form-group col-12 col-md-6" *ngIf="baseline">
+										<label class="col-form-label" for="baseline_date">Baseline Date</label>
+										<ng-select id="baseline_date" formControlName="baseline_date"
+											placeholder="Select" [searchable]="true" [clearable]="true"
+											bindLabel="label" bindValue="value" [items]="baseline_date">
+										</ng-select>
+									</div>
+
+									<div class="form-group col-12 col-md-6" *ngIf="nonlc_balance">
+										<label class="col-form-label" for="nonlc_balance">Balance Payment Term</label>
+										<ng-select id="balance_payterm" formControlName="balance_payterm"
+											placeholder="Select" [searchable]="true" [clearable]="true"
+											bindLabel="label" bindValue="value" [items]="balance_payterm">
+										</ng-select>
+									</div>
+
+									<div class="form-group col-12 col-md-6" *ngIf="pay_days">
+										<label class="col-form-label" for="pay_val">Payment Days</label>
+										<input class="form-control" id="pay_val" type="text" formControlName="pay_val"
+											placeholder="Enter Payment Days" autofocus />
+									</div>
+
+
+									<div class="form-group col-12 col-md-6" *ngIf="percent || nonlc_balance">
+										<label class="col-form-label" for="pay_percentage">Percentage</label>
+										<input class="form-control" id="pay_percentage" type="text"
+											formControlName="pay_percentage" placeholder="Enter Percentage" />
+									</div>
+
+
+								</div>
+								<div class="form-group">
+									<button class="btn btn-primary mr-1" type="submit"
+										[disabled]="paymentTermForm.pristine || paymentTermForm.invalid">Submit</button>
+									<button class="btn btn-danger" type="reset"
+										[disabled]="paymentTermForm.pristine && !submitted"
+										(click)="onReset()">Reset</button>
+								</div>
+							</form>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-8" *ngIf="view_opt">
+			<div class="card">
+				<div class="card-header">
+					<i class="icon-list"></i> Payment Term List
+				</div>
+
+				<div class="card-body">
+					<div class="row mb-3">
+						<div class="col-md-4 offset-md-8">
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa fa-search"></i></span>
+								</div>
+								<input type="text" class="form-control" [(ngModel)]="filterQuery"
+									placeholder="Search by name" />
+							</div>
+						</div>
+					</div>
+					<div *ngIf="isLoading" style="text-align: center;">
+						<app-loading-spinner></app-loading-spinner>
+					</div>
+					<table class="table table-striped table-hover table-responsive-lg"
+						[mfData]="data | tableFilter : filterQuery:filterArray" #mf="mfDataTable" [mfRowsOnPage]="5"
+						*ngIf="!error && !isLoading">
+						<thead>
+							<tr>
+								<th style="width: 8%">
+									<mfDefaultSorter by="srno">Sr.No.</mfDefaultSorter>
+								</th>
+								<th style="width: 25%">
+									<mfDefaultSorter by="pay_term">Payment Term</mfDefaultSorter>
+								</th>
+								<th style="width: 25%">
+									<mfDefaultSorter by="pay_val">Payment Days / %</mfDefaultSorter>
+								</th>
+								<th style="width: 25%">
+									<mfDefaultSorter by="pay_type">Payment Type</mfDefaultSorter>
+								</th>
+
+								<th style="width: 10%" *ngIf="edit_opt">
+									<mfDefaultSorter by="edit">Edit</mfDefaultSorter>
+								</th>
+								<th style="width: 10%" *ngIf="del_opt">
+									<mfDefaultSorter by="delete">Delete</mfDefaultSorter>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i"
+								[attr.id]="item.pt_id">
+								<td>{{i+1}}</td>
+								<td>{{item.pay_term}}</td>
+								<td>{{item.pay_val}}</td>
+								<td>{{ getPaymentType(item.pay_type) }}</td>
+
+								<td *ngIf="edit_opt"><a style="cursor: pointer;" (click)="onEdit(item.pt_id)"><i
+											class="fa fa-pencil"></i></a></td>
+								<td *ngIf="del_opt"><a style="cursor: pointer;" mwlConfirmationPopover
+										[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+										[confirmText]="confirmText" [cancelText]="cancelText" [placement]="placement"
+										[closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="danger"
+										cancelButtonType="success" (confirm)="onDelete(item.pt_id)"
+										(cancel)="cancelClicked = true"><i class="fa fa-trash"></i></a></td>
+
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<td colspan="6">
+									<mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+</div>
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<form [formGroup]="updatePaymentTermForm" novalidate (ngSubmit)="onUpdate()" class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">Update Payment Term</h4>
+					<button type="button" class="close" (click)="myModal.hide()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="col-md-12">
+
+						<div class="row">
+
+
+							<div class="form-group col-12 col-md-6">
+								<label for="update_pay_type">Payment Type</label>
+								<ng-select id="update_pay_type" formControlName="update_pay_type" placeholder="Select"
+									[searchable]="true" [clearable]="true" bindLabel="label" bindValue="value"
+									[items]="pay_type" [(ngModel)]="payType">
+								</ng-select>
+							</div>
+
+							<div class="form-group col-12 col-md-6">
+								<label class="col-form-label" for="update_advance_credit_payment"> Advance and
+									Credit</label>
+								<ng-select id="update_advance_credit_payment"
+									formControlName="update_advance_credit_payment" placeholder="Select"
+									[searchable]="true" [clearable]="true" bindLabel="label" bindValue="value"
+									[items]="advance_credit_payment" [(ngModel)]="advcrd" (change)="adv_credit($event)">
+								</ng-select>
+							</div>
+
+
+							<div class="form-group col-12 col-md-6" *ngIf="usanceatsight">
+								<label class="col-form-label" for="update_usance_sight"> Usance / At Sight</label>
+								<ng-select id="update_usance_sight" formControlName="update_usance_sight"
+									placeholder="Select" [searchable]="true" [clearable]="true" bindLabel="label"
+									bindValue="value" [items]="usance_sight" [(ngModel)]="usance"
+									(change)="usance_sight_change($event)">
+								</ng-select>
+							</div>
+
+
+
+							<div class="form-group col-12 col-md-6" *ngIf="within || nonlc_balance">
+								<label class="col-form-label" for="update_on_within"> Within or On</label>
+								<ng-select id="update_on_within" formControlName="update_on_within" placeholder="Select"
+									[searchable]="true" [clearable]="true" bindLabel="label" bindValue="value"
+									[items]="on_within" [(ngModel)]="with">
+								</ng-select>
+							</div>
+
+							<div class="form-group col-12 col-md-6" *ngIf="baseline">
+								<label class="col-form-label" for="update_baseline_date">Baseline Date</label>
+								<ng-select id="update_baseline_date" formControlName="update_baseline_date"
+									placeholder="Select" [searchable]="true" [clearable]="true" bindLabel="label"
+									bindValue="value" [items]="baseline_date" [(ngModel)]="base">
+								</ng-select>
+							</div>
+
+							<div class="form-group col-12 col-md-6" *ngIf="nonlc_balance">
+								<label class="col-form-label" for="update_nonlc_balance">Balance Payment Term</label>
+								<ng-select id="update_nonlc_balance" formControlName="update_nonlc_balance"
+									placeholder="Select" [searchable]="true" [clearable]="true" bindLabel="label"
+									bindValue="value" [items]="balance_payterm" [(ngModel)]="balancepay">
+								</ng-select>
+							</div>
+
+
+							<div class="form-group col-12 col-md-6" *ngIf="pay_days">
+								<label class="col-form-label" for="update_pay_val">Payment Days / %</label>
+								<input class="form-control" id="update_pay_val" type="text"
+									formControlName="update_pay_val" placeholder="Enter Payment Term"
+									[(ngModel)]="payday" />
+							</div>
+
+
+							<div class="form-group col-12 col-md-6" *ngIf="percent || nonlc_balance">
+								<label class="col-form-label" for="update_pay_percentage">Percentage</label>
+								<input class="form-control" id="update_pay_percentage" type="text"
+									formControlName="update_pay_percentage" placeholder="Enter Percentage"
+									[(ngModel)]="per" />
+							</div>
+						</div>
+
+
+
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="myModal.hide()">Close</button>
+					<button type="submit" class="btn btn-primary">Update</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

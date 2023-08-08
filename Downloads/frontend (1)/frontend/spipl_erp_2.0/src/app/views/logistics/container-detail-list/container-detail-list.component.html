@@ -1,0 +1,513 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fa fa-file"></i> Container Details List
+
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            <div class="row">
+                                <div class="col-md-3 mb-4">
+                                    <label for="">BL Date</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control " bsDaterangepicker
+                                            [(ngModel)]="bsRangeValue" (ngModelChange)="onSelect($event,1)"
+                                            placeholder="">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3 mb-4">
+                                    <label for="">Material Received Date</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control " bsDaterangepicker
+                                            (bsValueChange)="onSelect($event,2)"
+                                            placeholder="">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label for="">Godown</label>
+
+                                    <ng-select placeholder="Select Godown " [searchable]="true" [clearable]="true"
+                                        bindLabel="godown_name" bindValue="id" [items]="godown"
+                                        (change)="onGodownChange($event)">
+                                    </ng-select>
+
+
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label for="">Status</label>
+
+                                    <ng-select placeholder="Select Status " [searchable]="true" [clearable]="true"
+                                        bindLabel="status" bindValue="id" [items]="status" [(ngModel)]='setStatus'
+                                        (ngModelChange)="changeStatus($event)">
+                                    </ng-select>
+
+
+                                </div>
+
+                            </div>
+
+
+
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div *ngIf="isLoading" style="text-align: center;" class="col-md-12">
+                            <app-loading-spinner></app-loading-spinner>
+                          </div>
+                        <div class="col-md-12" *ngIf="!isLoading" >
+                            <p-table #dt [value]="container_list" dataKey="id" styleClass="ui-table-comntainer-list "
+                                [scrollable]="true" scrollHeight="400px" [virtualScroll]="true" [virtualRowHeight]="500"
+                                [rowHover]="true" [rows]="25" [showCurrentPageReport]="true"
+                                (onFilter)="onFilter($event, dt)" [rowsPerPageOptions]="[10,25,50,100]"
+                                [paginator]="false" [columns]="cols"
+                                currentPageReportTemplate="Total Records: {{container_list.length}}" [filterDelay]="0"
+                                [globalFilterFields]="['container_number','godown_name' , 'bill_lading_no','be_no' , 'bl_date' , 'cont_received_date']">
+
+                                <ng-template pTemplate="caption">
+
+                                    <div class="row">
+                                        <div class="col-md-3">
+
+                                            <div class="ui-helper-clearfix" style="text-align: left">
+                                                <button type="button" pButton icon="pi pi-file-excel" iconPos="left"
+                                                    label="EXCEL" (click)="exportExcel()" style="margin-right: 0.5em;"
+                                                    class="ui-button-success"></button>
+                                                <button type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+                                                    label="PDF" (click)="exportPdf()"
+                                                    class="ui-button-warning"></button>
+                                            </div>
+
+                                        </div>
+
+
+
+                                        <div class="col-md-3">
+                                            <input pInputText class='form-control' type="text"
+                                                (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                placeholder="Global Search" />
+                                        </div>
+                                    </div>
+
+                                </ng-template>
+
+
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+
+
+                                        <th pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+                                            [style.width.px]='col.style'>
+                                            {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                                        </th>
+
+
+                                    </tr>
+
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item let-columns>
+                                    <tr class="ui-selectable-row">
+
+
+
+                                        <td style="width: 150px ;">
+                                            <span class="ui-column-title">Container Number</span>
+                                            {{item.container_number}}
+                                        </td>
+
+                                        <td pEditableColumn style="width: 120px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input type="text" class="form-control"
+                                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                                        #dp="bsDatepicker" bsDatepicker style="background-color: white;"
+                                                        [(ngModel)]="item.container_return_date"
+                                                        (ngModelChange)="updateData($event, item.id , 'container_return_date' , item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+
+                                                    <span class="ui-column-title">Empty Container Return </span>
+                                                    {{item.container_return_date | date : 'dd-MM-yyyy'}}
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+
+                                        <td pEditableColumn style="width: 150px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <ng-select placeholder="Select Godown " [searchable]="true"
+                                                        [clearable]="true" bindLabel="godown_name" bindValue="id"
+                                                        [items]="godown"
+                                                        (change)="updateContainer($event, item.id , 'godown_id' , item)">
+                                                    </ng-select>
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    <span class="ui-column-title">Godown</span>
+                                                    {{item.godown_name}}
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+
+                                        <td style="width: 100px ;">
+                                            <span class="ui-column-title">BL Number</span>
+                                            {{item.bill_lading_no}}
+                                        </td>
+
+
+                                        <td style="width: 100px ;">
+                                            <span class="ui-column-title">BE Number</span>
+                                            {{item.be_no}}
+                                            <span *ngIf="item.be_copy">
+                                                <span *ngFor="let doc of getDocArray(item.be_copy)">
+                                                    <a href="{{doc}}" target="_blank"><em class="fa fa-file"></em></a>
+                                                </span>
+                                            </span>
+                                        </td>
+
+                                        <td style="width: 120px ;">
+                                            <span class="ui-column-title">BL Date</span>
+                                            {{item.bl_date | date : 'dd-MM-yyyy'}}
+                                        </td>
+
+                                        <td style="width: 100px ;">
+                                            <span class="ui-column-title">Net Wt</span>
+                                            {{item.net_wt}} MT
+
+
+                                        </td>
+
+                                        <td pEditableColumn style="width: 100px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText class="form-control" type="text"
+                                                        [(ngModel)]="item.unloading_qty"
+                                                        (keydown.enter)="updateContainer($event, item.id , 'unloading_qty' , item)"
+                                                        (change)="updateContainer($event, item.id , 'unloading_qty' , item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    <span class="ui-column-title">Unloading Qty</span>
+                                                    {{item.unloading_qty}} <span *ngIf="item.unloading_qty != null">MT</span>
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+
+                                        <td pEditableColumn style="width: 100px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText class="form-control" type="text"
+                                                        [(ngModel)]="item.crossing_qty"
+                                                        (keydown.enter)="updateContainer($event, item.id , 'crossing_qty', item)"
+                                                        (change)="updateContainer($event, item.id , 'crossing_qty' , item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    <span class="ui-column-title">Crossing Qty</span>
+                                                    {{item.crossing_qty}} <span *ngIf="item.crossing_qty != null">MT</span>
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+                                        <td  style="width: 100px ;">
+                                            <span class="ui-column-title">No of Pallets</span>
+                                            {{item.no_of_pallets}}
+                                        </td>
+
+
+                                        <td pEditableColumn style="width: 100px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText class="form-control" type="text"
+                                                        [(ngModel)]="item.charges"
+                                                        (keydown.enter)="updateContainer($event, item.id , 'charges' , item)"
+                                                        (change)="updateContainer($event, item.id , 'charges' ,item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    <span class="ui-column-title">Charges</span>
+                                                    {{item.charges}}
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+                                        <td pEditableColumn style="width: 120px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input type="text" class="form-control"
+                                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                                        #dp="bsDatepicker" bsDatepicker style="background-color: white;"
+                                                        [(ngModel)]="item.cont_received_date"
+                                                        (ngModelChange)="updateContainer($event, item.id , 'cont_received_date' , item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+
+                                                    <span class="ui-column-title">Container Received Date</span>
+                                                    {{item.cont_received_date | date : 'dd-MM-yyyy'}}
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+
+                                        <td pEditableColumn style="width: 100px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText class="form-control" type="text"
+                                                        [(ngModel)]="item.short_material_qty"
+                                                        (keydown.enter)="updateContainer($event, item.id , 'short_material_qty',item)"
+                                                        (change)="updateContainer($event, item.id , 'short_material_qty',item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    <span class="ui-column-title">Short Qty</span>
+                                                    {{item.short_material_qty}}
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+                                        <td pEditableColumn style="width: 100px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText class="form-control" type="text"
+                                                        [(ngModel)]="item.short_remark"
+                                                        (keydown.enter)="updateContainer($event, item.id , 'short_remark',item)"
+                                                        (change)="updateContainer($event, item.id , 'short_remark',item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    <span class="ui-column-title">Short Remark</span>
+                                                    {{item.short_remark}}
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+
+                                        <td pEditableColumn style="width: 100px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText class="form-control" type="text"
+                                                        [(ngModel)]="item.damage_material_qty"
+                                                        (keydown.enter)="updateContainer($event, item.id , 'damage_material_qty',item)"
+                                                        (change)="updateContainer($event, item.id , 'damage_material_qty',item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    <span class="ui-column-title">Damage Qty</span>
+                                                    {{item.damage_material_qty}}
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+                                        <td pEditableColumn style="width: 100px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <input pInputText class="form-control" type="text"
+                                                        [(ngModel)]="item.damage_remark"
+                                                        (keydown.enter)="updateContainer($event, item.id , 'damage_remark',item)"
+                                                        (change)="updateContainer($event, item.id , 'damage_remark',item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    <span class="ui-column-title">Damage Remark</span>
+                                                    {{item.damage_remark}}
+                                                </ng-template>
+                                            </p-cellEditor>
+
+
+                                        </td>
+
+                                        <td pEditableColumn style="width: 200px ;">
+                                            <span class="ui-column-title"> Short Debit/Credit Note No</span>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input"
+                                                    *ngIf="item.short_material_qty> 0 && item.short_material_qty!= null">
+                                                    <input pInputText class="form-control" type="text"
+                                                        [(ngModel)]="item.short_deb_credit_no"
+                                                        (change)="updateContainer($event, item.id , 'short_deb_credit_no' , item)"
+                                                        (keydown.enter)="updateContainer($event, item.id , 'short_deb_credit_no' , item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    {{item.short_deb_credit_no}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+
+                                        <td pEditableColumn style="width: 200px ;">
+                                            <span class="ui-column-title"> Damage Debit/Credit Note No</span>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input"
+                                                    *ngIf="item.damage_material_qty  > 0 && item.damage_material_qty!= null">
+                                                    <input pInputText class="form-control" type="text"
+                                                        [(ngModel)]="item.damage_deb_credit_no"
+                                                        (change)="updateContainer($event, item.id , 'damage_deb_credit_no' , item)"
+                                                        (keydown.enter)="updateContainer($event, item.id , 'damage_deb_credit_no' , item)">
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    {{item.damage_deb_credit_no}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+
+
+
+
+
+
+                                        <td pEditableColumn style="width: 200px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+
+                                                    <input type="file" [multiple]="true"
+                                                        (change)="addShortCopy($event , item.id)" class="form-control">
+
+
+
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+
+                                                    <span class="ui-column-title">Upload Short Damage Doc</span>
+                                                    <span *ngIf="item.short_damage_doc">
+                                                        <div *ngFor="let doc of getDocArray(item.short_damage_doc)">
+                                                            <a href="{{doc}}" target="_blank"><i class="fa fa-file"></i>
+                                                                {{doc | fileName}}</a>
+                                                            <em class="fa fa-trash"
+                                                                (click)="deleteDoc(getDocArray(item.short_damage_doc) , doc , 'short_damage_doc' , item.id)"></em>
+                                                        </div>
+                                                    </span>
+
+
+                                                </ng-template>
+                                            </p-cellEditor>
+
+                                        </td>
+
+                                     
+
+                                        <td pEditableColumn style="width: 200px ;">
+
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+
+                                                    <input type="file" [multiple]="true"
+                                                        (change)="addEwayCopyTransporter($event , item.id)"
+                                                        class="form-control">
+
+
+
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+
+                                                    <span class="ui-column-title">Upload Eway Doc Transporter</span>
+                                                    <span *ngIf="item.transporter_eway_bill_del_challan_copy">
+                                                        <div
+                                                            *ngFor="let doc of getDocArray(item.transporter_eway_bill_del_challan_copy)">
+                                                            <a href="{{doc}}" target="_blank"><i class="fa fa-file"></i>
+                                                                {{doc | fileName}}</a> <em class="fa fa-trash"
+                                                                (click)="deleteDoc(getDocArray(item.transporter_eway_bill_del_challan_copy) , doc , 'transporter_eway_bill_del_challan_copy' , item.id)"></em>
+                                                        </div>
+                                                    </span>
+
+
+                                                </ng-template>
+                                            </p-cellEditor>
+
+                                        </td>
+
+                                      
+
+
+
+
+
+
+                                    </tr>
+                                </ng-template>
+
+
+                                <ng-template pTemplate="footer">
+                                    <tr>
+                                        <td style="width: 150px ;">Total</td>
+                                        <td style="width: 120px ;"></td>
+                                        <td style="width: 150px ;"></td>
+                                        <td style="width: 100px ;"></td>
+                                        <td style="width: 100px ;"></td>
+                                        <td style="width: 120px ;"></td>
+                                        <td style="width: 100px ;">{{net_wt}}</td>
+                                        <td style="width: 100px ;">{{unloading_qty}}</td>
+                                        <td style="width: 100px ;">{{crossing_qty}}</td>
+                                        <td style="width: 100px ;">{{no_of_pallets}}</td>
+                                        <td style="width: 100px ;">{{charges}}</td>
+                                        <td style="width: 120px ;"></td>
+                                        <td style="width: 100px ;">{{short_material_qty}}</td>
+                                        <td style="width: 100px ;"></td>
+                                        <td style="width: 100px ;">{{damage_material_qty}}</td>
+                                        <td style="width: 100px ;"></td>
+                                        <td style="width: 200px ;"></td>
+                                        <td style="width: 200px ;"></td>
+                                        <td style="width: 200px ;"></td>
+                                        <td style="width: 200px ;"></td>
+                                       
+                                      
+                                    </tr>
+
+                                    <td colspan="15" style="text-align:left">Total Records: {{container_list?.length}}
+                                    </td>
+
+                                </ng-template>
+
+
+
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td colspan="14" style="text-align:left">No Data found.</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

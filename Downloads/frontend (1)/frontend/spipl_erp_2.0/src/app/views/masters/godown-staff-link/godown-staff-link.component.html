@@ -1,0 +1,228 @@
+
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-4 p-1" >
+            <div class="card">
+                <div class="card-header">
+                    <i class="icon-list"></i> Godown - Employee Master
+                </div>
+                <div class="card-body p-3">
+                    <form [formGroup]="godownEmpForm" novalidate (ngSubmit)="onSubmit()" class="needs-validation">
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="godown_id">Select Godown</label>
+                                    <ng-select id="godown_id" formControlName="godown_id" placeholder="Select Godown"
+                                        [searchable]="true" [clearable]="true" bindLabel="godown_name" bindValue="id"
+                                        [items]="godown_arr">
+                                    </ng-select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="emp_id">Select Employee</label>
+                                    <ng-select id="emp_id" formControlName="emp_id" placeholder="Select Employee"
+                                        [searchable]="true" [clearable]="true" bindLabel="full_name" bindValue="id"
+                                        [items]="emp_arr">
+                                    </ng-select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="show_all">ALL / Allocated Inventory</label>
+                                    <ng-select id="show_all" formControlName="show_all" placeholder="Select ALL / Allocated Inventory"
+                                        [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                        [items]="all_allocate_arr">
+                                    </ng-select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="zone_godown">Godown/Marketing</label>
+                                    <ng-select id="zone_godown" formControlName="zone_godown" placeholder="Select Godown / Marketing Person"
+                                        [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                        [items]="zone_godown_arr">
+                                    </ng-select>
+                                </div>
+                            </div>
+                        </div>
+                      
+                        <div class="form-group">
+                            <button class="btn btn-primary mr-1" type="submit"
+                                [disabled]="godownEmpForm.pristine || godownEmpForm.invalid">Submit</button>
+                            <button class="btn btn-danger" type="reset"
+                                [disabled]="godownEmpForm.pristine" (click)="onReset()">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 p-1">
+            <div class="card">
+                <div class="card-header">
+                    <i class="icon-List"></i>Godown - Employee List
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 offset-md-8">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-search"></i></span>
+                                </div>
+                                <input type="text" class="form-control" [(ngModel)]="filterQuery"
+                                    placeholder="Search" />
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="isLoading" style="text-align: center;">
+                        <app-loading-spinner></app-loading-spinner>
+                    </div>
+                    <table class="table table-striped table-hover table-responsive-lg"
+                        [mfData]="data | tableFilter : filterQuery:filterArray" #mf="mfDataTable" [mfRowsOnPage]="5"
+                        *ngIf="!error && !isLoading">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%">
+                                    <mfDefaultSorter by="">#</mfDefaultSorter>
+                                </th>
+                                <th style="width: 10%">
+                                    <mfDefaultSorter by="godown_name">Godown</mfDefaultSorter>
+                                </th>
+
+                                <th style="width: 10%">
+                                    <mfDefaultSorter by="employee_name">Employee</mfDefaultSorter>
+                                </th>
+                                <th style="width: 10%">
+                                    <mfDefaultSorter by="show_all_label">All/Allocate</mfDefaultSorter>
+                                </th>
+                                <th style="width: 10%">
+                                    <mfDefaultSorter by="godown_marketing_person">Godown/Marketing</mfDefaultSorter>
+                                </th>
+                                <th style="width: 10%">
+                                    <mfDefaultSorter by="action">Action</mfDefaultSorter>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i"
+                                [attr.id]="item.grade_id">
+                                <td>{{ i+1 }}</td>
+                                <td>{{ item.godown.godown_name }}</td>
+                                <td>{{ item.staff_member_master.first_name }} {{item.staff_member_master.last_name}}</td>
+                                <td>{{ get_all_allocate(item.show_all) }}</td>
+                                <td>{{ get_godown_marketing(item.zone_godown) }}</td>
+                                <td>
+                                    <!-- <a *ngIf="edit_opt" style="cursor: pointer;" (click)="onEdit(item.id)"><i
+                                            class="fa fa-pencil p-1"></i></a> -->
+                                    <a  style="cursor: pointer;" mwlConfirmationPopover
+                                        [popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+                                        [confirmText]="confirmText" [cancelText]="cancelText" [placement]="placement"
+                                        [closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="danger"
+                                        cancelButtonType="success" (confirm)="onDelete(item.id)"
+                                        (cancel)="cancelClicked = true"><i class="fa fa-trash p-1"></i></a>
+                                </td>
+
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="6">
+                                    <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+<!-- <div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form [formGroup]="updategodownEmpForm" novalidate (ngSubmit)="onUpdate()" class="needs-validation">
+                <div class="modal-header">
+                    <h4 class="modal-title">Update Grade Master</h4>
+                    <button type="button" class="close" (click)="myModal.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="col-form-label" for="update_grade_name">Grade</label>
+                                <input class="form-control" id="update_grade_name" type="text"
+                                    formControlName="update_grade_name" placeholder="Enter Grade"
+                                    autocomplete="given-name" required autofocus />
+                                <div *ngIf="updated && g['update_grade_name'].errors" class="invalid-feedback">
+                                    <div *ngIf="g['update_grade_name'].errors.required">Grade is required</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="col-form-label" for="update_main_grade_id">Select Main Grade</label>
+                                <ng-select id="update_main_grade_id" formControlName="update_main_grade_id"
+                                    placeholder="Select Main Grade" [searchable]="true" [clearable]="true"
+                                    bindLabel="name" bindValue="id" [items]="main_grade_data">
+                                </ng-select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="update_prime_non_prime">Prime / Non-Prime</label>
+                                <ng-select id="update_prime_non_prime" formControlName="update_prime_non_prime"
+                                    placeholder="Select Prime/Non-Prime" [searchable]="true" [clearable]="true"
+                                    bindLabel="name" bindValue="id" [items]="prime_non_prime_data">
+                                </ng-select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="update_unit_id">Unit</label>
+                                <ng-select id="update_unit_id" formControlName="update_unit_id"
+                                    placeholder="Select Unit" [searchable]="true" [clearable]="true" bindLabel="name"
+                                    bindValue="id" [items]="unit_data">
+                                </ng-select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="update_grade_rate">Rate</label>
+                                <input class="form-control" id="update_grade_rate" type="text"
+                                    formControlName="update_grade_rate" placeholder="Enter Rate" numbersOnly required />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="update_lowest_cap">Lowest Cap</label>
+                                <input class="form-control" id="update_lowest_cap" type="text"
+                                    formControlName="update_lowest_cap" placeholder="Enter Lowest Cap" numbersOnly
+                                    required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="myModal.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> -->

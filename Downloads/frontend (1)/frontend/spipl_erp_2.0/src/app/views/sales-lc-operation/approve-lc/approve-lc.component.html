@@ -1,0 +1,231 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-6">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="sales_lc_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div>
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getCols()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly style="padding: 19px 5px !important" />
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"
+														style="margin-left: 10px;padding: 19px 5px !important"></app-dropdown-daterange>
+												</div>
+												<div class="form-group mb-1">
+													<p-dropdown [options]="statusList" [(ngModel)]="selected_status"
+														optionLabel="name" (onChange)="onChangeStatus($event)">
+													</p-dropdown>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != 'action'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													<div *ngIf="col.field == 'days_left'">
+														<span class="badge badge-warning round-badge">
+															{{ rowData[col.field] }}
+														</span>
+													</div>
+													<div *ngIf="col.field != 'days_left'">
+														{{ rowData[col.field] }}
+													</div>
+												</div>
+												<div *ngIf="col.type == 'Quantity'">
+													{{ rowData[col.field] }} {{ rowData.unit_type }}
+												</div>
+												<div *ngIf="col.type == 'Amount'">
+													{{ rowData[col.field] | currency:'INR' }}
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'action'">
+												<a class="btn btn-dark text-white custom-action-btn"
+													data-toggle="tooltip" data-placement="left"
+													title="View Bill of Exchange" (click)="onAction(rowData, 'view')">
+													<i class="fa fa-eye"></i>
+												</a>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total | number }} MT
+											</strong>
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div bsModal #confirmPiModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Summary"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title"><i class="fa fa-eye"></i> Summary</h4>
+				<button type="button" class="close" (click)="confirmPiModal.hide()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body" *ngIf="summary != null">
+				<div class="mb-2">
+					<table class="table-bordered ">
+						<tr>
+							<th><span class="tableMargin2">Invoice No.</span></th>
+							<th><span class="tableMargin2">Total Quantity</span></th>
+							<th><span class="tableMargin2">Total Rate</span></th>
+							<th><span class="tableMargin2">Quantity</span></th>
+							<th><span class="tableMargin2">Total Amount</span></th>
+							<th><span class="tableMargin2">Pending Quantity</span></th>
+						</tr>
+						<tr>
+							<td><span class="tableMargin2">{{summary.pi_invoice_no}}</span></td>
+							<td><span class="tableMargin2">{{summary.pi_quantity | number :
+									'1.2-3'}}</span></td>
+							<td><span class="tableMargin2">{{summary.pi_rate}}</span></td>
+							<td><span class="tableMargin2">{{summary.partialQuantity}}</span></td>
+							<td><span class="tableMargin2">{{(summary.total_amount ? summary.total_amount : '0') |
+									number:'1.2-2'}}</span></td>
+							<td><span class="tableMargin2">{{(summary['covered_quantity'] > 0 ?
+									(summary['quantity'] - summary['covered_quantity']) : summary['quantity']) |
+									number : '1.2-3'}} MT</span></td>
+						</tr>
+					</table>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<p class="mb-1">
+							<strong>Customer: </strong>
+							{{summary.sub_org_name}}
+						</p>
+						<p class="mb-1">
+							<strong>LC No.</strong>
+							{{ summary.lc_no }}
+						</p>
+						<p class="mb-1">
+							<strong>LC Date: </strong>
+							{{summary.lc_date | date: 'dd-MMM-yyyy'}}
+						</p>
+						<p class="mb-1">
+							<strong>Total Quantity: </strong>
+							{{summary.total_quantity | number : '1.2-3'}}MT
+						</p>
+						<p class="mb-1">
+							<strong>Total Amount: </strong>
+							₹{{summary.lc_amount | number : '1.2-2'}}
+						</p>
+						<p class="mb-1">
+							<strong>Date Of Shipping: </strong>
+							{{summary.last_date_of_shipment}}
+						</p>
+						<p class="mb-1">
+							<strong>Tolerance Rate: </strong>
+							{{summary.tolerance_rate | number : '1.2-3'}}
+						</p>
+						<p class="mb-1">
+							<strong>Advising / Negotiating Bank: </strong>
+							{{(spipl_banks[0].bank_name !== null && spipl_banks[0].short_form !== null &&
+							spipl_banks[0].short_form !== "1" && spipl_banks[0].short_form !== "0" &&
+							spipl_banks[0].short_form !==
+							'') ? (spipl_banks[0].bank_name + ' - ' + spipl_banks[0].short_form + ' - ' +
+							spipl_banks[0].account_no) :
+							spipl_banks[0].bank_name }}
+						</p>
+						<p class="mb-1">
+							<strong>Remark: </strong>
+							{{summary.remark}}
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" (click)="rejectPi();" [disabled]="isLoading">Reject
+                    <i class="fa fa-spinner fa-spin" *ngIf="isLoading"></i></button>
+				<button type="button" class="btn btn-success" (click)="approvePi();" [disabled]="isLoading">Approve
+					<i class="fa fa-spinner fa-spin" *ngIf="isLoading"></i></button>
+			</div>
+		</div>
+	</div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

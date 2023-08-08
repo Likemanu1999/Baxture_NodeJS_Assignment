@@ -1,0 +1,243 @@
+ <div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa fa-file"></i> Insurance Claim List
+
+
+                </div>
+
+                <div class="card-body">
+                  <div class="row"  style="text-align: center;">
+                    <div *ngIf="isLoading">
+                      <app-loading-spinner></app-loading-spinner>
+                    </div>
+                  </div>
+                    <div class="row">
+                    
+                                              
+                        <div class="col-12" *ngIf="!isLoading">
+                            <p-table #dt [value]="list" dataKey="id" styleClass="ui-table-license"
+                            [rowHover]="true" [rows]="50" [showCurrentPageReport]="true"
+                            [rowsPerPageOptions]="[10,25,50,100]" [paginator]="false" [columns]="cols"
+                           
+                            currentPageReportTemplate="Total records: {{list.length}}"
+                            [filterDelay]="0" [scrollable]="true" scrollHeight="400px" [virtualScroll]="true"
+                            [virtualRowHeight]="300"
+                            [globalFilterFields]="['sub_org_master.sub_org_name','port_master.port_name','bl_no','be_no','invoice_no','spipl_bank.ad_code', 'policy_number']">
+
+                            <!-- <p-table #dt2 [value]="list" dataKey="id" styleClass="ui-table-license" [rowHover]="true" [rows]="10"
+                            [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [paginator]="true" [columns]="cols"
+                            [scrollable]="true" scrollHeight="400px" [virtualScroll]="true"
+                                [virtualRowHeight]="500"
+                            (onFilter)="onFilter2($event, dt2)" [filterDelay]="0" [globalFilterFields]="['port_name','agency']"> -->
+                            <ng-template pTemplate="caption">
+                              
+                              <div class="ui-helper-clearfix" style="text-align: left">
+                                <div class="ui-table-globalfilter-container">
+                                    <input pInputText type="text" class="form-control"
+                                      (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+                                  </div>
+                                <div class="row">
+                                  <div class="col-4">
+                                  
+          
+                                  </div>
+                                </div>
+                              </div>
+                            </ng-template>
+          
+          
+                            <ng-template pTemplate="header" let-columns>
+                              <tr>
+
+                                    <th style="width: 150px">Sr.No.</th>
+                                   
+                               
+                                <th pSortableColumn="{{col.field}}" *ngFor="let col of columns" [style.width.px]='col.style'>
+                                  {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                                </th>
+          
+          
+                              </tr>
+          
+          
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item let-columns let-i="rowIndex" let-expanded="expanded">
+                              <tr class="ui-selectable-row">
+                                <td style="width: 150px">  <a href="#" [pRowToggler]="item" *ngIf="item.license_utilizations!=''">
+                                    <button type="button" [ngClass]="expanded ? 'pi pi-angle-down btn btn-primary btn-sm' : 'pi pi-angle-right btn btn-success btn-sm'">Details</button>
+                                </a></td>
+                                <td style="width: 200px" >{{item.port_master.port_name}}</td>
+                                <td style="width: 150px" >{{item.non_received_date | date : 'dd/MM/yyyy'}}</td>
+                                <td style="width: 200px" > {{item.spipl_bank.ad_code}}</td>
+                                <td style="width: 200px" > {{item.sub_org_master.sub_org_name}}</td>
+                                <td style="width: 150px" > {{item.tot_non_qty}} {{item.UnitName}} </td>
+                                <td style="width: 150px" > {{item.rate}} </td>
+                                <td style="width: 100px" > {{item.CurrencyName}} </td>
+                                <td style="width: 150px" > {{item.shortDmgQty |
+                                  number : '1.0-3'}} {{item.UnitName}} </td>
+                                <td style="width: 150px" > {{item.invoice_no}}</td>
+                                <td style="width: 150px" > {{item.bl_no}}</td>
+                                <td style="width: 150px" > {{item.be_no}}</td>
+                                <td style="width: 150px" > <span *ngIf="item.insurance_doc">
+                                  <span *ngFor="let doc of item.insurance_doc">
+                                    <a [href]="doc" target="_blank"><i class="fa fa-file"></i></a>
+                                  </span>
+                                </span></td>
+                                <td style="width: 150px" > {{item.insurance_payment_date | date : 'dd-MM-yyyy'}}</td>
+                                <td style="width: 150px" > {{item.total_inc_amount_rcv}}</td>
+                                <td style="width: 150px" > {{item.policy_number}}</td>
+                              </tr>
+                            </ng-template>
+
+                             <ng-template pTemplate="rowexpansion" let-item let-columns="columns">
+                                <tr>
+                                    <td colspan="3">
+
+                                            <div class="form-group  col-md-8">
+                                                <label for="" class="col-form-label"><strong>Policy Number</strong></label>
+                                                <input type="text" class="form-control custom-file-input" class="form-control"
+                                                    [(ngModel)]="item.policy_number" (change)="updateData($event.target.value , 'policy_number' , item.id)">
+                    
+                                            </div>
+                                            <div class="form-group  col-md-8">
+                                              <label for="" class="col-form-label"><strong>Insurance Company</strong></label>
+                                              <ng-select  placeholder="Select " [(ngModel)]="item.insurance_company_id"
+                                              [searchable]="true" [clearable]="true" bindLabel="sub_org_name" bindValue="sub_org_id"
+                                              [items]="insuranceCompany" (change)="updateData($event , 'insurance_company_id' , item.id)">
+                                          </ng-select>
+                  
+                                          </div>
+                                         
+
+                                      
+                                    </td>
+                                    <td colspan="4">
+                                    
+                                      <mat-horizontal-stepper>
+                                      
+                                        <mat-step label="Intimation" >
+                                          <div style="color: green;" *ngIf="item.intimation_mail_send_date "> Mail Sent-{{item.intimation_mail_send_date | date: 'dd/MM/yyyy'}}</div>
+                                          <button type="button" class="btn btn-sm btn-primary" (click)="sendMail(item.id , 'intimation')">Intimation Mail</button>
+                                        </mat-step>
+                                        <mat-step label="Monetary Notice">
+                                          <div style="color: green;" *ngIf="item.monetory_mail_send_date   "> Mail Sent-{{item.monetory_mail_send_date   | date: 'dd/MM/yyyy'}}</div>
+                                          <div class="row">
+                                            <div class="form-group  col-md-6">
+                                              <label for="" class="col-form-label"><strong>Vessel Number</strong></label>
+                                              <input type="text" class="form-control custom-file-input" class="form-control"
+                                                  [(ngModel)]="item.vessel_number" (change)="updateData($event.target.value , 'vessel_number' , item.id)">
+                  
+                                          </div>
+                                         
+                                          </div>
+                                         
+                                          <button type="button" class="btn btn-sm btn-primary" (click) ="sendMail(item.id , 'monetary')" >Monetary Notice Mail</button>
+                                        </mat-step>
+
+                                        <mat-step label="Damage Letter">
+                                          <div style="color: green;" *ngIf="item.damage_mail_send_date  "> Mail Sent-{{item.damage_mail_send_date  | date: 'dd/MM/yyyy'}}</div>
+                                          <div class="form-group  col-md-4">
+                                            <label for="" class="col-form-label"><strong>Salvage %</strong></label>
+                                            <input type="text" class="form-control custom-file-input" class="form-control"
+                                                [(ngModel)]="item.salvage_value" (change)="updateData($event.target.value , 'salvage_value' , item.id)"> 
+                
+                                        </div>
+                                          <button type="button" class="btn btn-sm btn-primary" (click) ="sendMail(item.id , 'damage')" >Damage Letter Mail</button>
+                                        </mat-step>
+                                        <mat-step label="Claim Note">
+                                          <div style="color: green;" *ngIf="item.claim_mail_send_date    "> Mail Sent-{{item.claim_mail_send_date    | date: 'dd/MM/yyyy'}}</div>
+                                          <div class="row">
+                                            <div class="form-group  col-md-4">
+                                              <label for="" class="col-form-label"><strong>Additinal %</strong></label>
+                                              <input type="text" class="form-control custom-file-input" class="form-control"
+                                                  [(ngModel)]="item.additional_inc_percent" (change)="updateData($event.target.value , 'additional_inc_percent' , item.id)"> 
+                  
+                                          </div>
+  
+                                          <div class="form-group  col-md-4">
+                                            <label for="" class="col-form-label"><strong>Total Amount</strong></label>
+                                            <input type="text" class="form-control custom-file-input" class="form-control"
+                                                [(ngModel)]="item.total_inc_amount" (change)="updateData($event.target.value , 'total_inc_amount' , item.id)"> 
+                
+                                        </div>
+                                          </div>
+                                      
+                                          <button type="button" class="btn btn-sm btn-primary" (click) ="sendMail(item.id , 'claim')" >Claim Note Mail</button>
+                                        </mat-step>
+
+                                        
+                                      </mat-horizontal-stepper>
+                                     
+                                    </td>
+                                    <td colspan="5">
+                                      <div class="row">
+                                        <div class="form-group  col-md-4">
+                                          <label for="" class="col-form-label"><strong>Payment Date</strong></label>
+                                          <input type="text" class="form-control custom-file-input" class="form-control"
+                                          [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue',  todayHighlight: true }" (ngModelChange)="updateData($event , 'insurance_payment_date' , item.id)"
+                                          #dp="bsDatepicker" bsDatepicker placement="up"
+                                              [(ngModel)]="item.insurance_payment_date " > 
+              
+                                      </div>
+
+                                      <div class="form-group  col-md-4">
+                                        <label for="" class="col-form-label"><strong>Total Amount Received</strong></label>
+                                        <input type="text" class="form-control custom-file-input" class="form-control"
+                                            [(ngModel)]="item.total_inc_amount_rcv" (change)="updateData($event.target.value , 'total_inc_amount_rcv' , item.id)" numbersOnly> 
+            
+                                    </div>
+
+                                    <div class="form-group  col-md-4">
+                                      <label for="" class="col-form-label"><strong>Received</strong></label>
+                                      <input type="checkbox"  [checked]="item.insurance_status" #chk (click)="updateData(chk.checked , 'insurance_status' , item.id)"> 
+          
+                                  </div>
+
+                                  <div class="form-group  col-md-4">
+                                    <label>Upload Copy</label>
+                                    <input type="file" class="form-control" id="insurance_doc"  
+                                      (change)="addInsuranceDocs($event , item.id)" [multiple]=true>
+                                     
+                                  </div> 
+                                      </div>
+                                    </td>
+                                </tr>
+                        
+                             
+                            </ng-template> 
+          
+                            <ng-template pTemplate="footer" let-columns>
+                                <tr>
+                                    <td colspan="18" style="text-align:left">Total Records: {{list?.length}}
+                                    </td>
+                                </tr>
+          
+                            </ng-template>
+          
+          
+          
+                            <ng-template pTemplate="emptymessage">
+                              <tr>
+                                <td colspan="3" style="text-align:left">No Data found.</td>
+                              </tr>
+                            </ng-template>
+                          </p-table>
+
+                
+
+                        </div>
+
+
+              
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

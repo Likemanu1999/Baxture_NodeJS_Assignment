@@ -1,0 +1,163 @@
+ <div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+
+            <div class="email-app">
+              <nav  class="scrollvertical">
+
+
+                <ul class="nav">
+                  <li class="nav-item" *ngFor = "let item of expenseData let i = index" [attr.data-index]="i" [attr.id]="item.id" [ngClass]="{activeitem: isActive(item.id)}">
+                    <a style="cursor: pointer;" class="nav-link" (click)="getDetailsExpense(item.id)" >
+                    <b> {{ item.expense_cat_master.category }} </b> -  {{ item.expense_date | date  }}
+                   </a>
+
+                  </li>
+
+
+                </ul>
+
+              </nav>
+
+               <main>
+
+                <div class="card">
+                  <div class="card-header">
+                    <div class="row">
+
+                      <div class="col-md-8">
+                        <b> <h4>Expense Details For Trip  <b  *ngIf="tripName">{{ tripName }}</b> <br>Agent Name : <b *ngIf="tripAgent">{{ tripAgent }}</b></h4> </b>
+                      </div>
+
+                      <div class="col-md-4">
+                        <h4>Credit Note :<span *ngFor=" let cn of CreditNote"> <a href="{{ cn}}" target="_blank" ><i class="fa fa-file"></i></a> </span>&nbsp; <span><button class="btn btn-primary" (click)="onBack()"> Back</button></span></h4>
+                      </div>
+                    </div>
+
+                  </div>
+
+
+                    <div class="card-body"   *ngIf="display_content">
+
+
+
+                      <div class="row">
+
+                      <div class="col-md-8">
+                        <h3> {{expenseCategory}} <span class="badge  badge-primary">{{ status }}</span></h3>
+                        <div class="text-muted report-row"> Expense Id {{ expense_details }}</div>
+
+                        <div class="table-responsive">
+                          <table style="margin-bottom:5px;" >
+                            <tbody>
+                                <tr >
+                                  <td style="width:25%;" class="text-semi-muted" >Expense Date</td>
+                                  <td class="text-semi-muted">
+                                    &nbsp;&nbsp; : {{expenseDate | date }}
+                                  </td>
+                                </tr>
+
+                                <tr >
+                                  <td style="width:25%;" class="text-semi-muted"> Service Provider</td>
+                                  <td class="text-semi-muted">
+                                    &nbsp;&nbsp; : {{ serviceProvider}}
+                                  </td>
+                                </tr>
+
+                                <tr >
+                                  <td style="width:25%;" class="text-semi-muted">Company</td>
+                                  <td class="text-semi-muted">
+                                    &nbsp;&nbsp; : {{ subOrgName}}
+                                  </td>
+                                </tr>
+
+                                <tr >
+                                  <td style="width:25%;" class="text-semi-muted">Description</td>
+                                  <td class="text-semi-muted">
+                                    &nbsp;&nbsp; : {{description}}
+                                  </td>
+                                </tr>
+
+                                <tr >
+                                  <td style="width:25%;" class="text-semi-muted">Employee Name</td>
+                                  <td class="text-semi-muted"   >
+                                    &nbsp;&nbsp; :<span *ngFor=" let empFullName of newemparr">  {{ empFullName['name'] }}, </span>
+
+                                  </td>
+                                </tr>
+
+                                <tr >
+                                  <td style="width:25%;" class="text-semi-muted">Expense Copies </td>
+                                  <td class="text-semi-muted"   >
+                                    &nbsp;&nbsp; :<span *ngFor=" let item of ExpenseCopy">  <a href="{{item}}" target="_blank"><i class="fa fa-file"></i></a> </span>
+
+                                  </td>
+                                </tr>
+
+
+                            </tbody>
+                          </table>
+                        </div>
+
+                      </div>
+
+                      <div class="col-md-4">
+                        <h4 class="">Expense Amount
+                        <span class="text-muted report-row" >Rs.  {{ amount }}</span> </h4>
+
+                        <h4 class="">Amount To be Reimbursed
+                        <span class="text-muted report-row" >Rs.  {{ reimburseAmount }}</span></h4>
+
+                        <h4 class="">Refund Amount <span class="badge badge-warning">{{ refundableStatus }}</span>
+                        <span class="text-muted report-row" >Rs.  {{ refundAmount }} </span></h4>
+
+                        <!-- <h4 class="text-muted report-row">Refund Amount <span class="badge badge-warning">{{ refundableStatus }}</span>
+                          <span class="text-semi-muted" >Rs.  {{ refundAmount }} </span></h4> -->
+                      </div>
+
+
+                    </div>
+
+
+
+                    <h3 class="font-large"> History</h3>
+                      <div class="table-responsive">
+                      <table style="margin-bottom:5px;" >
+                        <tbody>
+                            <tr >
+                              <td style="width:25%;" class="font-small text-muted">{{addedDate | date: 'medium'}}</td>
+                              <td class="text-semi-muted">
+                                &nbsp;&nbsp; Expense Added By
+                              <i class="text-muted">
+                                  <span>-</span>  {{ FullNameAddedBy }}
+                                </i></td>
+                            </tr>
+
+                            <tr >
+                              <td style="width:25%;" class="font-small text-muted">{{modifiedDate | date: 'medium' }}</td>
+                              <td class="text-semi-muted">
+                                &nbsp;&nbsp; Expense Modified By
+                              <i class="text-muted">
+                                  <span>-</span> {{ FullNameModifiedBy }}
+                                </i></td>
+                            </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                  </div>
+                </div>
+
+
+              </main>
+
+          </div>
+        </div>
+      </div>
+   </div>
+</div>
+
+
+

@@ -1,0 +1,182 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12 p-0" *ngIf="view_opt">
+			<div class="card">
+				<div class="card-header">
+					<i class="icon-user"></i> Leaves Application List
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt1 dataKey="id" [value]="data" [rows]="10" [showCurrentPageReport]="true"
+								[rowsPerPageOptions]="[10,25,50,100]" [loading]="isLoading" [autoLayout]="true"
+								[paginator]="true" [columns]="cols" [globalFilterFields]="filter"
+								(onFilter)="onFilter($event, dt1)" (onLazyLoad)="onFilter($event, dt1)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="expexportDataort-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												
+													<div class="form-group mb-1 mr-1">
+														<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="clearDropdown(); getData()" 
+														[bsConfig]="datePickerConfig"
+															#dp="bsDaterangepicker"  bsDaterangepicker
+															placeholder="Choose Date Range" class="form-control page-filter"
+															readonly />
+														<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+															 [uploadSuccess]="uploadSuccess"
+															style="padding-left: 10px;"></app-dropdown-daterange>
+													</div>
+
+												<!-- <div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getData()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly />
+												</div> -->
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt1.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<!-- <ng-template pTemplate="caption">
+									<div class="ui-table-globalfilter-container">
+										<input pInputText type="text" class="form-control"
+											(input)="dt1.filterGlobal($event.target.value, 'contains')"
+											placeholder="Global Search" />
+									</div>
+									<div class=" mb-1 mr-2" style="text-align: left">
+										<a class="btn btn-success text-white" (click)="exportExcel()">
+											<i class="fa fa-file-excel-o"></i> Excel
+										</a>
+									</div>
+									<div class="form-group col-md-3">
+										<input pInputText [(ngModel)]="selected_date_range"
+										(ngModelChange)="getData()" [bsConfig]="datePickerConfig" 
+											#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+											placeholder="Choose Date Range" class="form-control page-filter"
+											readonly />
+									</div>
+								 <div class="form-group mb-1 mr-1">
+										<input pInputText [(ngModel)]="selected_date_range"
+											(ngModelChange)=
+											"getData()" [bsConfig]="datePickerConfig"
+											#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+											placeholder="Choose Date Range" class="form-control page-filter"
+											readonly />
+									</div> -->
+
+								<!-- </ng-template> -->
+								<!-- <ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}} <p-sortIcon field="{{col.field}}">
+											</p-sortIcon>
+										</th>
+										
+									</tr>
+								</ng-template> -->
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<!-- <p-multiselect [options]="item.status" optionlabel="status">
+									
+								</p-multiselect> -->
+								<ng-template pTemplate="body" let-item>
+									<tr class="ui-selectable-row">
+										<td>{{ item.id }}</td>
+										<td>{{ item.applicant }}</td>
+										<td>{{ item.from_date | date: 'dd-MMM-yyyy' }}</td>
+										<td>{{ item.to_date | date: 'dd-MMM-yyyy' }}</td>
+										<td>{{ item.total_days }}</td>
+										<td>{{ item.leave_category_label }}</td>
+										<td>{{ item.leave_type_label }}</td>
+										<td>{{ item.reason }}</td>
+										<td *ngIf="item.status == 1">
+											<span class="btn btn-pill btn-sm btn-warning">Pending</span>
+										</td>
+										<td *ngIf="item.status == 2">
+											<span class="btn btn-pill btn-sm btn-success">Approved</span>
+										</td>
+										<td *ngIf="item.status == 3">
+											<span class="btn btn-pill btn-sm btn-danger">Rejected</span>
+										</td>
+										<td *ngIf="item.status == 4">
+											<span class="btn btn-pill btn-sm btn-secondary">Canceled</span>
+										</td>
+										<td class="text-center">
+											<a class="btn btn-outline-dark btn-sm" mwlConfirmationPopover
+												[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+												[confirmText]="confirmText" [cancelText]="cancelText"
+												[placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+												confirmButtonType="success" cancelButtonType="danger"
+												(confirm)="updateStatus(2, item.id)"
+												(cancel)="updateStatus(3, item.id)">
+												<i class="fa fa-bolt"></i>
+											</a>
+										</td>
+										<td>{{ item.updatedBy }}</td>
+										<td>{{ item.checked_at | date: 'dd-MMM-yyyy' }}</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of cols">
+											<strong *ngIf="col.type == 'Duration'">
+												Total: {{ col.total }} Day
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length + 2" class="text-center">No
+											Data found.
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

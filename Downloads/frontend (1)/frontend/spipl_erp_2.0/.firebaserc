@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "parmar": "parmar-154e3",
+    "dube": "dubepatil",
+    "default": "dubepatil"
+  },
+  "targets": {
+    "dube": {
+      "hosting": {
+        "ng": [
+          "dubepatil"
+        ]
+      }
+    }
+  }
+}

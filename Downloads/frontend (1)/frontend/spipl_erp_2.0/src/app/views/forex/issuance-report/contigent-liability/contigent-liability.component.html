@@ -1,0 +1,238 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+
+                    <h4> <i class="fa fa-rupee"></i> Contigent Liability Report
+                        <span class="pull-right"><button class="btn btn-primary" (click)="getPaymentList()"><i
+                                    class="fa fa-refresh"></i></button></span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 offset-5" *ngIf="isLoading">
+                            <app-loading-spinner></app-loading-spinner>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p-table #dt [value]="payment_list" dataKey="id" styleClass="ui-table-payment"
+                                [rowHover]="true" [rows]="10" [loading]="isLoading" [showCurrentPageReport]="true"
+                                [rowsPerPageOptions]="[10,25,50]" [paginator]="true" (onFilter)="onFilter($event, dt)"
+                                currentPageReportTemplate="Total Records: {{payment_list.length}}" [scrollable]="true"
+                                [filterDelay]="0"
+                                [globalFilterFields]="['SupplierName', 'BankName', 'InvoiceNo', 'Amount','PaymentDueDate','tag','lc_issued_date','lc_no','Inr_amt','bank_amt']">
+                                <ng-template pTemplate="caption">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <div class="col-md-5">
+                                                    <label style="font-size: 14px;" for="">Contigent Liability
+                                                        Report</label>
+                                                </div>
+                                                <div class="col-md-7">
+                                                    <div class="form-group">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i
+                                                                        class="fa fa-calendar"></i></span>
+                                                            </div>
+                                                            <input type="text" class="form-control " bsDaterangepicker
+                                                                [(ngModel)]="bsRangeValue" placeholder=""
+                                                                (ngModelChange)="onSubmit($event)">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ui-helper-clearfix col-md-4" style="text-align: left">
+                                            <button type="button" *ngIf="excel_download" pButton icon="pi pi-file-excel"
+                                                iconPos="left" label="EXCEL" (click)="exportExcel()"
+                                                style="margin-right: 0.5em;" class="ui-button-success"></button>
+                                            <button type="button" *ngIf="pdf_download" pButton icon="pi pi-file-pdf"
+                                                iconPos="left" label="PDF" (click)="exportPdf()"
+                                                class="ui-button-warning"></button>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="ui-table-globalfilter-container" style="text-align: right">
+                                                <input pInputText type="text" class="form-control"
+                                                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                    placeholder="Global Search" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 200px;" pSortableColumn="{{col.field}}"
+                                            *ngFor="let col of cols"> {{col.header}} <p-sortIcon field="{{col.field}}">
+                                            </p-sortIcon>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 200px;">
+                                            <div *ngIf="supplier_list.length > 0">
+                                                <p-multiSelect [options]="supplier_list" placeholder="All"
+                                                    (onChange)="onchange($event,'SupplierName')"
+                                                    styleClass="ui-column-filter" optionLabel='SupplierName'
+                                                    appendTo="body">
+                                                    <ng-template let-op pTemplate="item">
+                                                        <span>{{op.label}}</span>
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+
+                                        <th style="width: 200px;">
+                                            <div *ngIf="bank_list.length > 0">
+                                                <p-multiSelect [options]="bank_list" placeholder="All"
+                                                    (onChange)="onchange($event,'BankName')"
+                                                    styleClass="ui-column-filter" optionLabel='BankName'
+                                                    appendTo="body">
+                                                    <ng-template let-op pTemplate="item">
+                                                        <span>{{op.label}}</span>
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+
+                                        </th>
+                                        <th style="width: 200px;"> </th>
+                                        <th style="width: 200px;"> </th>
+                                        <th style="width: 200px;">
+                                            <div *ngIf="tag_arr.length > 0">
+                                                <p-multiSelect [options]="tag_arr" placeholder="All"
+                                                    (onChange)="onchange($event,'tag')" styleClass="ui-column-filter"
+                                                    optionLabel='tag' appendTo="body">
+                                                    <ng-template let-op pTemplate="item">
+                                                        <span>{{op.label}}</span>
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+                                        <th style="width: 200px;"> </th>
+                                        <th style="width: 200px;">
+                                            <div *ngIf="currency.length > 0">
+                                                <p-multiSelect [options]="currency" placeholder="All"
+                                                    (onChange)="onchange($event,'CurrencyName')"
+                                                    styleClass="ui-column-filter" optionLabel='CurrencyName'
+                                                    appendTo="body">
+                                                    <ng-template let-op pTemplate="item">
+
+                                                        <span>{{op.label}}</span>
+
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+                                        <th style="width: 200px;"> </th>
+                                        <th style="width: 200px;"> </th>
+                                        <th style="width: 200px;"></th>
+                                        <th style="width: 200px;"> </th>
+                                        <th style="width: 200px;"> </th>
+                                        <th style="width: 200px;"> </th>
+                                        <th style="width: 200px;"> </th>
+                                        <th style="width: 200px;"> </th>
+                                    </tr>
+
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr class="ui-selectable-row">
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Supplier</span>
+                                            {{item.SupplierName}}
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Buyer Bank</span>
+                                            {{item.BankName}}
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">LC Issued</span>
+                                            {{item.lc_date | date: "dd-MM-y"}}
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">LC No</span>
+                                            {{item.bank_lc_no }}
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Type</span>
+                                            {{item.tag }}
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Purchase Date</span>
+                                            {{item.purchase_date | date: "dd-MM-y"}}
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Invoice Number</span>
+                                            {{item.InvoiceNo}}
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Invoice USD</span>
+                                            <span *ngIf="item.CurrencyName == 'USD';else InrVal">
+                                                {{item.Amount | currencyInr}} {{item.CurrencyName }}
+                                            </span>
+                                            <ng-template #InrVal>
+                                                0
+                                            </ng-template>
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Invoice INR</span>
+                                            <span *ngIf="item.Inr_amt;else InrNotPresent">
+                                                {{item.Inr_amt | currencyInr }}
+                                            </span>
+                                            <ng-template #InrNotPresent>
+                                                0
+                                            </ng-template>
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Payment Due Date</span>
+                                            {{item.PaymentDueDate | date: "dd-MM-y"}}
+
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Flc Value</span>
+                                            {{item.lc_amount}}
+                                        </td>
+                                        <td style="width: 200px;">
+                                            <span class="ui-column-title">Approved</span>
+                                            {{item.doc_ref_no == null? 'No' : 'Yes'}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="footer">
+                                    <tr>
+                                        <td style="width: 200px;">Total</td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"><span>USD : {{amount1 |currencyInr}}</span></td>
+                                        <td style="width: 200px;"><span>INR : {{inr_amt |currencyInr}}</span></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"></td>
+                                        <td style="width: 200px;"> </td>
+                                        <td style="width: 200px;"> </td>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td colspan="8" style="text-align:left">Not Data Foun</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

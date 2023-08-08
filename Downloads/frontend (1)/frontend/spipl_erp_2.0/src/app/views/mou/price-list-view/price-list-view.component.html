@@ -1,0 +1,357 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+
+                    <h4><i class="fa fa-handshake-o"></i> Freight List
+                        <!-- <button class="btn btn-outline-primary active pull-right" (click)="addNew()"><i
+                                class="fa fa-plus"></i> Add Discount</button> -->
+                    </h4>
+                </div>
+                <div class="card-body overflow-auto">
+                    <div class="row" *ngIf="isLoading">
+                        <div class="col-md-12">
+                            <div style="text-align :center;">
+                                <app-loading-spinner></app-loading-spinner>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="!isLoading">
+                        <p-table #dt [value]="data" datakey="id" styleClass="ui-table-cons" [rowHover]="true"
+                            [rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]"
+                            [loading]="isLoading" [paginator]="true" [columns]="cols" (onFilter)="onFilter($event, dt)"
+                            currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries"
+                            [filterDelay]="0" [globalFilterFields]="[]">
+
+                            <!-- <ng-template pTemplate="caption">
+                                <div class="ui-helper-clearfix" style="text-align: left">
+                                    <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                        (click)="exportExcel()" style="margin-right: 0.5em;"
+                                        class="ui-button-success mb-2"></button>
+                                </div>
+                            </ng-template> -->
+                            <ng-template pTemplate="header" let-columns>
+                                <tr>
+                                    <th pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+                                        style="width: 150px;">
+                                        {{col.header}} <p-sortIcon field="{{col.field}}">
+                                        </p-sortIcon>
+                                    </th>
+                                </tr>
+
+
+                                <tr>
+                                    <th></th>
+                                    <th *ngIf=" getColumnPresent('manufacture_name')">
+                                        <div *ngIf="manufacturer_arr.length > 0 ">
+                                            <p-multiSelect [options]="manufacturer_arr" placeholder="All"
+                                                (onChange)="onchange($event,'manufacture_name')"
+                                                styleClass="ui-column-filter" optionLabel='manufacture_name'
+                                                appendTo="body">
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th *ngIf=" getColumnPresent('city_name')">
+                                        <div *ngIf="city_master_arr.length > 0 ">
+                                            <p-multiSelect [options]="city_master_arr" placeholder="All"
+                                                (onChange)="onchange($event,'city_name')" styleClass="ui-column-filter"
+                                                optionLabel='city_name' appendTo="body">
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th></th>
+                                    <th></th>
+
+
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item let-columns>
+                                <tr class="ui-selectable-row">
+                                    <td>
+                                        <span class="ui-column-title">Date</span>
+                                        {{item.change_date | date : 'dd-MM-yyyy'}}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Manufacturer Name</span>
+                                        {{item.main_org_master.org_name}}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Destination</span>
+                                        {{item.city_master.name}}
+
+
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Freight Rate</span>
+                                        {{(item.frieght_rate)}}
+                                    </td>
+
+
+
+
+                                    <td>
+                                        <button class="btn btn-dark btn-sm mb-2 mx-2"
+                                            (click)="viewPriceList(item.manu_org_id,item.city_id)">
+                                            <i class="fa fa-eye"></i>
+                                        </button>
+
+                                        <!-- <button class="btn btn-dark btn-sm mb-2 mx-2"
+                                            (click)="duplicateFreight(item.id)">
+                                            <i class="fa fa-clone"></i>
+                                        </button> -->
+
+                                        <!-- <button class="btn btn-dark btn-sm mb-2 mx-2" (click)="onEdit(item)">
+                                            <i class="fa fa-clone"></i>
+                                        </button> -->
+
+                                        <!-- <button class="btn btn-primary btn-sm mb-2 mx-2" (click)="onEdit(item)">
+                                            <i class="fa fa-pencil"></i>
+                                        </button> -->
+
+                                        <button class="btn btn-primary btn-sm mb-2 mx-2"
+                                            (click)="copyPriceList(item.id)">
+                                            <i class="fa fa-pencil"></i>
+                                        </button>
+
+
+                                        <button class="btn btn-danger btn-sm mb-2 " mwlConfirmationPopover
+                                            [popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+                                            [confirmText]="confirmText" [cancelText]="cancelText"
+                                            [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+                                            confirmButtonType="danger" cancelButtonType="success"
+                                            (confirm)="onDelete(item.id)" (cancel)="cancelClicked = true">
+                                            <i class="fa fa-trash text-white"></i>
+                                        </button>
+                                        <!-- 
+
+                                        <button class="btn btn-primary btn-sm mb-2 mx-2" (click)="copyPriceList(item)">
+                                            Copy Price List
+                                        </button> -->
+
+                                    </td>
+
+                                </tr>
+                            </ng-template>
+
+                            <!-- <ng-template pTemplate="footer">
+
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{{ tot_mou_quantity | number : '1.0-3'}}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </ng-template> -->
+
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="10" class="text-center">No Data found.</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+
+
+                    </div>
+
+                </div>
+                <div class="card-footer">
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    <h2>Price List Details</h2>
+                </h4>
+                <button type="button" class="close" (click)=" oncloseModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col-md-12">
+                    <h3>
+
+                        Manufacture : {{ManufactureName}} ,
+                        Date : {{ChangeDate | date :'dd-MM-yyyy'}},
+                        Location: {{Location}},
+                        Freight Rate : {{ freight_rate }}
+                    </h3>
+                    <table class="table table-striped table-hover table-responsive-lg">
+                        <tr>
+                            <th>Sector</th>
+                            <th>Grade Name</th>
+                            <th>Basic Rate</th>
+                            <th>Cash Discount</th>
+                            <th>Other Discount</th>
+                            <th>BCD</th>
+                            <th>SWS</th>
+                            <th>Net Value Purchase</th>
+                            <th>Margin</th>
+                            <th>Net Value Sales</th>
+                        </tr>
+                        <tr *ngFor="let priceList_elem of priceListData">
+
+                            <td> {{priceList_elem.grade_master.product_master.name}}</td>
+
+                            <td>
+                                {{priceList_elem.grade_master.grade_name}}
+                            </td>
+                            <td>
+                                {{priceList_elem.basic_rate}}
+                            </td>
+                            <td>
+                                {{priceList_elem.cash_discount}}
+                            </td>
+                            <td>
+                                {{priceList_elem.other_discount}}
+                            </td>
+                            <td>
+                                {{priceList_elem.bcd}}
+                            </td>
+                            <td>
+                                {{priceList_elem.sws}}
+                            </td>
+                            <td>
+                                {{ (priceList_elem.basic_rate + priceList_elem.freight_rate - priceList_elem.cash_discount -
+                                priceList_elem.other_discount + priceList_elem.bcd + priceList_elem.sws).toFixed(2) }}
+                            </td>
+
+                            <td>
+                                {{priceList_elem.mat_hand_charges}}
+                            </td>
+                            <td>
+                                {{(priceList_elem.net_value_sales).toFixed(2)}}
+                            </td>
+
+
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div bsModal #myModalEdit="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form [formGroup]="freighUpdateForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Copy Freight List and Price List</h4>
+                    <button type="button" class="close" (click)=" oncloseModal()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="change_date">Date</label>
+                                <input type="text" class="form-control" id="change_date" formControlName="change_date"
+                                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                    #dp="bsDatepicker" bsDatepicker readonly placeholder="Enter Date "
+                                    style="background-color: white;" [(ngModel)]="change_date">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="city_id">City <sup
+                                        class="text-danger"><strong>*</strong></sup></label>
+                                <ng-select id="city_id" formControlName="city_id" placeholder="Select City"
+                                    [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                    [items]="city"   [(ngModel)]="city_id">
+                                </ng-select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="freight_rate_update">Freight Rate</label>
+                                <input type="text" class="form-control" id="freight_rate_update"
+                                    formControlName="freight_rate_update" placeholder="Enter Percentage Limit "  [(ngModel)]="freight_rate_update" >
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="cash_discount">Cash Discount</label>
+                                <input type="text" class="form-control" id="cash_discount"
+                                    formControlName="cash_discount" placeholder="Enter Percentage Limit "  [(ngModel)]="cash_discount">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="other_discount">Other Discount</label>
+                                <input type="text" class="form-control" id="other_discount"
+                                    formControlName="other_discount" placeholder="Enter Percentage Limit "   [(ngModel)]="other_discount">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="bcd">BCD</label>
+                                <input type="text" class="form-control" id="bcd" formControlName="bcd"
+                                    placeholder="Enter Percentage Limit "   [(ngModel)]="bcd">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="sws">SWS</label>
+                                <input type="text" class="form-control" id="sws" formControlName="sws"
+                                    placeholder="Enter Percentage Limit " [(ngModel)]="sws">
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" class="form-control" formControlName="dest_freight_id"
+                        [(ngModel)]="dest_freight_id">
+
+                        
+                    <input type="hidden" class="form-control" formControlName="manu_org_id"
+                    [(ngModel)]="manu_org_id">
+
+                        
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary mr-1" type="submit"
+                        [disabled]="freighUpdateForm.pristine || freighUpdateForm.invalid">
+                        <i class="fa fa-dot-circle-o"></i>Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

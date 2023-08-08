@@ -1,0 +1,118 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-4" >
+      <div class="card">
+        <div class="card-header">
+          <i class="icon-list"></i> Material Load Port Master
+        </div>
+        <div class="card-body"><!-- Angular Form Validation
+          <hr> -->
+          <div class="row">
+            <div class="col-md-8" *ngIf="add_opt">
+              <form [formGroup]="loadPortForm" (ngSubmit)="onSubmit()" novalidate class="needs-validation" autocomplete="off">
+                <div class="form-group">
+                  <label class="col-form-label" for="load_port_name">Load Port</label>
+                  <input class="form-control"
+                         id="load_port_name"
+                         type="text"
+                         formControlName="load_port_name"
+                         placeholder="Enter Load Port Name"
+                         autocomplete="given-name"
+                         [(ngModel)]="load_port_name"
+                         required
+                         autofocus
+                         />
+
+                </div>
+
+                <div class="form-group">
+                  <button class="btn btn-primary mr-1" type="submit" [disabled]="loadPortForm.pristine || loadPortForm.invalid">Submit</button>
+
+                  <button class="btn btn-danger" type="button"  [disabled]="loadPortForm.pristine " (click)="onReset()">Reset</button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+     <div class="col-md-8" *ngIf="view_opt">
+    <div class="card">
+      <div class="card-header">
+        <i class="icon-list"></i>   List
+      </div>
+
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-4 offset-md-8">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><i class="fa fa-search"></i></span>
+              </div>
+              <input type="text" class="form-control" [(ngModel)]="filterQuery" placeholder="Search by name"/>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="isLoading" style="text-align: center;">
+          <app-loading-spinner></app-loading-spinner>
+        </div>
+        <table class="table table-striped table-hover table-responsive-lg"
+        [mfData]="LoadPortData | tableFilter : filterQuery:filterArray"
+        #mf="mfDataTable"
+        [mfRowsOnPage]="5"
+        *ngIf=" !isLoading"
+        >
+          <thead>
+            <tr>
+              <th style="width: 8%">
+                <mfDefaultSorter >Sr.No.</mfDefaultSorter>
+              </th>
+              <th style="width: 25%">
+                <mfDefaultSorter by="load_port">Load Port Name</mfDefaultSorter>
+              </th>
+
+              <th style="width: 10%" *ngIf="edit_opt">
+                <mfDefaultSorter by="edit">Edit</mfDefaultSorter>
+              </th>
+              <th style="width: 10%" *ngIf="del_opt">
+                <mfDefaultSorter by="delete">Delete</mfDefaultSorter>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" [attr.id]="item.id">
+              <td>{{i+1}}</td>
+              <td>{{item.load_port}}</td>
+
+              <td *ngIf="edit_opt"><a style="cursor: pointer;" (click)="onEdit(item)"><i class="fa fa-pencil"></i></a></td>
+              <td *ngIf="del_opt"><a style="cursor: pointer;"
+                mwlConfirmationPopover
+                [popoverTitle]="popoverTitle"
+                [popoverMessage]="popoverMessage"
+                [confirmText]="confirmText"
+                [cancelText]="cancelText"
+                [placement]="placement"
+                [closeOnOutsideClick]="closeOnOutsideClick"
+                confirmButtonType="danger"
+                cancelButtonType="success"
+                (confirm)="onDelete(item.id , i)"
+                (cancel)="cancelClicked = true"
+                ><i class="fa fa-trash"></i></a></td>
+
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4">
+                <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      </div>
+    </div>
+  </div>
+  <toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+</div>

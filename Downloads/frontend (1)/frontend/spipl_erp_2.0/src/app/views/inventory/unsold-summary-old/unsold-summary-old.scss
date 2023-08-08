@@ -1,0 +1,31 @@
+@media screen and (max-width: 64em) {
+    .ui-table {
+        &.ui-table-non {
+            .ui-table-thead > tr > th,
+            .ui-table-tfoot > tr > td {
+                display: none !important;
+            }
+            .ui-table-tbody > tr {
+              border-bottom: 1px solid black;
+            }
+  
+            .ui-table-tbody > tr > td {
+                text-align: left;
+                display: block;
+                border: 0 none !important;
+                width: 100% !important;
+                float: left;
+                clear: left;
+                border: 0 none;
+  
+                .ui-column-title {
+                    padding: .4em;
+                    min-width: 30%;
+                    display: inline-block;
+                    margin: -.4em 1em -.4em -.4em;
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+  }

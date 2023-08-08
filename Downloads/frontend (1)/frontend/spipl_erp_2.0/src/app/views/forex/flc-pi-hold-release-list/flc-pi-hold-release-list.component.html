@@ -1,0 +1,299 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 offset-5" *ngIf="isLoading">
+                            <app-loading-spinner></app-loading-spinner>
+                        </div>
+                    </div>
+
+                    <div class="row" *ngIf="!isLoading">
+                        <div class="col-md-14">
+                            <p-table #dt [value]="lc_data" dataKey="id" styleClass="ui-table-pilist " [rowHover]="true"
+                                [rows]="50" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100]"
+                                [paginator]="false" (onFilter)="onFilter($event, dt)"
+                                currentPageReportTemplate="Total Records: {{lc_data.length}}" [filterDelay]="0"
+                                [scrollable]="true" scrollHeight="300px" [virtualScroll]="false"
+                                [globalFilterFields]="['suppierOrgName','pi_quantity','gradeName', 'mainGradeName', 'destinationPort', 'proform_invoice_no', 'piStage','pitype']">
+
+
+
+                                <ng-template pTemplate="caption">
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="ui-helper-clearfix" style="text-align: left">
+
+                                                <button type="button" pButton icon="pi pi-file-excel" iconPos="left"
+                                                    label="EXCEL" (click)="exportExcel()" style="margin-right: 0.5em;"
+                                                    class="ui-button-success"></button>
+                                                <button type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+                                                    label="PDF" (click)="exportPdf()"
+                                                    class="ui-button-warning"></button>
+                                                <span>{{sc_lable}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <ng-select placeholder="Hold/Release" [searchable]="true"
+                                                        [clearable]="true" bindLabel="dataLabel" bindValue="dataValue"
+                                                        [items]="holdReleaseData" [(ngModel)]="hold_Release_Data_Status"
+                                                        class="form-control padding-none"
+                                                        (change)="holdFlagChange($event)">
+                                                    </ng-select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"><i
+                                                                class="fa fa-calendar"></i></span>
+                                                    </div>
+                                                    <input type="text" class="form-control" bsDaterangepicker
+                                                        [(ngModel)]="selected_date_range"
+                                                        placeholder="Choose Date Range"
+                                                        (ngModelChange)="getData($event)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <div class="form-group">
+                                                <div class="btn-group" dropdown>
+                                                    <button dropdownToggle type="button" class="btn btn-primary"
+                                                        (click)="getPiList()">
+                                                        Submit <span class="caret"></span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div style="text-align: right">
+                                                <input pInputText type="text" class="form-control"
+                                                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                    placeholder="Global Search" />
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
+                                </ng-template>
+
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th [style.width]="col.style" pSortableColumn="{{col.field}}"
+                                            *ngFor="let col of colss"> {{col.header}} <p-sortIcon field="{{col.field}}">
+                                            </p-sortIcon>
+                                        </th>
+                                        <!-- <th>Hold/Release <p-sortIcon field="{{col.field}}"> -->
+                                        <!-- </p-sortIcon></th> -->
+
+                                    </tr>
+
+                                    <tr>
+                                        <th></th>
+                                        <th></th>
+                                        <th>
+                                            <div *ngIf="piarr.length > 0 ">
+                                                <p-multiSelect [options]="piarr" placeholder="All" appendTo="body"
+                                                    (onChange)="onchange($event,'piStage')"
+                                                    styleClass="ui-column-filter" optionLabel="piStage">
+                                                    <ng-template let-opt pTemplate="item">
+
+                                                        <span>{{opt.label}}</span>
+
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+                                        <th></th>
+                                        <th></th>
+                                        <th>
+                                            <div *ngIf="supplier_list.length > 0 ">
+                                                <p-multiSelect [options]="supplier_list" placeholder="All"
+                                                    appendTo="body" (onChange)="onchange($event,'suppierOrgName')"
+                                                    styleClass="ui-column-filter" optionLabel="suppierOrgName">
+                                                    <ng-template let-opt pTemplate="item">
+
+                                                        <span>{{opt.label}}</span>
+
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+                                        <th></th>
+                                        <th>
+                                            <div *ngIf="mainGrade_arr.length > 0 ">
+                                                <p-multiSelect [options]="mainGrade_arr" placeholder="All"
+                                                    appendTo="body" (onChange)="onchange($event,'mainGradeName')"
+                                                    styleClass="ui-column-filter" optionLabel="mainGradeName">
+                                                    <ng-template let-opt pTemplate="item">
+
+                                                        <span>{{opt.label}}</span>
+
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div *ngIf="grade_arr.length > 0 ">
+                                                <p-multiSelect [options]="grade_arr" placeholder="All" appendTo="body"
+                                                    (onChange)="onchange($event,'gradeName')"
+                                                    styleClass="ui-column-filter" optionLabel="gradeName">
+                                                    <ng-template let-opt pTemplate="item">
+
+                                                        <span>{{opt.label}}</span>
+
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div *ngIf="destports.length > 0 ">
+                                                <p-multiSelect [options]="destports" placeholder="All" appendTo="body"
+                                                    (onChange)="onchange($event,'destinationPort')"
+                                                    styleClass="ui-column-filter" optionLabel="destinationPort">
+                                                    <ng-template let-opt pTemplate="item">
+
+                                                        <span>{{opt.label}}</span>
+
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+                                        <th></th>
+                                    </tr>
+
+                                </ng-template>
+
+
+
+
+                                <ng-template pTemplate="body" let-item>
+                                    <tr class="ui-selectable-row">
+                                        <td>
+                                            <span class="ui-column-title">PI Invoice Number</span>
+                                            &#123;&#123;item.proform_invoice_no &#125;&#125;
+                                            <br>
+
+                                        </td>
+                                        <td>
+                                            <span class="ui-column-title">PI Invoice Date</span>
+                                            &#123;&#123;item.proform_invoice_date | date : "dd-MM-yyyy "&#125;&#125;
+                                        </td>
+
+                                        <td>
+                                            <span class="ui-column-title">PI Stage</span>
+
+                                            <span placeholder="Bottom" *ngIf="item.piStage">
+                                                {{ item.piStage }}
+                                            </span><br>
+                                            <span *ngIf="item.contRecv">{{item.contRecv | date : 'dd/MM/yyyy'}}</span>
+
+
+
+                                        </td>
+
+                                        <td>
+                                            <span class="ui-column-title">ETD</span>
+                                            {{item.tentitive_departure_date | date : 'dd/MM/yyyy'}}
+
+                                        </td>
+
+                                        <td>
+                                            <span class="ui-column-title">ETA</span>
+                                            {{item.arrival_date | date : 'dd/MM/yyyy'}}
+
+                                        </td>
+
+                                        <td>
+                                            <span class="ui-column-title">Supplier</span>
+                                            &#123;&#123;item.suppierOrgName&#125;&#125;
+                                            <span class="badge badge-pill badge-primary margin-right-20"
+                                                placeholder="Bottom" *ngIf="item.pitype">
+                                                {{ item.pitype }}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="ui-column-title">Quantity</span>
+                                            &#123;&#123;item.pi_quantity&#125;&#125;
+                                        </td>
+
+                                        <td>
+                                            <span class="ui-column-title">Main Grade</span>
+                                            &#123;&#123;item.mainGradeName&#125;&#125;
+                                        </td>
+
+                                        <td>
+                                            <span class="ui-column-title">Grade</span>
+                                            &#123;&#123;item.gradeName&#125;&#125;
+                                        </td>
+
+                                        <td>
+                                            <span class="ui-column-title">Port</span>
+                                            &#123;&#123;item.destinationPort&#125;&#125;
+
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" dropdown>
+                                                <!-- <span class="ui-column-title">Hold/Release</span> -->
+                                                <button dropdownToggle type="button" class="btn"
+                                                    [style.background-color]="item.purchase_hold_qty_flag == 0 ? '#f86c6b' : '#34A835'"
+                                                    [style.color]="'white'"
+                                                    (click)="toggleHoldReleaseQty(item.id, item.purchase_hold_qty_flag)">
+                                                    {{ item.purchase_hold_qty_flag == 0 ? 'Hold' : 'Release' }} <span
+                                                        class="caret"></span>
+                                                </button>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+
+                                </ng-template>
+                                <ng-template pTemplate="footer">
+
+                                    <tr>
+                                        <td></td>
+                                        <td>Total</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>{{total_qty}}</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="8" style="text-align:left">Total Records: {{ totalRecords }}</td>
+                                    </tr>
+
+
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td colspan="8" style="text-align:left">Not Found any data</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

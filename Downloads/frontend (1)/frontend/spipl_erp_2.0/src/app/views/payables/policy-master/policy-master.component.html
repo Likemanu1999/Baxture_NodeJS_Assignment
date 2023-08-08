@@ -1,0 +1,403 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0" *ngIf="view_opt">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-3">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+						<div class="col-md-9 text-right">
+							<button *ngIf="add_opt" type="button" class="btn btn-primary"
+								(click)="onAction(null, 'Add_Policy')">
+								<i class="fa fa-plus"></i> Add New Policy
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="policy_master_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="clearDropdown (); getData()"
+														[bsConfig]="datePickerConfig" #dp="bsDaterangepicker"
+														[maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly />&nbsp;
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter && col.field == 'status_name'"
+												[options]="col.dropdown" defaultLabel="All" [(ngModel)]="setstatus"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+											<p-multiSelect *ngIf="col.filter && col.field != 'status_name'"
+												[options]="col.dropdown" defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<!-- [style.backgroundColor]="rowData.background_color" -->
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<!-- [style.color]="rowData.color"> -->
+										<td *ngFor="let col of cols"
+											[ngClass]="(col.type == 'Status' || col.type == 'Action') ? 'bg-white text-dark' : ''">
+											<div *ngIf="getColumnPresent(col.field)">
+												<div *ngIf="col.field != 'action'">
+
+													<span class="ui-column-title">{{ col.header }}: </span>
+													<div *ngIf="col.type == null">
+														{{ rowData[col.field] }}
+													</div>
+
+													<div *ngIf="col.type == 'Amount'">
+														{{ rowData[col.field] | currency:'INR' }}
+													</div>
+													<div *ngIf="col.type == 'Date'">
+														<!-- class="badge badge-danger" -->
+														<span styl="height:100%" class={{rowData.badge}}
+															style="cursor: pointer;">
+															<span [style.color]="white">
+																<strong>{{ rowData[col.field] | date:'dd-MMM-yyyy'
+																	}}</strong>
+															</span>
+														</span>
+
+													</div>
+
+													<div *ngIf="col.type == 'Status'">
+														<!-- <span *ngIf="rowData.status == 1"															
+															class="btn btn-outline-success btn-light btn-sm action-btn mb-1" (click)="changeStatus(rowData.status,rowData.id)">{{ rowData.status_name }} 
+														</span>  -->
+														<span *ngIf="rowData.status == 1"
+															class="btn btn-success btn-sm action-btn mb-1">
+
+															<a data-toggle="tooltip" data-placement="top"
+																title="Activate Policy" mwlConfirmationPopover
+																[popoverTitle]="popoverTitle"
+																[popoverMessage]="popoverMessage2"
+																[confirmText]="confirmText" [cancelText]="cancelText"
+																[placement]="placement" closeOnOutsideClick="true"
+																confirmButtonType="success" cancelButtonType="danger"
+																(confirm)="changeStatus(rowData.status,rowData.id)"
+																(cancel)="cancelClicked = true">{{ rowData.status_name
+																}} </a>
+														</span>
+														<span *ngIf="rowData.status == 0"
+															class="btn btn-danger btn-sm action-btn mb-1">
+															<a data-toggle="tooltip" data-placement="top"
+																title="Inactivate Policy" mwlConfirmationPopover
+																[popoverTitle]="popoverTitle"
+																[popoverMessage]="popoverMessage2"
+																[confirmText]="confirmText" [cancelText]="cancelText"
+																[placement]="placement" closeOnOutsideClick="true"
+																confirmButtonType="success" cancelButtonType="danger"
+																(confirm)="changeStatus(rowData.status,rowData.id)"
+																(cancel)="cancelClicked = true">{{ rowData.status_name
+																}} </a>
+
+														</span>
+													</div>
+
+
+												</div>
+												<div *ngIf="col.field == 'action'">
+													<!-- <a class="btn btn-outline-dark btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top" title="View Policy"
+														(click)="onAction(rowData, 'View_Policy')">
+														<i class="fa fa-eye"></i>
+													</a> -->
+													<a class="btn btn-outline-dark btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top" title="Policy Claims"
+														(click)="onAction(rowData, 'Policy_Claims')">
+														Claims
+													</a>
+													<a class="btn btn-warning btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Policy Attachments"
+														(click)="onAction(rowData, 'Policy_Attachments')">
+														<i class="fa fa-paperclip"></i>
+													</a>
+													<a *ngIf="edit_opt"
+														class="btn btn-outline-info btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top" title="Edit Policy"
+														(click)="onAction(rowData, 'Edit_Policy')">
+														<i class="fa fa-pencil"></i>
+													</a>
+													<a *ngIf="delete_opt"
+														class="btn btn-outline-danger btn-sm action-btn mb-1"
+														data-toggle="tooltip" data-placement="top" title="Delete Policy"
+														mwlConfirmationPopover [popoverTitle]="popoverTitle"
+														[popoverMessage]="popoverMessage1" [confirmText]="confirmText"
+														[cancelText]="cancelText" [placement]="placement"
+														closeOnOutsideClick="true" confirmButtonType="success"
+														cancelButtonType="danger"
+														(confirm)="onAction(rowData, 'Delete_Policy')"
+														(cancel)="cancelClicked = true">
+														<i class="fa fa-trash"></i>
+													</a>
+												</div>
+											</div>
+											<div [style.backgroundColor]="rowData.background_color">
+
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #addPolicyModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add New Policy"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<form [formGroup]="policyForm" novalidate (ngSubmit)="onSubmitPolicyForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">
+						<i class="fa fa-plus text-primary"></i> Add New Policy
+					</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="policy_no">
+									<strong>Policy No.</strong>
+								</label>
+								<input type="text" id="policy_no" class="form-control" formControlName="policy_no"
+									placeholder="Policy No.">
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="insurance_company_id">
+									<strong>Insurance Company</strong>
+								</label>
+								<ng-select id="insurance_company_id" formControlName="insurance_company_id"
+									[searchable]="true" [clearable]="true" bindLabel="sub_org_name"
+									bindValue="sub_org_id" [items]="insuranceCompanyList"
+									placeholder="Insurance Company">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="agent_id">
+									<strong>Agent</strong>
+								</label>
+								<ng-select id="agent_id" formControlName="agent_id" [searchable]="true"
+									[clearable]="true" bindLabel="sub_org_name" bindValue="sub_org_id"
+									[items]="agentList" placeholder="Agent">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="policy_type_id">
+									<strong>Policy Type</strong>
+								</label>
+								<ng-select id="policy_type_id" formControlName="policy_type_id" [searchable]="true"
+									[clearable]="true" bindLabel="policy_type" bindValue="id" [items]="policyTypeList"
+									placeholder="Policy Type">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="sum_insured">
+									<strong>Sum Insured</strong>
+								</label>
+								<input type="text" id="sum_insured" class="form-control" formControlName="sum_insured"
+									placeholder="Sum Insured" numbersOnly>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="premium_amount">
+									<strong>Premium Amount</strong>
+								</label>
+								<input type="text" id="premium_amount" class="form-control"
+									formControlName="premium_amount" placeholder="Premium Amount" numbersOnly>
+							</div>
+						</div>
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="start_date">
+									<strong>Start Date</strong>
+								</label>
+								<input type="text" class="form-control" id="start_date" formControlName="start_date"
+									placeholder="Start Date" [bsConfig]="datePickerConfig" bsDatepicker readonly>
+							</div>
+						</div>
+						<div class="col-md-2">
+							<div class="form-group">
+								<label for="expiry_date">
+									<strong>Expiry Date</strong>
+								</label>
+								<input type="text" class="form-control" id="expiry_date" formControlName="expiry_date"
+									placeholder="Expiry Date" [bsConfig]="datePickerConfig" bsDatepicker readonly>
+							</div>
+						</div>
+						<div class="col-md-8">
+							<div class="form-group">
+								<label for="remark">
+									<strong>Remark</strong>
+								</label>
+								<input type="text" id="remark" class="form-control" formControlName="remark"
+									placeholder="Remark">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" [disabled]="policyForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div bsModal #policyAttachmentsModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Policy Attachments" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">
+					<i class="fa fa-paperclip text-primary"></i> Policy Attachments
+				</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<form [formGroup]="policyAttachmentsForm" novalidate (ngSubmit)="onSubmitAttachmentForm()"
+					autocomplete="off" class="needs-validation">
+					<div class="form-row align-items-center">
+						<div class="col-auto">
+							<label class="sr-only" for="policy_attachments">Upload Attachments</label>
+							<input type="file" id="policy_attachments" class="form-control form-control-file mb-2"
+								formControlName="policy_attachments" placeholder="Upload Attachments"
+								(change)="onFileChange($event)">
+						</div>
+						<div class="col-auto">
+							<button type="submit" class="btn btn-primary mb-2"
+								[disabled]="policyAttachmentsForm.invalid">Submit</button>
+						</div>
+					</div>
+				</form>
+				<hr>
+				<div class="row" *ngIf="policyAttachments.length > 0">
+					<div class="col-md-12">
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th class="text-center">#</th>
+									<th class="text-center">Attachment</th>
+									<th class="text-center">Action</th>
+
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let item of policyAttachments; let i = index">
+									<td class="text-center">{{i+1}}</td>
+									<td>
+										<a class="btn btn-primary" data-toggle="tooltip" data-placement="top"
+											title="Download Attachment" [href]="item.attachment" target="_blank"
+											download>
+											<i class="fa fa-download"></i> Attachment {{i+1}}
+										</a>
+									</td>
+									<td class="text-center">
+										<a *ngIf="delete_opt" class="btn btn-outline-danger btn-sm action-btn"
+											data-toggle="tooltip" data-placement="top" title="Delete Attachment"
+											mwlConfirmationPopover [popoverTitle]="popoverTitle"
+											[popoverMessage]="popoverMessage1" [confirmText]="confirmText"
+											[cancelText]="cancelText" [placement]="placement" closeOnOutsideClick="true"
+											confirmButtonType="success" cancelButtonType="danger"
+											(confirm)="onAction(item, 'Delete_Attachment')"
+											(cancel)="cancelClicked = true">
+											<i class="fa fa-trash"></i>
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

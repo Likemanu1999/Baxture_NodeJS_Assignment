@@ -1,0 +1,474 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-6">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+						<div class="col-md-6 text-right">
+							<a *ngIf="enableCreatePIButton" class="btn btn-primary text-white"
+								(click)="createPi()">Generate PI</a>
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="sales_deals_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-10">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div>
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getCols()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly style="padding: 19px 5px !important" />
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"
+														style="margin-left: 10px;padding: 19px 5px !important"></app-dropdown-daterange>
+												</div>
+												<div class="form-group mb-1">
+													<p-dropdown [options]="statusList" [(ngModel)]="selected_status"
+														optionLabel="name" (onChange)="onChangeStatus($event)">
+													</p-dropdown>
+												</div>
+												<div class="form-group mb-1">
+													<p-dropdown [options]="dealTypes" [(ngModel)]="selected_deal_type"
+														optionLabel="name" (onChange)="onChangeDealType($event)">
+													</p-dropdown>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-2">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th></th>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th></th>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td class="text-center">
+											<p-checkbox *ngIf="rowData.is_pi_created == 0" value="rowData"
+												[value]="rowData" [inputId]="rowData.con_id" [(ngModel)]="checked"
+												(ngModelChange)="onCheck($event)">
+											</p-checkbox>
+										</td>
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != 'payment_type_label'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													<div *ngIf="col.field == 'days_left'">
+														<span class="badge badge-warning round-badge">
+															{{ rowData[col.field] }}
+														</span>
+													</div>
+													<div *ngIf="col.field != 'days_left'">
+														{{ rowData[col.field] }}
+													</div>
+
+												</div>
+												<div *ngIf="col.type == 'Quantity' && col.field == 'pending_quantity'">
+													{{ (rowData['covered_quantity'] > 0 ? (rowData['quantity'] -
+													rowData['covered_quantity']) : 0) | number : '1.2-3'}} {{
+													rowData.unit_type }}
+												</div>
+												<div *ngIf="col.type == 'Quantity' && col.field != 'pending_quantity'">
+													{{ rowData[col.field] | number : '1.2-3' }} {{ rowData.unit_type }}
+												</div>
+												<div *ngIf="col.type == 'Amount'">
+													₹{{ (rowData[col.field] ? rowData[col.field] : 0)| number : '1.2-2'}}
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'payment_type_label'">
+												<a class="btn text-white custom-action-btn" data-toggle="tooltip"
+													data-placement="left" title="Change Payment Type"
+													(click)="onChangePaymentType(rowData)">{{rowData.payment_type_label}}
+												</a>
+											</div>
+										</td>
+									</tr>
+
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td></td>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total | number : '1.2-3'}} MT
+											</strong>
+											<strong *ngIf="col.type == 'Amount'">
+												Total: ₹{{ col.total | number : '1.2-2' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td></td>
+										<td [attr.colspan]="cols.length + 1" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #createPiModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Create PI"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Generate PI <h5>
+						Customer: {{sub_org_name}}
+					</h5>
+				</h4>
+				<button type="button" class="close" (click)="closeModel()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="col-md-6 mt-3">
+				<div class="form-group">
+					<div class="row">
+						<div class="col-md-6">
+							<p-radioButton name="complete" [(ngModel)]="complete" value=1
+								(click)="onChangeValue($event, 'partial')" label="Partial PI"></p-radioButton>
+						</div>
+						<div class="col-md-6">
+							<p-radioButton name="complete" [(ngModel)]="complete" value=0
+								(click)="onChangeValue($event, 'complete')" label="Complete PI"></p-radioButton>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-body overflow-auto">
+				<div class="row mb-2">
+					<div class="col-md-12">
+						<table class="table-bordered ">
+							<tr>
+								<th><span class="tableMargin">{{selected_deal_type.id == 2 ? 'SO ID' : 'Invoice
+										No.'}}</span></th>
+								<th><span class="tableMargin">Total Quantity</span></th>
+								<th><span class="tableMargin">Total Rate</span></th>
+								<th><span class="tableMargin">Quantity</span></th>
+								<th><span class="tableMargin">Total Amount</span></th>
+								<th><span class="tableMargin">Pending Quantity</span></th>
+							</tr>
+							<tr *ngFor="let item of checked">
+								<td><span class="tableMargin">{{selected_deal_type.id == 2 ? item.con_id :
+										item.invoice_no}}</span></td>
+								<td><span class="tableMargin">{{item.quantity | number :
+										'1.2-3'}}</span></td>
+								<td><span class="tableMargin">{{item.final_rate}}</span></td>
+								<td><span class="tableMargin"><input type="text" id="quantity" class="form-control"
+											[readonly]="complete == 0"
+											style="width: 100px !important; margin: 0px 10px;"
+											[(ngModel)]="item.partialQuantity" placeholder="Quantity" required
+											(change)="getTotal(item.final_rate,$event,selected_deal_type.id == 2 ? item.con_id : item.invoice_no)">
+									</span>
+								</td>
+								<td><span class="tableMargin">{{(item.total ? item.total : '0') | number
+										:
+										'1.2-2'}}</span></td>
+								<td><span class="tableMargin">{{(item['covered_quantity'] > 0 ?
+										(item['quantity'] - item['covered_quantity']) : item['quantity']) |
+										number : '1.2-3'}} MT</span></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<span *ngIf="isQuantityExceed" style="color: red;">Quantity Limit Exceed</span>
+			</div>
+			<form [formGroup]="piForm" novalidate (ngSubmit)="confirmationModal()" class="needs-validation"
+				autocomplete="off">
+				<div class="modal-body overflow-auto">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="quantity">Total Quantity</label>
+								<input type="text" id="total_quantity" class="form-control"
+									formControlName="total_quantity" placeholder="Total Quantity" readonly>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="total_amount">Total Amount</label>
+								<input type="text" id="total_amount" class="form-control" formControlName="total_amount"
+									placeholder="Total Amount" readonly>
+							</div>
+						</div>
+						<!-- Generate PI-Invoice No. at backend 
+							<div class="col-md-4">
+							<div class="form-group">
+								<label for="pi_invoice_no">PI Invoice No</label>
+								<input type="text" id="pi_invoice_no" class="form-control"
+									formControlName="pi_invoice_no" placeholder="PI Invoice No" autocomplete="off">
+							</div>
+						</div> -->
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="pi_date">PI Date</label>
+								<input type="text" id="pi_date" class="form-control" [maxDate]="maxDate"
+									formControlName="pi_date" placeholder="PI Date" [bsConfig]="datePickerConfig"
+									readonly bsDatepicker>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="total_pi_value">PI Value (+GST{{tcs ? '+TCS' : ''}}{{tds ? '-TDS' : ''}})</label>
+								<input type="text" id="total_pi_value" class="form-control" readonly
+									formControlName="total_pi_value" placeholder="PI Value">
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="bank_interest_rate">Bank Interest Rate</label>
+								<div class="input-group">
+									<input type="text" id="bank_interest_rate" class="form-control"
+										formControlName="bank_interest_rate" placeholder="Bank Interest Rate"
+										(change)="onChangeValue($event.target.value, 'bank_interest_rate')" numbersOnly>
+									<div class="input-group-append">
+										<span class="input-group-text">%</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="bank_charges">Bank Charges</label>
+								<input type="text" id="bank_charges" class="form-control" formControlName="bank_charges"
+									placeholder="Bank Charges" numbersOnly>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="payment_term_id">Payment Terms</label>
+								<ng-select id="payment_term_id" formControlName="payment_term_id"
+									placeholder="Select Payment Terms" [searchable]="true" [clearable]="true"
+									bindLabel="pay_term" bindValue="pt_id" [items]="lc_payment_terms"
+									(change)="onChangePaymentTerm($event)">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="advising_negotiating_bank_id">Advising/Negotiating Bank</label>
+								<ng-select id="advising_negotiating_bank_id"
+									formControlName="advising_negotiating_bank_id" placeholder="Select Bank"
+									[disabled]="true" readonly [searchable]="true" [clearable]="true"
+									bindLabel="bank_name" bindValue="id" [items]="spipl_banks">
+									<ng-template ng-label-tmp let-item="item">
+										<span> {{ (item.bank_name !== null && item.short_form !== null &&
+											item.short_form !== "1" && item.short_form !== "0" && item.short_form !==
+											'') ? (item.bank_name + ' - ' + item.short_form + ' - ' + item.account_no) :
+											item.bank_name }}</span>
+									</ng-template>
+									<ng-template ng-option-tmp let-item="item" let-search="searchTerm"
+										let-index="index">
+										<span>{{ (item.bank_name !== null && item.short_form !== null && item.short_form
+											!== "1" && item.short_form !== "0" && item.short_form !== '') ?
+											(item.bank_name + ' - ' + item.short_form + ' - ' + item.account_no) :
+											item.bank_name }}</span>
+									</ng-template>
+								</ng-select>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="place_of_loading">Dispatch From</label>
+								<input type="text" id="place_of_loading" class="form-control" readonly
+									formControlName="place_of_loading" placeholder="Dispatch From" autocomplete="off">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="place_of_destination">Dispatch To</label>
+								<input type="text" id="place_of_destination" class="form-control"
+									formControlName="place_of_destination" placeholder="Dispatch To" autocomplete="off">
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="remark">Remark</label>
+								<input type="text" id="remark" class="form-control" formControlName="remark"
+									placeholder="Remark" autocomplete="off">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary"
+						[disabled]="piForm.pristine || piForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div bsModal #confirmPiModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Summary"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title"><i class="fa fa-eye"></i> Summary</h4>
+				<button type="button" class="close" (click)="confirmPiModal.hide()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body" *ngIf="summary != null">
+				<div class="mb-2">
+					<table class="table-bordered table-responsive">
+						<tr>
+							<th><span class="tableMargin2">{{selected_deal_type.id == 2 ? 'SO ID' : 'Invoice
+									No.'}}</span></th>
+							<th><span class="tableMargin2">Total Quantity</span></th>
+							<th><span class="tableMargin2">Total Rate</span></th>
+							<th><span class="tableMargin2">Quantity</span></th>
+							<th><span class="tableMargin2">Total Amount</span></th>
+							<th><span class="tableMargin2">Pending Quantity</span></th>
+						</tr>
+						<tr *ngFor="let item of checked">
+							<td><span class="tableMargin2">{{selected_deal_type.id == 2 ? item.con_id :
+									item.invoice_no}}</span></td>
+							<td><span class="tableMargin2">{{item.quantity | number :
+									'1.2-3'}}</span></td>
+							<td><span class="tableMargin2">{{item.final_rate}}</span></td>
+							<td><span class="tableMargin2">{{item.partialQuantity}}</span></td>
+							<td><span class="tableMargin2">{{(item.total ? item.total : '0')
+									| number:'1.2-2'}}</span></td>
+							<td><span class="tableMargin2">{{(item['covered_quantity'] > 0 ?
+									(item['quantity'] - item['covered_quantity']) : item['quantity']) |
+									number : '1.2-3'}} MT</span></td>
+						</tr>
+					</table>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12">
+						<p class="mb-1">
+							<strong>Customer: </strong>
+							{{sub_org_name}}
+						</p>
+						<p class="mb-1">
+							<strong>PI Date: </strong>
+							{{summary.pi_date | date: 'dd-MMM-yyyy'}}
+						</p>
+						<p class="mb-1">
+							<strong>Total Quantity: </strong>
+							{{summary.total_quantity | number : '1.2-3'}}MT
+						</p>
+						<p class="mb-1">
+							<strong>Total Amount: </strong>
+							₹{{summary.total_amount | number : '1.2-2'}}
+						</p>
+						<p class="mb-1">
+							<strong>PI Value (+GST{{tcs ? '+TCS' : ''}}{{tds ? '-TDS' : ''}}): </strong>
+							₹{{summary.total_pi_value | number : '1.2-2'}}
+						</p>
+						<p *ngIf="tcs" class="mb-1">
+							<strong>TCS: </strong>
+							{{tcs}}%
+						</p>
+						<p *ngIf="tds" class="mb-1">
+							<strong>TDS: </strong>
+							{{tds}}%
+						</p>
+						<p class="mb-1">
+							<strong>Dispatch From: </strong>
+							{{summary.place_of_loading}}
+						</p>
+						<p class="mb-1">
+							<strong>Dispatch To: </strong>
+							{{summary.place_of_destination}}
+						</p>
+						<p class="mb-1">
+							<strong>Payment Term: </strong>
+							{{pay_days}}
+						</p>
+						<p class="mb-1">
+							<strong>Bank Interest Rate: </strong>
+							{{summary.bank_interest_rate | number : '1.2-3'}}%
+						</p>
+						<p class="mb-1">
+							<strong>Bank Charges: </strong>
+							₹{{summary.bank_charges | number : '1.2-3'}}
+						</p>
+						<p class="mb-1">
+							<strong>Advising / Negotiating Bank: </strong>
+							{{(spipl_banks[0].bank_name !== null && spipl_banks[0].short_form !== null &&
+							spipl_banks[0].short_form !== "1" && spipl_banks[0].short_form !== "0" &&
+							spipl_banks[0].short_form !==
+							'') ? (spipl_banks[0].bank_name + ' - ' + spipl_banks[0].short_form + ' - ' +
+							spipl_banks[0].account_no) :
+							spipl_banks[0].bank_name }}
+						</p>
+						<p class="mb-1">
+							<strong>Remark: </strong>
+							{{summary.remark}}
+						</p>
+
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" (click)="submitPiForm();" [disabled]="isLoading">Confirm
+					<i class="fa fa-spinner fa-spin" *ngIf="isLoading"></i></button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

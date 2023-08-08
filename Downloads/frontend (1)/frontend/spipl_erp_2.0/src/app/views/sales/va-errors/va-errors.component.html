@@ -1,0 +1,125 @@
+<div class="animated fadeIn custom_body">
+    <div class="row">
+        <div class="col-md-12 p-0">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <i class="fa fa-list"></i> {{ page_title }}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p-table #dt dataKey="id" styleClass="va_error_table" [value]="vaErrorData" [rows]="10"
+                                [showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+                                [loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+                                [globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+                                (onLazyLoad)="onFilter($event, dt)"
+                                currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+                                <ng-template pTemplate="caption">
+                                    <div class="row">
+                                        <div class="col-md-9">
+                                            <div class="form-inline">
+                                                <a class="btn btn-success text-white mb-1 mr-2"
+                                                    (click)="exportData('Excel')" data-toggle="tooltip"
+                                                    data-placement="top" title="Excel">
+                                                    <i class="fa fa-file-excel-o"></i>
+                                                    <span class="export-text d-none">Excel</span>
+                                                </a>
+                                                <a class="btn btn-danger text-white mb-1 mr-2"
+                                                    (click)="exportData('PDF')" data-toggle="tooltip"
+                                                    data-placement="top" title="PDF">
+                                                    <i class="fa fa-file-pdf-o"></i>
+                                                    <span class="export-text d-none">PDF</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="w-100 mt-1 pull-right">
+                                                <input pInputText type="text" class="form-control"
+                                                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                    placeholder="Global Search" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Payment Id</th>
+                                        <th>Amount</th>
+                                        <th>VA Id</th>
+                                        <th>DIVISION</th>
+                                        <th>Action</th>
+                                        <th>Date</th>
+                                    </tr>
+                                    <tr>
+                                        <th *ngFor="let col of columns">
+                                            <p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+                                                defaultLabel="All"
+                                                (onChange)="customFilter($event.value, col.field, 'in')">
+                                            </p-multiSelect>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-rowData>
+                                    <tr class="ui-selectable-row">
+                                        <td>{{rowData.id}}</td>
+                                        <td>{{rowData.middleware_payment_id}}</td>
+                                        <td>{{rowData.actual_amount}}</td>
+                                        <td>{{rowData.virtual_id}}</td>
+                                        <td>{{rowData.company}}</td>
+                                        <td>
+                                            <button class="btn btn-dark btn-sm action-btn mx-2 mb-2"
+                                                (click)="adjust(rowData)">
+                                                Adjust
+                                            </button>
+                                        </td>
+                                        <td>{{rowData.added_at | date:'dd/MM/y'}}</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div bsModal #vaadjustModal="bs-modal" novalidate class="modal fade" tabindex="-1" role="dialog"
+    aria-labelledby="VA ADJUST Modal" aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <form [formGroup]="vaadjustform" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+                <div class="modal-header">
+                    <h4 class="modal-title">VA ADJUST Form</h4>
+                    <button type="button" class="close" (click)="onCloseModal()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="sub_org_id" class="col-form-label">VA Number OR Organization
+                                    Name <sup class="text-danger"><strong>*</strong></sup></label>
+                                <ng-select id="sub_org_id" formControlName="sub_org_id" [items]="data"
+                                    placeholder="Select VA Number" bindLabel="sub_org_name_va" bindValue="sub_org_id"
+                                    [clearable]="true">
+                                </ng-select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary mr-1">Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<toaster-container [toasterconfig]=" toasterconfig"></toaster-container>

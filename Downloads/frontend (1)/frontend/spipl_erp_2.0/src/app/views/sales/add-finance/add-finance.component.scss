@@ -1,0 +1,83 @@
+.ui-table {
+	.ui-table-tbody > tr > td {
+		border: 0 none;
+		cursor: auto;
+		&:last-child {
+			width: 11em;
+		}
+	}
+}
+.page-filter {
+	font-size: 14px !important;
+	font-weight: normal !important;
+}
+body .ui-table .ui-table-caption {
+	background: #495057 !important;
+}
+.card {
+	margin-bottom: 1rem !important;
+}
+.card-body {
+	padding: 0.75rem !important;
+}
+.order-heading {
+	font-weight: 500 !important;
+}
+body .ui-multiselect {
+	top: 3px !important;
+	margin-right: 8px !important;
+	padding: 1px !important;
+	background: #fff !important;
+}
+.ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
+	text-align: left !important;
+}
+
+body .ui-dropdown {
+	margin-left: 8px !important;
+}
+body .ui-dropdown .ui-dropdown-label {
+	padding: 4px !important;
+	text-align: left !important;
+}
+.action-btn {
+	padding: 0px 5px !important;
+}
+
+@media screen and (max-width: 64em) {
+	body .ui-table .ui-table-caption {
+		padding: 12px !important;
+	}
+	body .ui-table .ui-table-tbody > tr > td {
+		padding: 0.3em 0.5em !important;
+	}
+	.expand-btn,
+	.expanded_row {
+		display: none !important;
+	}
+	.ui-table {
+		.ui-table-tbody > tr > td {
+			&:first-child {
+				text-align: left;
+			}
+		}
+	}
+	.form-inline {
+		display: block !important;
+	}
+	body .ui-dropdown {
+		width: 100% !important;
+		margin-top: 4px !important;
+		margin-left: 0px !important;
+	}
+	body .ui-multiselect {
+		width: 100% !important;
+	}
+	.export-text {
+		display: inline-block !important;
+	}
+}
+
+.use_extra_amount_label {
+	margin-bottom: 0.8rem !important;
+}

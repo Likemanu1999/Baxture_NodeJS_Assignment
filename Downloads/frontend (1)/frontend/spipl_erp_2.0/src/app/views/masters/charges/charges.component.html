@@ -1,0 +1,188 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h5><i class="fa fa-database"></i> Bank Charges Masters Data</h5>
+					<button class="btn btn-primary pull-right" (click)="addCharges()">
+						<i class="fa fa-plus"></i> Add Charges
+					</button>
+				</div>
+				<div class="card-body">
+					<div class="row" *ngIf="isLoading">
+						<div class="col-md-12 text-center">
+							<app-loading-spinner></app-loading-spinner>
+						</div>
+					</div>
+					<div *ngIf="!isLoading">
+						<p-table #dt dataKey="id" [value]="chargesData" styleClass="ui-p-table"
+							[autoLayout]="false" [rows]="10" [showCurrentPageReport]="true"
+							[rowsPerPageOptions]="[10,25,50]" [loading]="isLoading" [paginator]="true"
+							[columns]="selectedColumns" (onFilter)="onFilter($event, dt)"
+							(onLazyLoad)="onFilter($event, dt)"
+							currentPageReportTemplate="Showing {{currentPage}} of {{totalPages}} entries"
+							[filterDelay]="0"
+							[globalFilterFields]="[
+							'bank_name',
+							'stage_name',
+							'head_name',
+							'charges',
+							'from_date',
+							'to_date',
+							'action'
+							]">
+							<ng-template pTemplate="caption">
+								<div class="ui-table-globalfilter-container">
+									<input pInputText type="text" class="form-control"
+										(input)="dt.filterGlobal($event.target.value, 'contains')"
+										placeholder="Global Search" />
+								</div>
+								<div class="ui-helper-clearfix" style="text-align: left">
+								</div>
+							</ng-template>
+							<ng-template pTemplate="header" let-columns>
+								<tr>
+									<th id="" pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+										style="width: auto;"> {{col.header}} <p-sortIcon field="{{col.field}}">
+										</p-sortIcon>
+									</th>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="body" let-item let-columns>
+								<tr class="ui-selectable-row">
+									<td>
+										<span class="ui-column-title">Bank</span>
+										{{item.bank_name}}
+									</td>
+									<td>
+										<span class="ui-column-title">Stage</span>
+										{{item.stage_name}}
+									</td>
+									<td>
+										<span class="ui-column-title">Head</span>
+										{{item.head_name}}
+									</td>
+									<td>
+										<span class="ui-column-title">Charges</span>
+										{{item.charges}}
+									</td>
+									<td>
+										<span class="ui-column-title">From</span>
+										{{item.from_date | date:'dd-MMM-y'}}
+									</td>
+									<td>
+										<span class="ui-column-title">To</span>
+										{{item.to_date | date:'dd-MMM-y'}}
+									</td>
+									<td>
+										<!-- <a class="btn btn-outline-dark custom-action-btn" data-toggle="tooltip"
+											data-placement="left" title="View Details"
+											(click)="viewCharges(item.id)">
+											<i class="fa fa-eye"></i>
+										</a> -->
+										<a class="btn btn-outline-info custom-action-btn" data-toggle="tooltip"
+											data-placement="left" title="Edit" (click)="openEditChargesModal(item.id)">
+											<i class="fa fa-pencil"></i>
+										</a>
+										<a class="btn btn-outline-danger custom-action-btn" data-toggle="tooltip"
+											data-placement="left" title="Delete" mwlConfirmationPopover
+											[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+											[confirmText]="confirmText" [cancelText]="cancelText"
+											[placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+											confirmButtonType="danger" cancelButtonType="success"
+											(confirm)="onDelete(item.id)" (cancel)="cancelClicked = true"><i
+												class="fa fa-trash"></i></a>
+									</td>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="emptymessage">
+								<tr>
+									<td class="text-center" colspan="7">No Data found.</td>
+								</tr>
+							</ng-template>
+						</p-table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div bsModal #chargesModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="chargesModal"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="chargesForm" novalidate (ngSubmit)="onSubmit()" class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title"><i class="fa fa-plus"></i> Add Charges</h4>
+					<button type="button" class="close" (click)="chargesModal.hide()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="bank_id">Bank</label>
+								<ng-select id="bank_id" formControlName="bank_id" placeholder="Select Bank"
+									[searchable]="true" [clearable]="false" bindLabel="bank_name" bindValue="id"
+									[items]="banksList" required>
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="head_id">Charges Head</label>
+								<ng-select id="head_id" formControlName="head_id" placeholder="Select Charges Head"
+									[searchable]="true" [clearable]="false" bindLabel="name" bindValue="id"
+									[items]="chargesHeadsList" required>
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="charges">Charges</label>
+								<input type="text" class="form-control" id="charges" formControlName="charges"
+									placeholder="Enter Charges" numbersOnly>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="charges_type">Charges Type</label>
+								<ng-select id="charges_type" formControlName="charges_type"
+									placeholder="Select Charges Type" [clearable]="false" bindLabel="name"
+									bindValue="id" [items]="chargesTypesList" required>
+								</ng-select>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="from_date">From Date</label>
+								<i class="fa fa-calendar"></i>
+								<input type="text" class="form-control" id="from_date" formControlName="from_date"
+									placeholder="Enter From Date" [bsConfig]="datePickerConfig" bsDatepicker readonly>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="to_date">To Date</label>
+								<i class="fa fa-calendar"></i>
+								<input type="text" class="form-control" id="to_date" formControlName="to_date"
+									placeholder="Enter To Date" [bsConfig]="datePickerConfig" bsDatepicker readonly>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="chargesModal.hide()">Close</button>
+					<button type="submit" [disabled]="chargesForm.invalid" class="btn btn-primary">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

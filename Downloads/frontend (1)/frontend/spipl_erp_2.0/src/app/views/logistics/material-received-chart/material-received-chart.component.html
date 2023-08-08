@@ -1,0 +1,1117 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h4><i class="fa fa-truck"></i> Material Arrival Chart
+						<span class="pull-right"><button class="btn btn-primary" (click)="getNonList()"><i
+									class="fa fa-refresh"></i></button></span>
+					</h4>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-5 mb-3">
+							<label for="">Non Invoice Date</label>
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa fa-calendar"></i></span>
+								</div>
+								<input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+									[bsConfig]="datePickerConfig"
+									(ngModelChange)="clearDropdown(); onSelect($event,'1')" #dp="bsDaterangepicker"
+									placeholder="">
+								<app-dropdown-daterange class="ml-4" (dateEvent)="receiveDate($event)"
+									[uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+
+							</div>
+						</div>
+
+						<div class="col-md-3 mb-3">
+							<label for="">Arrival Date</label>
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa fa-calendar"></i></span>
+								</div>
+								<input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue1"
+									(ngModelChange)="onSelect($event,'3')" placeholder="">
+							</div>
+						</div>
+						<div class="col-md-2">
+							<div class="form-group " *ngIf="port_list">
+								<label for="">Port</label>
+
+								<ng-select placeholder="Select Port " [searchable]="true" [clearable]="true"
+									bindLabel="port_name" bindValue="id" [items]="port_list"
+									(ngModelChange)="onSelectPort($event)" [(ngModel)]="port">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="col-md-2">
+							<label for=""> Arrival List:</label>
+							<ng-select placeholder="Select" [searchable]="true" [clearable]="true" bindLabel="name"
+								bindValue="id" [items]="listType" [(ngModel)]="list_type"
+								(change)="onSelect($event , 2)">
+							</ng-select>
+						</div>
+
+						<div class="col-md-2 mb-3">
+							<label for=""> Status:</label>
+							<select class="form-control" (change)="checkStatus($event.target.value)"
+								[(ngModel)]="select_status">
+								<option value="">Select</option>
+								<option *ngFor="let val of status" [value]='val.id' [style.backgroundColor]='val.color'>
+									{{val.name}}
+								</option>
+							</select>
+						</div>
+
+
+
+						<div class="col-md-2 mt-5">
+							<input type="checkbox" #check (click)="shipmentReceived(check.checked)"> Shipment Received
+						</div>
+
+
+					</div>
+
+					<div class="row">
+						<div class="col-md-2 offset-5" *ngIf="isLoading">
+							<app-loading-spinner></app-loading-spinner>
+						</div>
+					</div>
+
+					<div class="row " *ngIf="!isLoading">
+						<div class="col-md-12">
+							<p-table #dt [value]="non_list" dataKey="id" styleClass="ui-table-non" [rowHover]="true"
+								[showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100,500]"
+								[scrollable]="true" scrollHeight="400px" [paginator]="false" [columns]="selectedColumns"
+								(onFilter)="onFilter($event, dt)"
+								currentPageReportTemplate=" Total Records :{{non_list.length}}" [filterDelay]="0"
+								[globalFilterFields]="['sub_org_name','bank_name','invoice_no','tot_non_qty','grade_name','shipping_line','noting_of_material','non_received_date','ad_code', 'port_name' , 'be_invoices' , 'bl_invoices','file_no','lot_no','pi_no','pi_date']">
+
+
+								<ng-template pTemplate="caption">
+
+									<div class="row">
+										<div class="col-md-3">
+
+											<div class="ui-helper-clearfix" style="text-align: left">
+												<button type="button" *ngIf="excel_export" pButton
+													icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+													(click)="exportExcel()" style="margin-right: 0.5em;"
+													class="ui-button-success"></button>
+												<button type="button" *ngIf="pdf_export" pButton icon="pi pi-file-pdf"
+													iconPos="left" label="PDF" (click)="exportPdf()"
+													class="ui-button-warning"></button>
+												<button class="btn btn-success btn-sm" (click)="openSearch()">Advance
+													Search</button>
+											</div>
+
+										</div>
+										<div class="col-md-6" style="text-align: left">
+											<p-multiSelect [options]="cols" [(ngModel)]="selectedColumns"
+												optionLabel="header" selectedItemsLabel="{0} columns selected"
+												[style]="{minWidth: '200px'}" defaultLabel="Choose Columns"
+												class="p-mainfilter "></p-multiSelect>
+										</div>
+
+										<div class="col-md-3" style="text-align: right">
+											<input pInputText class='form-control' type="text"
+												(input)="dt.filterGlobal($event.target.value, 'contains')"
+												placeholder="Global Search" />
+										</div>
+
+									</div>
+
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<!-- [ngClass]="col.field == 'sub_org_name' ? 'sticky-col second-col' : ''" -->
+										<th *ngIf="edit_opt" style="width: 150px;">Edit</th>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+											[style.width.px]='col.style'>
+
+											{{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+										</th>
+
+										<th style="width: 200px;" *ngIf="delivery_challan">Delivery Challan</th>
+										<th style="width: 200px;" *ngIf="coa_mail_send">COA Mail</th>
+										<th style="width: 250px;">Charges</th>
+										<th style="width: 250px;">BL Remark</th>
+
+									</tr>
+
+									<tr>
+										<th *ngIf="edit_opt"></th>
+
+										<th *ngIf="getColumnPresent('port_name')">
+											<div *ngIf="ports.length > 0 ">
+												<p-multiSelect [options]="ports" placeholder="All"
+													(onChange)="onchange($event,'port_name')" appendTo="body"
+													styleClass="ui-column-filter" optionLabel="port_name"
+													[(ngModel)]="selectedPort">
+													<ng-template let-option pTemplate="item">
+
+														<span>&#123;&#123;option.label&#125;&#125;</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+										<th *ngIf="getColumnPresent('id')">
+											<input pInputText type="text"
+												(input)="dt.filter($event.target.value, 'id', 'startsWith')"
+												placeholder="Search by Id" class="ui-column-filter form-control">
+										</th>
+										<th *ngIf="getColumnPresent('non_received_date')">
+											<input type="text" class="form-control" [(ngModel)]="non_received_date"
+												(ngModelChange)="onDateSelect($event,'non_received_date')"
+												[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+												#dp="bsDatepicker" bsDatepicker placeholder="Search by Date">
+										</th>
+										<th *ngIf="getColumnPresent('ad_code')">
+											<div *ngIf="banks.length > 0">
+
+												<p-multiSelect [options]="banks" placeholder="All" appendTo="body"
+													(onChange)="onchange($event,'bank_name')"
+													styleClass="ui-column-filter" optionLabel="bank_name">
+													<ng-template let-opt pTemplate="item">
+
+														<span>{{opt.label}}</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+
+										<th *ngIf="getColumnPresent('sub_org_name')">
+											<div *ngIf="supplier_list.length > 0 ">
+												<p-multiSelect [options]="supplier_list" placeholder="All"
+													appendTo="body" (onChange)="onchange($event,'sub_org_name')"
+													styleClass="ui-column-filter" optionLabel='sub_org_name'>
+													<ng-template let-op pTemplate="item">
+
+														<span>&#123;&#123;op.label&#125;&#125;</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+
+										<th *ngIf="getColumnPresent('invoice_no')">
+											<input pInputText type="text"
+												(input)="dt.filter($event.target.value, 'invoice_no', 'startsWith')"
+												placeholder="Search by Invoice" class="ui-column-filter form-control">
+										</th>
+										<th *ngIf="getColumnPresent('non_revised_copy')"></th>
+										<th *ngIf="getColumnPresent('bl_invoices')"></th>
+
+
+										<th *ngIf="getColumnPresent('main_grade_name')">
+											<div *ngIf="main_grade_arr.length > 0 ">
+												<p-multiSelect [options]="main_grade_arr" placeholder="All"
+													appendTo="body" (onChange)="onchange($event,'main_grade_name')"
+													styleClass="ui-column-filter" optionLabel="main_grade_name">
+													<ng-template let-option pTemplate="item">
+
+														<span>&#123;&#123;option.label&#125;&#125;</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+
+										<th *ngIf="getColumnPresent('grade_name')">
+											<div *ngIf="grades.length > 0 ">
+												<p-multiSelect [options]="grades" placeholder="All" appendTo="body"
+													(onChange)="onchange($event,'grade_name')"
+													styleClass="ui-column-filter" optionLabel="grade_name">
+													<ng-template let-option pTemplate="item">
+
+														<span>&#123;&#123;option.label&#125;&#125;</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+
+
+										<th *ngIf="getColumnPresent('tot_non_qty')"></th>
+										<th *ngIf="getColumnPresent('material_received_qty')"></th>
+										<th *ngIf="getColumnPresent('rate')"></th>
+										<th *ngIf="getColumnPresent('arrival_date')">
+											<input type="text" class="form-control" [(ngModel)]="arrival_date"
+												(ngModelChange)="onDateSelect($event,'arrival_date')"
+												[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+												#dp="bsDatepicker" bsDatepicker placeholder="Search by Date">
+										</th>
+										<th style="width:180px"></th>
+										<th *ngIf="getColumnPresent('noting_of_material')">
+											<div *ngIf="notingMaterial.length > 0 ">
+												<p-multiSelect [options]="notingMaterial" placeholder="All"
+													appendTo="body" (onChange)="onchange($event,'noting_of_material')"
+													styleClass="ui-column-filter" optionLabel="noting_of_material">
+													<ng-template let-option pTemplate="item">
+
+														<span>&#123;&#123;option.label&#125;&#125;</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+
+										<th *ngIf="getColumnPresent('be_invoices')"></th>
+										<th *ngIf="getColumnPresent('required_lic_amount')">
+
+										</th>
+										<th *ngIf="getColumnPresent('lot')"></th>
+
+										<th *ngIf="getColumnPresent('pi_type')">
+											<div *ngIf="piTypes.length > 0">
+
+												<p-multiSelect [options]="piTypes" placeholder="All" appendTo="body"
+													(onChange)="onchange($event,'pi_type')"
+													styleClass="ui-column-filter" optionLabel="pi_type">
+													<ng-template let-opt pTemplate="item">
+
+														<span>{{getType(opt.label)}}</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+										<th *ngIf="getColumnPresent('pi_no')"></th>
+										<th *ngIf="getColumnPresent('pi_date')"></th>
+										<th *ngIf="delivery_challan"></th>
+										<th *ngIf="coa_mail_send"></th>
+										<th style="width: 250px;"></th>
+										<th style="width: 250px;"></th>
+									</tr>
+
+								</ng-template>
+								<ng-template pTemplate="body" let-item let-columns appendTo="body">
+									<tr class="ui-selectable-row" [style.backgroundColor]="item.colorCode"
+										[style.font-weight]="item.fontStyle" [style.color]="item.fontColor"
+										style="font-weight:bold;">
+										<td *ngIf="edit_opt" style="width: 150px;"><span class="badge badge-primary"
+												style="cursor: pointer;" (click)="editNon(item)">Edit Non</span>
+											<span *ngIf="bl_edit" class="badge badge-success" style="cursor: pointer;"
+												(click)="addBl(item)">Edit BL</span>
+											<div class="badge badge-warning"
+												*ngIf="item.material_received_date_logistics != null && item.material_received_date_logistics != ''">
+												Shipment Received<br>{{item.material_received_date_logistics| date :
+												'dd/MM/yyyy'}}</div>
+											<div *ngIf="item.bl_list.length ">
+												<div *ngFor="let blcharge of item.bl_list">
+													<button *ngIf="blcharge.charges_submited_flag == 0"
+														class="btn btn-sm btn-btn btn-block btn-outline-danger"
+														(click)="addCharges(blcharge.id)"><em class="fa fa-plus"> </em>
+														Charges</button>
+													<button *ngIf="blcharge.charges_submited_flag == 1"
+														class="btn btn-sm btn-success "
+														(click)="addCharges(blcharge.id)"><em class="fa fa-check"> </em>
+														Charges</button>
+												</div>
+
+											</div>
+											<div>
+												<i style="color: purple; font-size: small;">File No :
+													{{item.file_no}}</i>
+											</div>
+
+											<div *ngIf="item.endorse_invoice_copy != null">
+												<a style="color: rgb(86, 36, 224); font-size: 10px;"
+													*ngFor="let doc of getDocArray(item.endorse_invoice_copy)"
+													href="{{doc}}" target="_blank"><i class="fa fa-file"></i> Endorse
+													Copy</a>
+											</div>
+										</td>
+
+										<td *ngIf="getColumnPresent('port_name')" style="width: 200px;">
+											<span class="ui-column-title">Port</span>
+											<span>{{item.port_name}}</span>
+											<div *ngIf="item.cha">
+												<h6 style="color: purple; font-size: 10px;">CHA : {{item.cha}}</h6>
+											</div>
+
+										</td>
+										<td *ngIf="getColumnPresent('id')" style="width: 180px;">
+											<span class="ui-column-title">Non No</span>
+											<span class="badge badge-success"> NON{{item.id}}</span>
+											<div style="color: green; font-size: 10px;">Non To CHA Dt</div>
+											<div style="color: green; font-size: 10px;">{{item.non_recv_sent_cha | date
+												: 'dd/MM/yyyy'}}</div>
+
+										</td>
+
+										<td *ngIf="getColumnPresent('non_received_date')" style="width: 150px;">
+											<span class="ui-column-title">NON Received Date</span>
+											<span>{{item.non_received_date | date : 'dd/MM/yyyy'}}</span>
+
+										</td>
+
+										<td *ngIf="getColumnPresent('ad_code')" style="width: 200px;">
+											<span class="ui-column-title">AD CoDe</span>
+											<span>{{item.ad_code}} ( {{item.bank_name}} )</span>
+											<div *ngIf="item.original_doc_received_date">
+												<div style="color: blue; font-size: 10px;">Original Doc Recv from Bank
+												</div>
+												<div style="color: blue; font-size: 10px;">
+													{{item.original_doc_received_date}}</div>
+											</div>
+
+										</td>
+
+
+										<td *ngIf="getColumnPresent('sub_org_name')" style="width: 200px;">
+											<span class="ui-column-title">Supplier</span>
+											<span>{{item.sub_org_name}}</span>
+											<p style="color: crimson; font-size: 12px;">({{item.shipping_line}})</p>
+
+										</td>
+										<td *ngIf="getColumnPresent('invoice_no')" style="width: 150px;">
+											<span class="ui-column-title">Invoice No</span>
+											<div *ngIf="item.days"> <span
+													class="badge badge-pill badge-danger a1">{{item.days}}</span></div>
+											<span>{{item.invoice_no}} <span *ngIf="item.non_copy">
+													<span *ngFor="let doc of getDocArray(item.non_copy)">
+														<a href="{{doc}}" target="_blank" style="cursor: pointer;"><em
+																class="fa fa-file"></em></a>
+													</span>
+												</span></span>
+											<div *ngIf="item.all_docs_recv_from_forex_dt"
+												style="color: crimson; font-size: 10px;">Ori Rec By
+												Logistics : {{item.all_docs_recv_from_forex_dt | date : 'dd/MM/yyyy'}}
+											</div>
+
+
+											<h5 *ngIf="item.high_seas_pi==1">
+												<div style="color: blue; font-size: 10px;">
+													{{item.high_seas_customer}}</div>
+												<span class="badge badge-warning" style="cursor: pointer;">High Seas PI
+												</span>
+											</h5>
+
+
+											<h5 *ngIf="item.forward_sale_pi==1">
+												<span class="badge badge-warning" style="cursor: pointer;">Import
+													Surisha PI
+												</span>
+											</h5>
+
+											<!-- <h5 *ngIf="item.purchase_hold_qty_flag==1">
+												<span class="badge badge-warning" style="cursor: pointer;">Purchase Hold Qty
+												</span>
+											</h5> -->
+
+											<div *ngIf="item.toBeBond">
+												<span class="badge badge-primary" style="cursor: pointer;">Bond To Be
+												</span>
+											</div>
+
+
+
+										</td>
+										<td *ngIf="getColumnPresent('non_revised_copy')" style="width: 200px;">
+											<span class="ui-column-title">Revise Non Copy</span>
+											<span *ngIf="item.revise_non_details != null">
+												<span *ngFor="let doc of item.revise_non_details">
+													<a href="{{doc.non_revised_copy}}" target="_blank"
+														style="font-size: 12px;"> <i class="fa fa-file"></i>
+														{{doc.non_revised_copy
+														| fileName}}<br></a><span style="color:green;font-size: 10px;"
+														*ngIf="doc.revise_non_sent_dt!=null">Mail Sent:
+														{{doc.revise_non_sent_dt| date: "dd/MM/yyyy
+														hh:mm:ss"}}</span><br>
+												</span>
+											</span>
+
+										</td>
+										<td *ngIf="getColumnPresent('bl_invoices')" style="width: 200px;">
+											<div>{{item.bl_invoices}}</div>
+											<div style="color: slateblue;">{{item.received_noc}}</div>
+											<div *ngIf="item.noc > 0">(NOC={{item.noc}})</div>
+											<div class="badge badge-primary" style="cursor: pointer;" *ngIf="bl_list"
+												(click)="addBl(item)"> BL
+												Details</div>
+										</td>
+										<td *ngIf="getColumnPresent('main_grade_name')" style="width: 150px;">
+											<span class="ui-column-title">Main Grade</span>
+											<span>{{item.main_grade_name}}</span>
+										</td>
+
+										<td *ngIf="getColumnPresent('grade_name')" style="width: 150px;">
+											<span class="ui-column-title">Grade</span>
+											<span>{{item.grade_name}}</span>
+										</td>
+										<td *ngIf="getColumnPresent('tot_non_qty')" style="width: 100px;">
+											<span class="ui-column-title">Quantity</span>
+											<span>{{item.tot_non_qty}} {{item.UnitName}}</span>
+
+										</td>
+										<td *ngIf="getColumnPresent('material_received_qty')" style="width: 100px;">
+											<span class="ui-column-title">Received Qty</span>
+											<span>{{item.material_received_qty}} {{item.UnitName}}</span>
+
+										</td>
+										<td *ngIf="getColumnPresent('rate')" style="width: 100px;">
+											<span class="ui-column-title">Rate</span>
+											<span>{{item.rate}}</span>
+										</td>
+										<td *ngIf="getColumnPresent('arrival_date')" style="width: 180px;">
+											<span class="ui-column-title">Arrival Date</span>
+											<span *ngIf="item.non_arrival_trackings.length == 0">{{item.arrival_date |
+												date : 'dd-MM-yyyy'}} </span>
+											<span *ngIf="item.non_arrival_trackings.length != 0"
+												style="font-size: 15px;">Shipment Arrival Date:<div><span
+														style="font-size: 15px;">{{item.non_arrival_trackings[0].arrival_date
+														| date : 'dd-MM-yyyy'}}</span> &nbsp;
+													<span style="font-size: 8px ; color: blue;">Updated on
+														{{item.non_arrival_trackings[0].created_date | date:'dd-MM-yyyy
+														hh:mm:ss'}}</span>
+												</div> </span>
+											<div *ngIf="item.date_of_shipment"
+												style="color: rgb(185, 30, 134) ; font-size: 10px;"><b> Shipment Date:
+													{{item.date_of_shipment | date : 'dd-MM-yyyy'}} <span
+														*ngIf="item.noOfDaysShip">({{item.noOfDaysShip}} days)
+													</span></b></div>
+											<a *ngIf="item.non_arrival_trackings.length > 1"
+												class="btn btn-outline-dark btn-sm action-btn mr-1 mb-1"
+												data-toggle="tooltip" data-placement="top" title="View date"
+												(click)="onAction(item.non_arrival_trackings)">
+												<i class="fa fa-eye"></i>
+											</a>
+										</td>
+										<td style="width: 150px;">
+											<input type="text" class="form-control" [(ngModel)]="item.igm"
+												[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+												(ngModelChange)="onIgmDateSelect($event)" #dp="bsDatepicker" bsDatepicker placeholder="Select Date">
+											<div class="igm-btn">
+												<button class="btn btn-primary" (click)="confirm(item)">{{item.igm ?
+													'Update' : 'IGM Received'}}
+												</button>
+											</div>
+										</td>
+
+										<td *ngIf="getColumnPresent('noting_of_material')" style="width: 200px;">
+											<span class="ui-column-title">Noting of Material</span>
+											<span>{{item.noting_of_material}}</span>
+
+										</td>
+
+										<td *ngIf="getColumnPresent('be_invoices')" style="width: 200px;">										<span *ngFor="let doc of item.be_copy">
+												<a href="{{doc}}" target="_blank"><i class="fa fa-file"></i></a> &nbsp;
+											</span>	
+											<span>{{item.be_invoices}}</span>
+											&nbsp;
+																																									
+											<div *ngIf="item.be_invoices==''" style="color:red">Pending..</div>
+											<div *ngIf="item.bl_invoices && be_list && item.shipmentArr.length"
+												class="badge badge-primary" style="cursor: pointer;"
+												(click)="addBe(item)">
+												BE Details</div>
+										</td>
+										<td *ngIf="getColumnPresent('required_lic_amount')" style="width: 100px;">
+											<span>{{item.required_lic_amount | currencyInr}}</span>
+										</td>
+										<td style="width: 200px;" *ngIf="getColumnPresent('lot')"><button
+												class="btn btn-primary btn-sm" (click)="addLot(item)" *ngIf="lot_add">
+												Lot
+												Details</button> <button class="btn btn-danger btn-sm"
+												(click)="uploadCoa(item)" *ngIf="coa_upload"> <i
+													class="fa fa-upload"></i> COA</button></td>
+										<td *ngIf="getColumnPresent('pi_type')" style="width: 120px;">
+											<span class="ui-column-title">Source</span>
+											<span class="badge badge-primary">{{getType(item.pi_type)}}</span>
+
+										</td>
+										<td *ngIf="getColumnPresent('pi_no')" style="width: 100px;">
+											<span class="ui-column-title">PI Number</span>
+											<span style="font-size: 12px;">{{item.pi_no}}</span>
+										</td>
+										<td *ngIf="getColumnPresent('pi_date')" style="width: 100px;">
+											<span class="ui-column-title">PI Date</span>
+											<span style="font-size: 12px;">{{item.pi_date}}</span>
+										</td>
+										<td *ngIf="delivery_challan" style="width: 200px;"><span
+												class="ui-column-title">Delivery
+												Chalan</span> <a (click)="deliveryChallan(item.id)"
+												style="cursor: pointer;" *ngIf="item.bl_invoices"
+												class="badge badge-warning">{{item.bl_invoices}}</a>
+											<div *ngIf="item.mail_sent_delivery">
+												<span style="color: darkgreen;">Mail Sent : {{item.mail_sent_delivery |
+													date: "dd/MM/yyyy"}}</span>
+											</div>
+										</td>
+										<td style="width: 200px;"> <span class="ui-column-title"
+												*ngIf="coa_mail_send">COA Mail</span>
+											<span *ngIf="item.coa_copy">
+												<span *ngFor="let doc of getDocArray(item.coa_copy)">
+													<a href="{{doc}}" target="_blank"><i class="fa fa-file"></i></a> coa
+													copy
+												</span>
+												<span *ngIf="coa_mail_send" style="cursor: pointer;"
+													class="badge badge-primary" (click)="openCoaMail(item)"><i
+														class="fa fa-envelope"></i></span>
+												<div *ngIf="item.coa_mail_sent_dt"> <span class="badge badge-success"
+														[pTooltip]="item.coa_mail_sent_dt | date: 'dd-MM-y hh:mm:ss a'"
+														tooltipPosition="top" placeholder="top">Mail Sent </span></div>
+											</span>
+										</td>
+										<td style="width: 250px;">
+											<span *ngIf="item.total_charges_without_fob"><b>Total Charges/MT:</b>
+												{{item.charges_per_mt}} <br>
+												<b>Total Charges/Cont:</b> {{item.charges_per_cont}}<br> </span>
+											<span *ngIf="item.storageQty"><b>Storage Charges/MT : </b> (Qty:
+												{{item.storageQty}})
+												: {{item.storage_charges_mt}} <br> </span>
+											<span *ngIf="item.fobCharge">
+												<b>Fob/MT </b> : {{item.fob_per_mt}} <br>
+												<b>Fob/Cont </b> : {{item.fob_per_cont}} <br>
+											</span>
+										</td>
+										<td style="width: 250px;">
+											{{item.blremark}}
+										</td>
+									</tr>
+								</ng-template>
+
+								<ng-template pTemplate="footer">
+									<tr>
+										<td *ngIf="edit_opt" style="width: 150px;"></td>
+										<td *ngIf="getColumnPresent('port_name')" style="width: 200px;"> </td>
+										<td *ngIf="getColumnPresent('id')" style="width: 180px;"> </td>
+										<td *ngIf="getColumnPresent('non_received_date')" style="width: 150px;"></td>
+										<td *ngIf="getColumnPresent('ad_code')" style="width: 200px;"> </td>
+										<td *ngIf="getColumnPresent('sub_org_name')" style="width: 200px;"></td>
+										<td *ngIf="getColumnPresent('invoice_no')" style="width: 150px;"> </td>
+										<td *ngIf="getColumnPresent('non_revised_copy')" style="width: 200px;"></td>
+										<td *ngIf="getColumnPresent('bl_invoices')" style="width: 200px;"></td>
+										<td *ngIf="getColumnPresent('main_grade_name')" style="width: 150px;"> </td>
+										<td *ngIf="getColumnPresent('grade_name')" style="width: 150px;"> </td>
+
+
+										<td *ngIf="getColumnPresent('tot_non_qty')" style="width: 100px;">{{totalQty}}
+											MT</td>
+										<td *ngIf="getColumnPresent('material_received_qty')" style="width: 100px;">
+											{{totalReceived}}
+											MT</td>
+										<td *ngIf="getColumnPresent('rate')" style="width: 100px;"></td>
+										<td *ngIf="getColumnPresent('arrival_date')" style="width: 180px;"></td>
+										<td *ngIf="getColumnPresent('noting_of_material')" style="width: 200px;"></td>
+										<td *ngIf="getColumnPresent('be_invoices')" style="width: 200px;"></td>
+										<td *ngIf="getColumnPresent('required_lic_amount')" style="width: 100px;">
+
+											{{totBcdLic | currencyInr}}</td>
+										<td *ngIf="getColumnPresent('lot')" style="width: 200px;"></td>
+										<td *ngIf="getColumnPresent('pi_type')" style="width: 120px;"> </td>
+										<td *ngIf="getColumnPresent('pi_no')" style="width: 100px;"></td>
+										<td *ngIf="getColumnPresent('pi_date')" style="width: 100px;"></td>
+										<td *ngIf="delivery_challan" style="width: 200px;"></td>
+										<td *ngIf="coa_mail_send" style="width: 200px;"></td>
+										<td style="width: 250px; font-size: 12px;">
+											Total NOC : {{totNOC}}<br>
+											Total Qty: {{totalQty}}<br>
+											Total Charges: {{totCharges}}<br>
+											Average/MT : {{totCharges/totalQty}}<br>
+											Average/Cont: {{totCharges/totNOC}}
+											<hr>
+
+											Total Charges (Without FOB): {{totChargesWithoutFob}}<br>
+											Average/MT (Without FOB) : {{totChargesWithoutFob/totalQty}}<br>
+											Average/Cont (Without FOB): {{totChargesWithoutFob/totNOC}}
+										</td>
+										<td style="width: 200px;"></td>
+									</tr>
+									<tr>
+										<td colspan="15" style="text-align:left">Total Records: {{non_list?.length}}
+										</td>
+									</tr>
+
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td colspan="12" style="text-align:left">No Data found.</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h4 class="modal-title">Lot Details For {{non_invoice_no}} </h4>
+				<button type="button" class="close" (click)=" oncloseModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<form [formGroup]="addLotForm" novalidate (ngSubmit)="onSubmitLot()" autocomplete="off">
+
+							<div class="row">
+								<div class="col-md-3 col-8">
+									<input type="text" class="form-control" placeholder="Lot Number"
+										formControlName="lot_no">
+								</div>
+								<div class="col-md-1 col-4">
+									<button type="submit" class="btn btn-success btn-sm"
+										[disabled]="addLotForm.pristine || addLotForm.invalid"><i
+											class="fa fa-plus"></i></button>
+								</div>
+
+							</div>
+
+						</form>
+
+						<div class="row mt-5" *ngIf="lot_list.length > 0">
+							<div class="col-md-12">
+								<p-table [value]="lot_list" dataKey="id" styleClass="ui-table-non " [rowHover]="true"
+									[rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]"
+									[columns]="colsLot" [filterDelay]="0" [globalFilterFields]="[]">
+									<ng-template pTemplate="header" let-columns>
+										<tr>
+											<th pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+												[style.width.px]='col.style'>
+												{{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+											</th>
+											<th style="width: 200px;">Delete</th>
+										</tr>
+									</ng-template>
+
+									<ng-template pTemplate="body" let-item let-columns let-i="index">
+										<tr class="ui-selectable-row">
+											<td pEditableColumn>
+
+												<p-cellEditor>
+													<ng-template pTemplate="input">
+														<input pInputText class="form-control" type="text"
+															[(ngModel)]="item.lot_no"
+															(keydown.enter)="updateLot($event, item.id)">
+													</ng-template>
+													<ng-template pTemplate="output">
+														<span class="ui-column-title">Lot Number</span>
+														{{item.lot_no}}
+													</ng-template>
+												</p-cellEditor>
+
+
+											</td>
+											<td><button type="button" class="btn btn-danger btn-sm"
+													(click)="deleteLot(item , i)">Delete</button>
+										</tr>
+									</ng-template>
+
+								</p-table>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+
+
+
+			<div class="modal-footer">
+
+			</div>
+
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div bsModal #myModalCoa="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h4 class="modal-title">COA Upload For {{non_invoice_no}} </h4>
+				<button type="button" class="close" (click)=" oncloseCoa()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+
+						<div class="row">
+							<div class="col-md-8 ">
+								<input type="file" class="form-control" [multiple]="true" (change)="addCoaCopy($event)">
+							</div>
+							<div class="col-md-4 ">
+								<button type="button" class="btn btn-success btn-sm" (click)="uploadCoaCopy()"><i
+										class="fa fa-upload"></i></button>
+							</div>
+
+						</div>
+
+
+
+					</div>
+				</div>
+
+
+			</div>
+
+
+
+			<div class="modal-footer">
+
+			</div>
+
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div bsModal #myModalCoaMail="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h4 class="modal-title">COA Mail For {{non_invoice_no}} </h4>
+				<button type="button" class="close" (click)=" oncloseCoaMail()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-2 offset-5" *ngIf="isLoadingMail">
+						<app-loading-spinner></app-loading-spinner>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<p style="color: red;">Plese Keep Emails (',') Seperated</p>
+						<div class="row">
+							<div class="col-md-6">
+
+								<label for="">To : <span *ngFor="let mail of email"><input type="checkbox"
+											(click)="mailto(a.checked,mail)" #a> {{mail}} </span></label>
+								<textarea class="form-control" [(ngModel)]="ccText"
+									(change)='tomailvalue($event)'></textarea>
+							</div>
+							<div class="col-md-6">
+								<label for="">CC : <span *ngFor="let cc of email"><input type="checkbox"
+											(click)="ccmail(e.checked,cc)" #e> {{cc}} </span></label>
+								<textarea class="form-control" [(ngModel)]="bccText"
+									(change)='ccmailvalue($event)'></textarea>
+							</div>
+
+						</div>
+						<p>Dear Sir/Madam</p>
+						<p>Good Day</p>
+						<p>Kindly Check Attach COA/TC for your Ready Reference.</p>
+						<p>Thank you for your kind cooperation.</p>
+						<p>Regards,</p>
+						<p>SParmar .</p>
+						<span *ngIf="coa_copy">
+							<span *ngFor="let doc of getDocArray(coa_copy)">
+								<a href="{{doc}}" target="_blank"><i class="fa fa-file"></i></a> coa copy
+							</span>
+						</span>
+						<div>
+							<button class="btn btn-primary btn-sm" (click)="sendMail()">Send</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div bsModal #editNonModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h4 class="modal-title">Edit Non {{non_invoice_no}} </h4>
+				<button type="button" class="close" (click)=" oncloseModalNon()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<form [formGroup]="editNonForm" novalidate (ngSubmit)="onEditNon()" autocomplete="off">
+
+							<div class="row" *ngIf="shipping_details">
+								<div class="form-group col">
+									<label for="">Shipping Name</label>
+
+									<ng-select formControlName="shiping_line_id" placeholder="Select Shiping Line "
+										[searchable]="true" [clearable]="true" bindLabel="sub_org_name"
+										bindValue="sub_org_id" [items]="shipping_line_list">
+									</ng-select>
+								</div>
+
+
+
+								<div class="form-group col-md-3">
+									<label for="">ETA</label>
+									<input type="text" class="form-control"
+										[bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+										#dp="bsDatepicker" formControlName="arrival_date" bsDatepicker
+										placeholder="Arrival Date" style="background-color: white;">
+								</div>
+
+								<div class="form-group col-md-3">
+									<label for="">No. of Free Days </label>
+									<input type="text" class="form-control" formControlName="freedays"
+										(keyup)="addDays($event)" numbersOnly>
+								</div>
+
+
+
+								<div class="form-group col-md-3">
+									<label for="">Free Time Bl Date </label>
+									<input type="text" class="form-control"
+										[bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+										#dp="bsDatepicker" formControlName="free_time_bl_dt" bsDatepicker
+										placeholder="Free Time Bl Date " style="background-color: white;" readonly>
+								</div>
+
+								<div class="form-group col-md-3">
+									<label for=""> All Original Docs Received By Import Logistics</label>
+									<input type="checkbox" formControlName="all_docs_rcev_from_forex_dt"
+										[checked]="allDocRecvDt">
+
+								</div>
+
+
+
+
+							</div>
+
+
+
+							<div class="row" *ngIf="document_verification_details">
+
+
+								<div class="form-group col-md-3">
+									<label for="">Purchase Date </label>
+									<input type="text" class="form-control"
+										[bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+										#dp="bsDatepicker" bsDatepicker formControlName="purchase_date"
+										placeholder="Purchase Date" style="background-color: white;">
+								</div>
+
+								<div class="form-group col-md-3">
+									<label for="">RBI Rate </label>
+									<input type="text" class="form-control" placeholder="RBI Rate"
+										formControlName="rbi_rate">
+								</div>
+
+
+								<div class="form-group col-md-3">
+									<label for="">File Number </label>
+									<input type="text" class="form-control" placeholder="File No"
+										formControlName="file_no">
+								</div>
+
+								<div class="form-group col-md-4">
+									<label for=""> Verify All Original Docs Received From Forex Dept</label>
+									<input type="checkbox" formControlName="verify_original_docs_rcv_forex"
+										[checked]="verify_original_docs_rcv_forex">
+
+								</div>
+
+
+
+
+
+							</div>
+
+
+							<div class="row" *ngIf="upload_endorse_copy">
+								<div class="form-group col-md-3">
+									<label for="">Endorse Copy </label>
+									<input type="file" class="form-control" formControlName="endorse_invoice_copy"
+										[multiple]="true" (change)="addEndorseCopy($event)">
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group col-md-3">
+									<label for="">Freight (FOB) </label>
+									<input type="text" class="form-control" formControlName="fob_freight_lic"
+										numbersOnly>
+								</div>
+								<div class="form-group col-md-3">
+									<label for="">Insurance (FOB) </label>
+									<input type="text" class="form-control" formControlName="fob_insurance_lic"
+										numbersOnly>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-1 col-4 mt-3">
+									<button type="submit" class="btn btn-success btn-sm"
+										[disabled]="editNonForm.pristine || editNonForm.invalid">update</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+			</div>
+		</div>
+	</div>
+</div>
+<p-confirmDialog #cd header="Warning" icon="pi pi-info-triangle" [style]="{width: '40vw'}" [visible]="displayPop">
+
+	<p-footer>
+		<button type="button" pButton class="ui-button-danger" icon="pi pi-times" label="Reject"
+			(click)="onReject()"></button>
+
+		<button type="button" class="ui-button-success" pButton icon="pi pi-check" label="Approve"
+			(click)="cd.accept()"></button>
+	</p-footer>
+</p-confirmDialog>
+<div bsModal #serchModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h4 class="modal-title">Advance Search</h4>
+				<button type="button" class="close" (click)=" oncloseModalSearch()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<form [formGroup]="searchForm" novalidate (ngSubmit)="getSearchList()" autocomplete="off">
+
+							<div class="row">
+
+
+
+								<div class="form-group col-md-3">
+									<label for="">Invoice Number </label>
+									<input type="text" class="form-control" formControlName="invoice_no"
+										placeholder="Invoice Number">
+								</div>
+
+
+
+								<div class="form-group col-md-3" *ngIf="shipping_line">
+									<label for="">Shipping Line</label>
+									<ng-select placeholder="Select Shiping Line " [searchable]="true" [clearable]="true"
+										formControlName="shippine_line_id" bindLabel="sub_org_name"
+										bindValue="sub_org_id" [items]="shipping_line">
+									</ng-select>
+								</div>
+
+
+								<div class="form-group col-md-3" *ngIf="shipmentType">
+									<label for="">Import</label>
+
+									<ng-select formControlName="import_type" placeholder="Select" [searchable]="true"
+										[clearable]="true" bindLabel="name" bindValue="id" [items]="shipmentType">
+									</ng-select>
+								</div>
+
+
+
+								<div class="form-group col-md-3">
+									<label for="">BL Number </label>
+									<input type="text" formControlName="bl_no" class="form-control"
+										placeholder="Bl Number">
+								</div>
+
+
+
+								<div class="form-group col-md-3">
+									<label for="">BE Number </label>
+									<input type="text" formControlName="be_no" class="form-control"
+										placeholder="BE Number">
+								</div>
+		
+								<div class="form-group col-md-3">
+									<label for="">Lot Number </label>
+									<input type="text" formControlName="lot_no" class="form-control"
+										placeholder="Lot Number">
+								</div>
+
+
+							</div>
+
+							<div class="row">
+								<div class="col-md-1 col-4 mt-3">
+									<button type="submit" class="btn btn-success btn-sm">Search</button>
+								</div>
+							</div>
+
+
+
+						</form>
+
+					</div>
+				</div>
+
+
+			</div>
+
+
+
+			<div class="modal-footer">
+
+			</div>
+
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div bsModal #viewDealModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="View Deal"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content" *ngIf="valueDate != null">
+			<div class="modal-header">
+				<h4 class="modal-title">
+					<i class="fa fa-eye"></i> Arrival Date Details
+				</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div *ngFor="let eta of valueDate"><span style="font-size: 12px;">
+						<div class="row">
+							<div class="col-sm-3 mb-2">
+								<strong>Arrival Date:</strong> {{eta.arrival_date | date : 'dd-MM-yyyy'}}
+							</div>
+							<div class="col-sm-6 mb-2">
+								<span style="font-size: 10px ; color: blue;">Update On: {{eta.created_date |
+									date:'dd-MM-yyyy hh:mm:ss'}}
+								</span>
+							</div>
+						</div>
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

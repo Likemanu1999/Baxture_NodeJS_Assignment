@@ -1,0 +1,1426 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="">Supplier :</label>
+                            <div class="form-group ">
+                                <ng-select placeholder="Supplier" [searchable]="true" [clearable]="true"
+                                    bindLabel="sub_org_name_address" bindValue="sub_org_id" [items]="sub_org"
+                                    (change)="onSubmit($event,'supplier','sub_org_id',0)">
+
+                                    <ng-template ng-option-tmp let-item="item">
+                                        <div title="{{item.sub_org_name_address}}">{{item.sub_org_name_address}}
+
+                                        </div>
+
+                                    </ng-template>
+
+                                </ng-select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+
+                            <div class="form-group">
+                                <label for="">Buyers Bank :</label>
+                                <ng-select placeholder="Select Bank" [searchable]="true" [clearable]="true"
+                                    bindLabel="bank_name" bindValue="id" [items]="spipl_bank"
+                                    (change)="onSubmit($event,'bank','id',0)">
+                                </ng-select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="">LC Created Date :</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                </div>
+                                <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                                    placeholder="LC Created Date" (ngModelChange)="onSubmit($event,'','',1)">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="">LC Opening Date :</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                </div>
+                                <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue2"
+                                    placeholder="Openinng Date" (ngModelChange)="onSubmit($event,'','',2)">
+                            </div>
+                        </div>
+
+                        <div class="col-md-2" *ngIf="total_lc_amount_supplier || total_lc_quantity_supplier">
+                            <p *ngIf="total_lc_amount_supplier"><strong>Total LC Amount: </strong>
+                                {{total_lc_amount_supplier}}</p>
+                            <p *ngIf="total_lc_quantity_supplier"><strong> Total LC Quantity:
+                                </strong>{{total_lc_quantity_supplier}}
+                            </p>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="">Global Search :</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" (ngModelChange)="filterLcList($event)"
+                                    [(ngModel)]="gobalFilterText" placeholder="Global Search" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2 offset-5" *ngIf="isLoading_unsold">
+        <app-loading-spinner></app-loading-spinner>
+    </div>
+    <div class="email-app">
+
+        <!-- Amgular Material Table -->
+        <table mat-table [dataSource]="dataSource" multiTemplateDataRows>
+            <ng-container matColumnDef="{{column}}" *ngFor="let column of columnsToDisplay">
+                <th mat-header-cell *matHeaderCellDef> {{column}} </th>
+                <td mat-cell *matCellDef="let element" style="cursor:pointer">
+                    <strong>LC Number: </strong>
+                    <span class="badge badge-pill badge-primary margin-right-20" placeholder="Bottom"
+                        *ngIf="element.bank_lc_no && element.lc_opening_date">
+                        {{element.bank_lc_no}} - (
+                        {{element.lc_opening_date | date: 'dd/MM/yyyy'}})
+                    </span>
+                    <strong>Supplier Name: </strong>
+                    {{ element.suppier_name }}
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="expand">
+                <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+                <td mat-cell *matCellDef="let element">
+                    <!-- <button mat-icon-button aria-label="expand row" (click)="(expandedElement = expandedElement === element ? null : element); $event.stopPropagation()">
+        <mat-icon *ngIf="expandedElement !== element">keyboard_arrow_down</mat-icon>
+        <mat-icon *ngIf="expandedElement === element">keyboard_arrow_up</mat-icon>
+      </button> -->
+                </td>
+            </ng-container>
+
+            <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+            <ng-container matColumnDef="expandedDetail">
+                <td mat-cell *matCellDef="let element">
+                    <div class="example-element-detail"
+                        [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+                        <div style="padding: 10px 0;">
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fa fa-adjust"></i> <strong>{{supplier_name}}</strong>
+                                    <strong *ngIf="manufacture_name">({{manufacture_name}})</strong>
+                                    &nbsp;&nbsp;
+
+
+                                    <span class="btn-group" dropdown>
+                                        <button dropdownToggle type="button" class="btn btn-default dropdown-toggle">
+                                            LC Operations<span class="caret"></span>
+                                        </button>
+                                        <ul *dropdownMenu class="dropdown-menu" role="menu">
+                                            <li role="menuitem" *ngIf="lc_opening_date == null && rese_lc">
+                                                <button style="cursor: pointer;" class="dropdown-item"
+                                                    (click)="resetLc()">Reset LC</button>
+                                            </li>
+                                            <li role="menuitem" *ngIf="open_lc"> <button style="cursor: pointer;"
+                                                    class="dropdown-item" (click)="openLc(funding_bank)">Open
+                                                    LC</button></li>
+
+
+
+                                            <li role="menuitem"
+                                                *ngIf="lc_opening_date != null  && Non_details.length == 0 ">
+                                                <button style="cursor: pointer;" class="dropdown-item"
+                                                    (click)="discardLcPopUp()">Discard LC</button>
+                                            </li>
+
+
+
+
+                                            <li role="menuitem" *ngIf="lc_amend"> <button (click)="ammendLc()"
+                                                    style="cursor: pointer;" class="dropdown-item">LC
+                                                    Amendment</button></li>
+                                            <li role="menuitem" *ngIf="lc_insurance"> <button (click)="insuranceLc()"
+                                                    style="cursor: pointer;" class="dropdown-item">LC Insurance</button>
+                                            </li>
+
+                                            <!-- *ngIf="(tolerance_plus_amount+tolerance_minus_amount) == 0 " -->
+                                            <li role="menuitem"> <button (click)="toleranceAdjustPopUp()"
+                                                    style="cursor: pointer;" class="dropdown-item">Knock-Off
+                                                    LC</button></li>
+
+                                            <!-- *ngIf="(tolerance_plus_amount+tolerance_minus_amount)  != 0 " -->
+                                            <li role="menuitem"> <button (click)="toleranceResetPopUp()"
+                                                    style="cursor: pointer;" class="dropdown-item">Knock-Off LC
+                                                    Reset</button></li>
+
+                                            <li role="menuitem"> <button (click)="lcCancel()" style="cursor: pointer;"
+                                                    class="dropdown-item">LC
+                                                    Cancel</button></li>
+
+
+                                        </ul>
+                                    </span>
+
+
+                                    <span class="btn-group" dropdown>
+                                        <button dropdownToggle type="button" class="btn btn-default dropdown-toggle">
+                                            Action<span class="caret"></span>
+                                        </button>
+                                        <ul *dropdownMenu class="dropdown-menu" role="menu">
+                                            <!-- && lc_opening_date == null -->
+                                            <li role="menuitem" *ngIf="edit_opt "><a style="cursor: pointer;"
+                                                    class="dropdown-item" (click)="onEditLc(lc_id)"><i
+                                                        class="fa fa-pencil"></i>LC Edit</a></li>
+                                            <li role="menuitem" *ngIf="del_opt && lc_opening_date == null">
+                                                <button style="cursor: pointer;" class="dropdown-item"
+                                                    (click)="onDeleteLc(lc_id)"><i class="fa fa-trash"></i>LC
+                                                    Delete</button>
+                                            </li>
+                                            <li role="menuitem" *ngIf="lc_download"><button style="cursor: pointer;"
+                                                    class="dropdown-item" (click)="generateWord(lc_id)"><i
+                                                        class="fa fa-download"></i>LC
+                                                    Doc Download</button></li>
+
+                                        </ul>
+                                    </span>
+
+                                    <span *ngIf="lc_opening_date != null && create_non">
+                                        <button class="btn btn-primary btn-sm" (click)="createNon()">Create
+                                            Non</button>
+                                    </span>
+
+
+                                    <button class="btn btn-sm btn-light pull-right"
+                                        (click)="isCollapsed = !isCollapsed">
+                                        <i *ngIf="isCollapsed" class="fa fa-chevron-down"></i>
+                                        <i *ngIf="!isCollapsed" class="fa fa-chevron-up"></i>
+                                    </button>
+                                </div>
+                                <div class="card-body" (collapsed)="collapsed($event)" (expanded)="expanded($event)"
+                                    [collapse]="isCollapsed">
+
+                                    <div class="row " *ngIf="supplier_name">
+                                        <div class="col-md-3">
+                                            <p><strong>LC Number :</strong>{{bank_lc_no}} <span *ngIf="openingdoc !=[]">
+                                                    <a *ngFor="let opdoc of openingdoc " href="{{opdoc}}"
+                                                        target="_blank"><i class="fa fa-download"></i></a></span>
+                                            </p>
+                                            <p><strong>LC Opening Date</strong> <span
+                                                    *ngIf="lc_opening_date">{{lc_opening_date | date :
+                                                    "dd-MM-y"}}</span></p>
+                                            <p>
+                                                <strong>LC Opening Bank</strong> {{bank_name}}
+                                            </p>
+                                            <p><strong>Funding Bank</strong> {{funding_bank_name}}</p>
+
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p><strong>LC Creation Date:-</strong> {{lc_date | date :
+                                                "dd-MM-y"}}
+                                            </p>
+                                            <p><strong>Shipment Date:-</strong> {{date_of_shipment | date :
+                                                "dd-MM-y"}}</p>
+                                            <p><strong>Expiry Date:-</strong> {{expiry_date | date : "dd-MM-y"}}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p><strong>LC Amount:-</strong> {{tot_lc_amount | currencyInr}} </p>
+                                            <p><strong>LC Tolerance:-</strong> {{tot_lc_amount *
+                                                (toleranceper)}}
+                                            </p>
+                                            <p><strong>Total Quantity:-</strong> {{totquantity}}</p>
+                                            <p><strong>LC Rate:-</strong> {{lc_rate}}</p>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <!-- <p><strong>Date of Ammendment:-</strong> {{lc_ammed_date | date : "dd-MM-y"}} <span
+                      *ngIf="ammenddoc !=[]"> <a *ngFor="let amdoc of ammenddoc " href="{{amdoc}}" target="_blank"><i
+                          class="fa fa-download"></i></a></span></p> -->
+                                            <p><strong>Date of Insurance:-</strong> {{lc_insurance_date | date :
+                                                "dd-MM-y"}} <span *ngIf="isurancedoc !=[]"><a
+                                                        *ngFor="let indoc of isurancedoc " href="{{indoc}}"
+                                                        target="_blank"> <i class="fa fa-download"></i></a></span>
+                                            </p>
+
+                                            <p><strong>LC Cancellation Date :-</strong> {{lc_cancellation_date |
+                                                date : "dd-MM-y"}}
+                                                <span *ngIf="lcCancellation !=[]"> <a
+                                                        *ngFor="let lccanceldoc of lcCancellation "
+                                                        href="{{lccanceldoc}}" target="_blank"><i
+                                                            class="fa fa-download"></i></a></span>
+                                            </p>
+                                            <p><strong>LC Cancellation Remark:-</strong>
+                                                {{lc_cancellation_remark }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- p-table for Ammendment -->
+                                    <div *ngIf="ammendDetails.length">
+                                        <p-table #dt3 [value]="ammendDetails">
+                                            <ng-template pTemplate="header">
+                                                <tr>
+                                                    <th>Ammendment Date</th>
+                                                    <th>Ammendment Value</th>
+                                                    <th>Ammendment Days</th>
+                                                    <th>Ammendment Clause</th>
+                                                    <th>LC Ammendment Value</th>
+                                                    <th>Ammendment Shipment </th>
+                                                    <th>Ammendment Expiry </th>
+                                                    <th>Ammendment PayTerm </th>
+                                                    <th>Ammendment Remarks </th>
+                                                    <th>Edit </th>
+                                                    <th>Delete </th>
+                                                </tr>
+                                            </ng-template>
+                                            <ng-template pTemplate="body" let-ammendItem let-rowIndex="rowIndex">
+                                                <tr class="over-flow-wrap-break-word">
+                                                    <td>
+                                                        <span class="ui-column-title">Ammendment Date</span>
+                                                        {{ammendItem.lc_ammed_date | date :'dd-MM-y'}}
+
+                                                        <span *ngIf="ammendItem.lc_ammend_copy"> <a
+                                                                *ngFor="let val of getDocsArray(ammendItem.lc_ammend_copy) "
+                                                                href="{{val}}" target="_blank"><i
+                                                                    class="fa fa-download"></i></a></span>
+
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Ammendment Value</span>
+                                                        <!-- {{ammendItem.ammendment_value}}   -->
+                                                        <i *ngIf="ammendItem.ammendment_value" class="fa fa-check"
+                                                            style="color:green;" aria-hidden="true"></i>
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Ammendment Days</span>
+                                                        <!-- {{ammendItem.ammendment_days}} -->
+                                                        <i *ngIf="ammendItem.ammendment_days" class="fa fa-check"
+                                                            style="color:green;" aria-hidden="true"></i>
+
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Ammendment Clause</span>
+                                                        <!-- {{ammendItem.ammendment_clause}} -->
+                                                        <i *ngIf="ammendItem.ammendment_clause" class="fa fa-check"
+                                                            style="color:green;" aria-hidden="true"></i>
+
+
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">LC Ammendment Value</span>
+                                                        {{ammendItem.ammend_lc_value}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Ammendment Shipment</span>
+                                                        {{ammendItem.ammend_shipment_date}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Ammendment Expiry</span>
+                                                        {{ammendItem.ammend_lc_expiry_date}}
+                                                    </td>
+                                                    <td>
+                                                        <div *ngIf="ammendItem.payment_term_master != null">
+                                                            <span class="ui-column-title">Ammendment PayTerm</span>
+                                                            {{ammendItem.payment_term_master.ammend_payment_term
+                                                            }}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Ammendment Remarks</span>
+                                                        {{ammendItem.ammend_remark}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Edit</span>
+                                                        <a style="cursor: pointer;"
+                                                            (click)="onEditAmmendment(ammendItem)"><i
+                                                                class="fa fa-pencil"></i></a>
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Delete</span>
+                                                        <a style="cursor: pointer;" mwlConfirmationPopover
+                                                            [popoverTitle]="popoverTitle"
+                                                            [popoverMessage]="popoverMessageDelete"
+                                                            [confirmText]="confirmText" [cancelText]="cancelText"
+                                                            [placement]="placement"
+                                                            [closeOnOutsideClick]="closeOnOutsideClick"
+                                                            confirmButtonType="success" cancelButtonType="danger"
+                                                            (confirm)="onDeleteAmmendment(ammendItem.id)"
+                                                            (cancel)="cancelClicked = true"><i
+                                                                class="fa fa-trash"></i></a>
+                                                    </td>
+
+                                                </tr>
+                                            </ng-template>
+                                            <ng-template pTemplate="emptymessage">
+                                                <tr>
+                                                    <td colspan="11">No Records Found.</td>
+                                                </tr>
+                                            </ng-template>
+                                        </p-table>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- PI List p-table -->
+                            <div *ngIf="lc_pi">
+                                <form [formGroup]="addNonForm" novalidate autocomplete="off">
+                                    <div [hidden]="!addNon">
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col-md-2">
+                                                    <label for="">Date of shipment</label>
+
+                                                    <div class="form-group">
+                                                        <input type="text" class="form-control"
+                                                            formControlName="date_of_shipment" id="date_of_shipment"
+                                                            [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                                            #dp="bsDatepicker" bsDatepicker [maxDate]="today"
+                                                            placeholder="Enter Date " readonly
+                                                            style="background-color: white;">
+                                                    </div>
+
+
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="">Invoice Date</label>
+
+                                                    <div class="form-group">
+                                                        <input type="text" class="form-control"
+                                                            formControlName="invoice_date" id="invoice_date"
+                                                            [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                                            #dp="bsDatepicker" bsDatepicker [maxDate]="today"
+                                                            placeholder="Enter Date " readonly
+                                                            style="background-color: white;">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="">Non Received On</label>
+
+                                                    <div class="form-group">
+                                                        <input type="text" class="form-control"
+                                                            formControlName="non_received_date" id="non_received_date"
+                                                            [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                                            #dp="bsDatepicker" bsDatepicker [maxDate]="today"
+                                                            placeholder="Enter Date " readonly
+                                                            style="background-color: white;">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="">Invoice No</label>
+
+                                                    <div class="form-group">
+                                                        <input type="text" formControlName="invoice_no" id="invoice_no"
+                                                            class="form-control" placeholder="Enter Number ">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="">Upload Doc</label>
+
+                                                    <div class="form-group">
+                                                        <input type="file" formControlName="non_copy" id="non_copy"
+                                                            class="form-control" [multiple]=true
+                                                            placeholder="Enter Date " (change)="addNonDocs($event)">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <label for="">Remark</label>
+
+                                                    <div class="form-group">
+                                                        <textarea class="form-control" placeholder="Enter Remark"
+                                                            formControlName="non_rmk" id="non_rmk"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p-table #dt1 [value]="lc_pi" [globalFilterFields]="['proform_invoice_no','gradeName','destinationPort']">
+                                        <ng-template pTemplate="caption">
+                                            <div class="captionTopDiv2">
+                                                <div>
+                                                    <!-- <div class="card-header"> -->
+                                                    <strong>PI List</strong>
+                                                    <!-- </div> -->
+                                                </div>
+                                                <div>
+                                                    <input pInputText type="text" class="form-control"
+                                                        (input)="dt1.filterGlobal($event.target.value, 'contains')"
+                                                        placeholder="Global Search" />
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="header">
+                                            <tr class="over-flow-wrap-break-word">
+                                                <th>Sr.No.</th>
+                                                <th>PI Invoice Number</th>
+                                                <th>Shipment Month</th>
+                                                <th>PI Date</th>
+                                                <th>PI Quantity</th>
+                                                <th>Rate</th>
+                                                <th>Amount</th>
+                                                <th>Grade</th>
+                                                <th>Port</th>
+                                                <th>Covered Quantity</th>
+                                                <th>Pending Quantity</th>
+                                                <th [hidden]="!addNon">Non To cover</th>
+                                                <th>KnockOff</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-lcPiList let-rowIndex="rowIndex">
+                                            <tr formArrayName="pidetail" class="over-flow-wrap-break-word">
+                                                <ng-container formGroupName="{{rowIndex}}">
+                                                    <td>
+                                                        <span class="ui-column-title">Sr.No.</span>
+                                                        {{rowIndex+1}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">PI Invoice Number</span>
+                                                        {{lcPiList.proform_invoice_no}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Shipment Month</span>
+                                                        {{ getMonth(lcPiList.shipment_month )}} -
+                                                        {{lcPiList.shipment_year}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">PI Date</span>
+                                                        {{lcPiList.proform_invoice_date | date:
+                                                        'dd/MM/yyyy'}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">PI Quantity</span>
+                                                        {{lcPiList.pi_quantity}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Rate</span>
+                                                        {{lcPiList.pi_rate}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Amount</span>
+                                                        {{(lcPiList.total_pi_amount)}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Grade</span>
+                                                        {{lcPiList.gradeName}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Port</span>
+                                                        {{lcPiList.destinationPort}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Covered Quantity</span>
+                                                        {{lcPiList.nonqty_cover_against_pi}}
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">Pending Quantity</span>
+                                                        {{lcPiList.pi_quantity -
+                                                        lcPiList.nonqty_cover_against_pi}}
+                                                    </td>
+                                                    <td [hidden]="!addNon">
+
+                                                        <div
+                                                            *ngIf="lcPiList.pi_quantity - lcPiList.nonqty_cover_against_pi != 0">
+                                                            <span class="ui-column-title">Non To cover</span>
+                                                            <input type="text" formControlName="pi_id_qty"
+                                                                (keyup)="checkQuantity($event , lcPiList, i)"
+                                                                style="width: 50px;">
+                                                            <input type="hidden" formControlName="grade_id">
+                                                            <input type="hidden" formControlName="port_id">
+
+                                                            <input type="hidden" formControlName="pi_id">
+                                                            <input type="hidden" formControlName="pi_rate">
+                                                            <input type="hidden" formControlName="high_seas_pi">
+                                                            <input type="hidden" formControlName="forward_sale_pi">
+                                                            <input type="hidden" formControlName="purchase_hold_qty_flag">
+
+                                                        </div>
+
+                                                    </td>
+                                                    <td>
+                                                        <span class="ui-column-title">KnockOff</span>
+                                                        <button
+                                                            (click)="conformPopUpMethod(lcPiList.id,lcPiList.pi_quantity)"
+                                                            *ngIf="lcPiList.nonqty_cover_against_pi !=0"
+                                                            style="cursor: pointer;"
+                                                            class="btn btn-primary mr-1">Knock-Off</button>
+                                                    </td>
+                                                </ng-container>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="emptymessage">
+                                            <tr>
+                                                <td colspan="12">There are no order for this product yet.</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+
+                                    <div class="row mb-3" [hidden]="!addNon">
+                                        <div class="col-md-12 col-6">
+                                            <button type="button" class="btn btn-sm btn-info" (click)="onSubmitNon()"
+                                                [disabled]="addNonForm.pristine || addNonForm.invalid || loadingBtn">Submit
+                                                Non</button>
+                                        </div>
+
+                                    </div>
+                                </form>
+                            </div>
+                            <!-- Non List p-table -->
+                            <div *ngIf="Non_details.length > 0" style="margin-top: 10px;">
+                                <p-table #dt1 [value]="Non_details"
+                                    [globalFilterFields]="['allPiOneNon', 'invoice_no']">
+                                    <ng-template pTemplate="caption">
+                                        <div class="captionTopDiv2">
+                                            <div>
+                                                <!-- <div class="card-header"> -->
+                                                <strong>Non List</strong>
+                                                <!-- </div> -->
+                                            </div>
+                                            <div>
+                                                <input pInputText type="text" class="form-control"
+                                                    (input)="dt1.filterGlobal($event.target.value, 'contains')"
+                                                    placeholder="Global Search" />
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th>Sr.No.</th>
+                                            <th>PI No</th>
+                                            <th>Non Invoice Number</th>
+                                            <th>Invoice Date</th>
+                                            <th>Non Received Date</th>
+                                            <th>Shipment Date</th>
+                                            <th>Total Amount</th>
+                                            <th>Total Quantity</th>
+                                            <th *ngIf="revise_non">Revise Non</th>
+                                            <th>Revise Doc</th>
+                                            <th *ngIf="edit_non">Edit</th>
+                                            <th *ngIf="delete_non">Delete</th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-order let-rowIndex="rowIndex">
+                                        <tr class="over-flow-wrap-break-word">
+                                            <td>
+                                                <span class="ui-column-title">Sr.No.</span>
+                                                {{rowIndex+1}}
+                                            </td>
+                                            <td>
+                                                <span class="ui-column-title">PI No</span>
+                                                {{order.allPiOneNon}}
+                                            </td>
+                                            <td>
+                                                <span class="ui-column-title">Non Invoice Number</span>
+                                                {{order.invoice_no}} <span *ngIf="order.non_copy"> <a
+                                                        *ngFor="let val of getDocsArray(order.non_copy) " href="{{val}}"
+                                                        target="_blank"><i class="fa fa-download"></i></a></span>
+                                            </td>
+                                            <td>
+                                                <span class="ui-column-title">Invoice Date</span>
+                                                {{order.invoice_date | date : "dd-MM-y"}}
+                                            </td>
+                                            <td>
+                                                <span class="ui-column-title">Non Received Date</span>
+                                                {{order.non_received_date | date : "dd-MM-y"}}
+                                            </td>
+                                            <td>
+                                                <span class="ui-column-title">Shipment Date</span>
+                                                {{order.date_of_shipment | date : "dd-MM-y"}}
+                                            </td>
+                                            <td>
+                                                <span class="ui-column-title">Total Amount</span>
+                                                {{order.tot_non_amt | currencyInr}}
+                                            </td>
+                                            <td>
+                                                <span class="ui-column-title">Total Quantity</span>
+                                                {{order.tot_non_qty}}
+                                            </td>
+                                            <td *ngIf="revise_non"><button class="btn btn-sm btn-info"
+                                                    (click)="ReviseNon(order)">
+                                                    <span class="ui-column-title">Revise Non</span>
+                                                    <i class="fa fa-reply-all"></i></button>
+                                            </td>
+                                            <td>
+                                                <span *ngIf="order.non_revised_copy">
+                                                    <span class="ui-column-title">Revise Doc</span>
+                                                    <span *ngFor="let val of order.non_revised_copy">
+                                                        <table>
+                                                            <tr>
+                                                                <td><a href="{{val.non_revised_copy}}" target="_blank">
+                                                                        <i class="fa fa-download"></i></a></td>
+                                                                <td><a style="cursor: pointer;" mwlConfirmationPopover
+                                                                        [popoverTitle]="popoverTitle"
+                                                                        [popoverMessage]="popoverMessage"
+                                                                        [confirmText]="confirmText"
+                                                                        [cancelText]="cancelText"
+                                                                        [placement]="placement"
+                                                                        [closeOnOutsideClick]="closeOnOutsideClick"
+                                                                        confirmButtonType="success"
+                                                                        cancelButtonType="danger"
+                                                                        (confirm)="delete_revise_non_path(val.id)"
+                                                                        (cancel)="cancelClicked = true"><i
+                                                                            class="fa fa-trash"></i></a></td>
+                                                            </tr>
+                                                        </table>
+
+
+                                                    </span>
+                                                </span>
+                                            </td>
+                                            <td *ngIf="edit_non"><a style="cursor: pointer;" (click)="onEditNon(order)">
+                                                    <span class="ui-column-title">Edit</span>
+                                                    <i class="fa fa-pencil"></i></a></td>
+                                            <td *ngIf="delete_non"><a style="cursor: pointer;" mwlConfirmationPopover
+                                                    [popoverTitle]="popoverTitle"
+                                                    [popoverMessage]="popoverMessageDelete" [confirmText]="confirmText"
+                                                    [cancelText]="cancelText" [placement]="placement"
+                                                    [closeOnOutsideClick]="closeOnOutsideClick"
+                                                    confirmButtonType="success" cancelButtonType="danger"
+                                                    (confirm)="onDeleteNon(order.id)" (cancel)="cancelClicked = true">
+                                                    <span class="ui-column-title">Delete</span>
+                                                    <i class="fa fa-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="emptymessage">
+                                        <tr>
+                                            <td colspan="11">No Records Found.</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr> -->
+            <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand;" class="example-element-row"
+                [class.example-expanded-row]="expandedElement === element" (click)="getDetails(element.id, element)">
+            </tr>
+            <!-- <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr> -->
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" style="height: 0px; min-height: 0px;">
+            </tr>
+        </table>
+        <!-- </main> -->
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form>
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Reset LC PI</h4>
+                    <button type="button" class="close" (click)="myModal.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <table class="table table-striped table-hover table-responsive-lg" [mfData]="reset_pi_list"
+                        #mf="mfDataTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Invoice Number</th>
+                                <th>PI Quantity</th>
+                                <th>Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i"
+                                [attr.id]="item.sub_org_id">
+                                <td>
+                                    <div *ngIf="pi_id_list.includes(item.id) ; else notcheck">
+                                        <input type="checkbox" checked
+                                            (change)="onChange($event.target.checked, item.id)">
+                                    </div>
+                                    <ng-template #notcheck>
+                                        <input type="checkbox" (change)="onChange($event.target.checked, item.id)"
+                                            [checked]="checked(item.id)">
+                                    </ng-template>
+                                </td>
+                                <td>{{item.proform_invoice_no}}</td>
+                                <td>{{item.pi_quantity}}</td>
+                                <td>{{item.pi_rate}}</td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="myModal.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary" mwlConfirmationPopover [popoverTitle]="popoverTitle"
+                        [popoverMessage]="popoverMessage" [confirmText]="confirmText" [cancelText]="cancelText"
+                        [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="success"
+                        cancelButtonType="danger" (confirm)="resetLcPi()"
+                        (cancel)="cancelClicked = true">Update</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div bsModal #openLcModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form [formGroup]="addOpenLcForm" novalidate (ngSubmit)="onSubmitOpenLcForm()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Open LC </h4>
+                    <button type="button" class="close" (click)="openLcModal.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+
+                    <div class="form-group row">
+
+                        <div class="col-md-6 mb-2">
+                            <label>LC No.</label>
+                            <input type="text" class="form-control" id="bank_lc_no" formControlName="bank_lc_no"
+                                placeholder="Enter LC Number " [(ngModel)]="bank_lc_no">
+                        </div>
+
+                        <div class="col-md-6 mb-2">
+                            <label>Opening Date</label>
+                            <input type="text" class="form-control" id="lc_opening_date"
+                                formControlName="lc_opening_date"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter Opening Date "
+                                [(ngModel)]="lc_opening_date" readonly>
+                        </div>
+
+                        <div class="col-md-6 mb-2">
+                            <label>Rate</label>
+                            <input type="text" class="form-control" id="lc_rate" formControlName="lc_rate"
+                                placeholder="Enter Rate " [(ngModel)]="lc_rate" numbersOnly>
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>Upload Copy</label>
+                            <input type="file" class="form-control" id="lc_copy_path" formControlName="lc_copy_path"
+                                (change)="addDocs($event)" [multiple]=true>
+                        </div>
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>Supplier Usance Charges</label>
+                            <input type="text" class="form-control" id="supplier_usance_charges"
+                                formControlName="supplier_usance_charges" placeholder="Supplier Usance Charges "
+                                [(ngModel)]="supplier_usance_charges">
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>Manufacturers Name</label>
+                            <input type="text" class="form-control" id="manufacture_name"
+                                formControlName="manufacture_name" placeholder="Manufacturers Name "
+                                [(ngModel)]="manufacture_name">
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>Remark</label>
+                            <input type="text" class="form-control" id="lc_remark" formControlName="lc_remark"
+                                placeholder="Enter Remark " [(ngModel)]="lc_remark">
+                        </div>
+
+
+                        <div *ngIf="third_party_lc == 1; then thenBlock else elseBlock"></div>
+
+                        <ng-template #thenBlock>
+                            <div class="col-md-4 mt-4">
+                                <label>Third Party</label>
+                                <input type="checkbox" id="third_party_lc" formControlName="third_party_lc"
+                                    [checked]=true>
+                            </div>
+                        </ng-template>
+                        <ng-template #elseBlock>
+                            <div class="col-md-4 mt-4">
+                                <label>Third Party</label>
+                                <input type="checkbox" id="third_party_lc" formControlName="third_party_lc">
+                            </div>
+                        </ng-template>
+
+
+                        <div class="col-md-6 mb-2">
+                            <label for="">Funding Bank :</label>
+                            <ng-select id="funding_bank" formControlName="funding_bank" placeholder="Select Bank"
+                                [searchable]="true" [clearable]="true" bindLabel="bank_name" bindValue="id"
+                                [items]="funding_bank_list">
+                            </ng-select>
+                        </div>
+
+                    </div>
+
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="openLcModal.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary"
+                        [disabled]="addOpenLcForm.pristine || addOpenLcForm.invalid">Submit</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div bsModal #lcAmmendModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content">
+            <form [formGroup]="addLcammend" novalidate (ngSubmit)="onSubmitLcAmmend()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Ammend LC </h4>
+                    <button type="button" class="close" (click)="lcAmmendModal.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+
+                    <div class="form-group row">
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>Ammendment Date</label>
+                            <input type="text" class="form-control" id="lc_ammed_date" formControlName="lc_ammed_date"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter  Date "
+                                [(ngModel)]="lc_ammed_date" readonly>
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>Upload Copy</label>
+                            <input type="file" class="form-control" id="lc_ammend_copy" formControlName="lc_ammend_copy"
+                                (change)="addAmmendDocs($event)" [multiple]=true>
+                        </div>
+
+                        <!-- <div class="col-md-6 mb-2">
+                <div class="form-check">
+  
+  
+                  <input class="form-check-input" type="checkbox" value="" (click)="onAmmendValue($event.target.checked)">
+                  <label class="col-form-label" for="ammend_value">Value Ammendment</label>
+                </div>
+  
+              </div> -->
+
+
+
+                        <div class="col-md-4 mb-2" *ngIf="ammend_value == 1">
+                            <div class="form-check">
+                                <label>Value Ammendment</label>
+                                <input type="checkbox" (click)="onAmmendValue($event.target.checked)" id="ammend_value"
+                                    formControlName="ammend_value" [(ngModel)]="ammendValueFlag" [checked]=true>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-2" *ngIf="ammend_value == 0">
+                            <div class="form-check">
+                                <label>Value Ammendment</label>
+                                <input type="checkbox" (click)="onAmmendValue($event.target.checked)" id="ammend_value"
+                                    formControlName="ammend_value" [(ngModel)]="ammendValueFlag">
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4 mb-2" *ngIf="ammend_days == 1">
+                            <div class="form-check">
+                                <label>Days Ammendment</label>
+                                <input type="checkbox" (click)="onAmmendDays($event.target.checked)" id="ammend_days"
+                                    formControlName="ammend_days" [(ngModel)]="ammendDaysFlag" [checked]=true>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-2" *ngIf="ammend_days == 0">
+                            <div class="form-check">
+                                <label>Days Ammendment</label>
+                                <input type="checkbox" (click)="onAmmendDays($event.target.checked)" id="ammend_days"
+                                    formControlName="ammend_days" [(ngModel)]="ammendDaysFlag">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-2" *ngIf="ammend_clause == 1">
+                            <div class="form-check">
+                                <label>Clause Ammendment</label>
+                                <input type="checkbox" (click)="onAmmendClause($event.target.checked)"
+                                    id="ammend_clause" formControlName="ammend_clause" [(ngModel)]="ammendClauseFlag"
+                                    [checked]=true>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-2" *ngIf="ammend_clause == 0">
+                            <div class="form-check">
+                                <label>Clause Ammendment</label>
+                                <input type="checkbox" (click)="onAmmendClause($event.target.checked)"
+                                    id="ammend_clause" formControlName="ammend_clause" [(ngModel)]="ammendClauseFlag">
+                            </div>
+                        </div>
+
+
+
+                        <div class="col-md-12 mb-2" *ngIf="ammendValueFlag">
+                            <label>LC Ammendment Amount</label>
+                            <input type="text" class="form-control" id="ammend_lc_value"
+                                formControlName="ammend_lc_value" placeholder="Enter LC Value "
+                                [(ngModel)]="lc_ammed_db_value">
+                        </div>
+
+                        <div class="col-md-6 mb-2" *ngIf="ammendDaysFlag">
+                            <label>Ammendment In Shipment Date</label>
+                            <input type="text" class="form-control" id="ammend_shipment_date"
+                                formControlName="ammend_shipment_date"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker placeholder="Enter  Date "
+                                [(ngModel)]="ammend_shipment_date" readonly>
+                        </div>
+
+                        <div class="col-md-6 mb-2" *ngIf="ammendDaysFlag">
+                            <label>Ammendment In LC Expiry Date</label>
+                            <input type="text" class="form-control" id="ammend_lc_expiry_date"
+                                formControlName="ammend_lc_expiry_date"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker placeholder="Enter  Date "
+                                [(ngModel)]="ammend_lc_expiry_date" readonly>
+                        </div>
+
+
+                        <div class="col-md-12 mb-2" *ngIf="ammendDaysFlag">
+                            <label class="col-md-4 col-form-label"><strong>Payment Term</strong></label>
+                            <ng-select id="ammend_payment_term_id" formControlName="ammend_payment_term_id"
+                                placeholder="Payment Term" [searchable]="true" [clearable]="true" bindLabel="pay_term"
+                                bindValue="pt_id" [items]="paymentTermListAmmend" [(ngModel)]="ammend_payment_term_id">
+                            </ng-select>
+                        </div>
+
+
+
+                        <div class="col-md-12 mb-2">
+                            <label>Remark</label>
+                            <textarea class="form-control" id="ammend_remark" formControlName="ammend_remark"
+                                placeholder="Enter Remark " [(ngModel)]="lc_ammed_remark"></textarea>
+                        </div>
+
+
+
+
+                    </div>
+
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="lcAmmendModal.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary"
+                        [disabled]="addLcammend.pristine || addLcammend.invalid">Submit</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+
+
+<div bsModal #lcInsuranceModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content">
+            <form [formGroup]="addLcinsurance" novalidate (ngSubmit)="onSubmitLcInsurance()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Insurance LC </h4>
+                    <button type="button" class="close" (click)="lcInsuranceModal.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+
+                    <div class="form-group row">
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>Insurance Date</label>
+                            <input type="text" class="form-control" id="lc_insurance_date"
+                                formControlName="lc_insurance_date"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter  Date "
+                                [(ngModel)]="lc_insurance_date" readonly>
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>Upload Copy</label>
+                            <input type="file" class="form-control" id="lc_insurance_copy"
+                                formControlName="lc_insurance_copy" (change)="addInsuranceDocs($event)" [multiple]=true>
+                        </div>
+
+                        <div class="col-md-12 mb-2">
+                            <label>Remark</label>
+                            <textarea type="text" class="form-control" id="insurance_remark"
+                                formControlName="insurance_remark" placeholder="Enter Remark "
+                                [(ngModel)]="lc_insurance_remark"></textarea>
+                        </div>
+
+
+                    </div>
+
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="lcInsuranceModal.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary"
+                        [disabled]="addLcinsurance.pristine || addLcinsurance.invalid">Submit</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div bsModal #lcCancelModel="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content">
+            <form [formGroup]="updateLcCancelStatus" novalidate (ngSubmit)="onSubmitlcCancel()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">LC Cancel </h4>
+                    <button type="button" class="close" (click)="lcCancelModel.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+
+                    <div class="form-group row">
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>LC Cancel Date</label>
+                            <input type="text" class="form-control" id="lc_cancel_date" formControlName="lc_cancel_date"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter  Date "
+                                [(ngModel)]="lc_cancel_date" readonly>
+                        </div>
+
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>LC Cancel Documents</label>
+                            <input type="file" class="form-control" id="lc_cancel_documents"
+                                formControlName="lc_cancel_documents" (change)="addLcCancelDocs($event)"
+                                [multiple]=true>
+                        </div>
+
+                        <div class="col-md-12 mb-2">
+                            <label>Remark</label>
+                            <textarea type="text" class="form-control" id="lc_cancel_remark"
+                                formControlName="lc_cancel_remark" placeholder="Enter Remark "
+                                [(ngModel)]="lc_cancel_remark"></textarea>
+                        </div>
+
+
+                    </div>
+
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="lcCancelModel.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary"
+                        [disabled]="updateLcCancelStatus.pristine || updateLcCancelStatus.invalid">Submit</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div bsModal #nonModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content">
+            <form [formGroup]="addNonForm" novalidate (ngSubmit)="updateNon()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Update Non </h4>
+                    <button type="button" class="close" (click)="nonModal.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="">Date of shipment</label>
+
+                                <div class="form-group">
+                                    <input type="text" class="form-control" formControlName="date_of_shipment"
+                                        id="date_of_shipment"
+                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                        #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter Date "
+                                        [(ngModel)]='shipmentDate' style="background-color: white;" readonly>
+                                </div>
+
+
+                            </div>
+                            <div class="col-md-6">
+                                <label for="">Invoice Date</label>
+
+                                <div class="form-group">
+                                    <input type="text" class="form-control" formControlName="invoice_date"
+                                        id="invoice_date"
+                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                        #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter Date "
+                                        [(ngModel)]="invoiceDate" readonly style="background-color: white;">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="">Non Received On</label>
+
+                                <div class="form-group">
+                                    <input type="text" class="form-control" formControlName="non_received_date"
+                                        id="non_received_date"
+                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                        #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter Date "
+                                        [(ngModel)]='receivedDate' readonly style="background-color: white;">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="">Invoice No</label>
+
+                                <div class="form-group">
+                                    <input type="text" formControlName="invoice_no" id="invoice_no" class="form-control"
+                                        placeholder="Enter Number " [(ngModel)]='invoiceNo'>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="">Upload Doc</label>
+
+                                <div class="form-group">
+                                    <input type="file" formControlName="non_copy" id="non_copy" class="form-control"
+                                        [multiple]=true placeholder="Enter Date " (change)="addNonDocs($event)">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="">Remark</label>
+
+                                <div class="form-group">
+                                    <textarea class="form-control" placeholder="Enter Remark" formControlName="non_rmk"
+                                        id="non_rmk" [(ngModel)]='remark'></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="nonModal.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="addNonForm.pristine ">Submit</button>
+                    <!-- || addNonForm.invalid -->
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div bsModal #ReviseNonModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content">
+            <form [formGroup]="reviseNonForm" novalidate (ngSubmit)="onSubmitReviseCopy()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Revise Non</h4>
+                    <button type="button" class="close" (click)="ReviseNonModal.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+
+                    <div class="form-group row">
+
+
+
+                        <div class="col-md-6 mb-2">
+                            <label>Upload Copy</label>
+                            <input type="file" class="form-control" id="non_revised_copy"
+                                formControlName="non_revised_copy" (change)="addRevisedCopy($event)" [multiple]=true>
+                        </div>
+
+                        <div class="col-md-12 mb-2">
+                            <label>Discripancy Note</label>
+                            <textarea type="text" class="form-control" id="discrepancy_note"
+                                formControlName="discrepancy_note" placeholder="Enter Note "></textarea>
+                        </div>
+
+
+                    </div>
+
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="ReviseNonModal.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary"
+                        [disabled]="reviseNonForm.pristine || reviseNonForm.invalid">Submit</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<!-- Knock-Off Pop-Up -->
+<div bsModal #conformPopUp="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content">
+            <form [formGroup]="addNonForm" novalidate (ngSubmit)="updateNon()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Are you Sure ? Do you want to Adjust Tolereance for this PI</h4>
+                    <button type="button" class="close" (click)="conformPopUp.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="conformPopUp.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary"
+                        (click)="updatePiQtyTolerance(c_pi_id, c_pi_qty)">Submit</button>
+                    <!-- || addNonForm.invalid -->
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<!-- Discard LC Pop-Up -->
+<div bsModal #discardLcPopUpConformPopUp="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+    aria-labelledby="myModalLabel" aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content">
+            <form [formGroup]="addNonForm" novalidate (ngSubmit)="updateNon()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Are you Sure ? Do you want to Discard This Lc</h4>
+                    <button type="button" class="close" (click)="discardLcPopUpConformPopUp.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        (click)="discardLcPopUpConformPopUp.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary" (click)="discardLc()">Submit</button>
+                    <!-- || addNonForm.invalid -->
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<!-- Tolerence reset Pop-Up -->
+<div bsModal #tolerenceConformPopUp="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+    aria-labelledby="myModalLabel" aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content">
+            <form [formGroup]="addNonForm" novalidate (ngSubmit)="updateNon()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Are you Sure ? Do you want to Reset Tolereance for this LC</h4>
+                    <button type="button" class="close" (click)="tolerenceConformPopUp.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        (click)="tolerenceConformPopUp.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary" (click)="toleranceReset()">Submit</button>
+                    <!-- || addNonForm.invalid -->
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<!-- toleranceAdjust Pop-Up -->
+<div bsModal #toleranceAdjustConformPopUp="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+    aria-labelledby="myModalLabel" aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog " role="document">
+        <div class="modal-content">
+            <form [formGroup]="addNonForm" novalidate (ngSubmit)="updateNon()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Are you Sure ? Do you want to Adjust Tolereance for this LC</h4>
+                    <button type="button" class="close" (click)="toleranceAdjustConformPopUp.hide()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        (click)="toleranceAdjustConformPopUp.hide()">Close</button>
+                    <button type="submit" class="btn btn-primary" (click)="toleranceAdjust()">Submit</button>
+                    <!-- || addNonForm.invalid -->
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

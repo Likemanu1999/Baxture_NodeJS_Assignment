@@ -1,0 +1,626 @@
+<div class="animated fadeIn" *ngIf="!containerDetails">
+  <div class="row" *ngIf="!addForm">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+         <h4><i class="fa fa-truck"></i>  Bill Of Lading of {{non_invoice_no}} , Non Quantity: {{totalNonQty}} , Balance Quantity: <span style="color: red;">{{totalNonQty - totalBlQty}} </span> , Shipping Line : {{shipping_line}} , Port : {{port_name}}
+          <span class="pull-right"><button *ngIf="bl_add" class="btn btn-primary" (click)="addBl()"><i class="fa fa-plus"></i>  BL</button>&nbsp;<button class="btn btn-primary" (click)="onBack()"><i class="fa fa-arrow-left "></i> Back</button></span></h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="form-group col-md-3">
+              <label for="">Shipment Type</label>
+              <ng-select
+              placeholder="Select Sipment Type"
+              [searchable]="true"
+              [clearable]="true"
+              bindLabel="name"
+              bindValue="id"
+              [items]="shipmentType"
+              (change) = "filterShipment($event)"
+              >
+              </ng-select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-2 offset-5" *ngIf="isLoading">
+               <app-loading-spinner ></app-loading-spinner>
+            </div>
+          </div>
+
+          <div class="row" >
+            <div class="col-md-12">
+              <p-table #dt [value]="bl_list"
+              dataKey="id"
+              styleClass="ui-table-non "
+              [rowHover]="true"
+              [rows]="10"
+              [showCurrentPageReport]="true"
+              [rowsPerPageOptions]="[10,25,50]"
+              [paginator]="true"
+              [columns]="cols"
+
+              currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+              [filterDelay]="0" [globalFilterFields]="[]">
+
+
+              <ng-template pTemplate="header" let-columns>
+               <tr>
+                <th style="width: 90px;" *ngIf="bl_edit">Edit </th>
+                <th style="width: 90px;" *ngIf="bl_delete">Del </th>
+                <th style="width: 200px;" *ngIf="container_details">Containers</th>
+                <th pSortableColumn="{{col.field}}" *ngFor="let col of columns" [style.width.px] = 'col.style'> {{col.header}} <p-sortIcon field="{{col.field}}"   ></p-sortIcon></th>
+                <th style="width: 150px;">Add Charges</th>
+
+               </tr>
+
+              </ng-template>
+                <ng-template pTemplate="body" let-item let-columns >
+                    <tr class="ui-selectable-row" >
+
+
+
+                      <!-- <td *ngIf="bl_edit"> 
+                        <span *ngIf="!material_received_flag">
+                          <span class="ui-column-title">Edit </span>
+                          <button class="btn btn-primary btn-sm" (click)="editBl(item)"><i class="fa fa-pencil"></i></button>
+                        </span>
+                       
+                      </td> -->
+
+                      <td *ngIf="bl_edit"> 
+                        <span >
+                          <span class="ui-column-title">Edit </span>
+                          <button class="btn btn-primary btn-sm" (click)="editBl(item)"><i class="fa fa-pencil"></i></button>
+                        </span>
+                        <div class="mt-2" > <input type="checkbox" #check [checked]="item.to_be_bond" style="cursor: pointer" (change)="changeStatus(check.checked , item.id)">To BE IN BOND</div>
+                       
+                      </td>
+
+                      <td *ngIf="bl_delete">
+                        <span >
+                        <span class="ui-column-title">Delete</span>
+                        <button class="btn btn-danger btn-sm" mwlConfirmationPopover
+                        [popoverTitle]="popoverTitle"
+                        [popoverMessage]="popoverMessage"
+                        [confirmText]="confirmText"
+                        [cancelText]="cancelText"
+                        [placement]="placement"
+                        [closeOnOutsideClick]="closeOnOutsideClick"
+                        confirmButtonType="danger"
+                        cancelButtonType="success"
+                        (confirm)="deleteBl(item)"
+                        (cancel)="cancelClicked = true"><i class="fa fa-trash"></i></button></span>
+                      </td>
+
+
+                      <td *ngIf="container_details">
+                        <span class="ui-column-title">Container Details </span>
+                        <button class="btn btn-sm btn-square btn-warning" (click)="getContainerDetails(item)">Container Details</button>
+                      </td>
+
+
+                      <td>
+                        <span class="ui-column-title">BL No/ BL Date</span>
+
+                         {{item.bill_lading_no}}
+                         <span class="badge badge-success">{{item.bl_date | date: 'dd-MM-yyyy'}}</span>
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Bl Qty</span>
+                         {{item.bl_qauntity}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Shipment Type</span>
+                        <span *ngIf="item.shipment_type_master"> {{item.shipment_type_master.name}}</span>
+
+                      </td>
+
+
+
+                      <td>
+                        <span class="ui-column-title">Noting Of Material</span>
+                        <span *ngIf="item.notingOfMaterial"> {{item.notingOfMaterial.sub_org_name}}</span>
+
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">High Seas Invoice No.</span>
+                        {{item.high_seas_invc_no}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">High Seas Invoice Date</span>
+                        {{item.high_seas_invc_dt}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">High Seas Rate</span>
+                        {{item.high_seas_invc_rate}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">CFS/DPD</span>
+                        <span *ngIf="item.cfsDpd"> {{item.cfsDpd.sub_org_name}}</span>
+
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Request Sent to CFS on Dt</span>
+                        {{item.non_negotiable.non_recv_sent_cha | date: "dd-MM-yyyy"}}
+                      </td>
+
+
+                      <td>
+                        <span class="ui-column-title">All Clearing Original Doc Received Dt</span>
+                        {{item.non_negotiable.original_doc_received_date | date : 'dd/MM/yyyy'}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Exchange Copy submited to bank name</span>
+                        {{item.non_negotiable.spipl_bank.bank_name}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Material In Bond</span>
+                        {{getType(item.material_in_bond_status)}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Material In Bond Date</span>
+                        {{item.inbond_date | date : 'dd/MM/yyyy'}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Material EX Bond Details</span>
+                        <span *ngIf="item.exbond_details">
+                          <span *ngFor="let det of item.exbond_details">
+                            <div >Date : {{det.exbond_date | date : 'dd-MM-yyyy'}} , Qty : {{det.exbond_qty}}</div>
+                          
+                          </span>
+                        
+                        </span>
+
+                      </td>
+
+                      <td><button class="btn btn-sm btn-btn btn-block btn-outline-danger" (click)="addCharges(item.id)">Add Charges</button></td>
+
+
+
+
+
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                  <tr>
+                    <td *ngIf="bl_edit"></td>
+                    <td *ngIf="bl_delete"></td>
+                    <td *ngIf="container_details"></td>
+                    <td></td>
+                    <td>{{bl_list | totalsum : 'bl_qauntity'}}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+
+              </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="8" style="text-align:left">No Data found.</td>
+                    </tr>
+                </ng-template>
+              </p-table>
+
+            </div>
+          </div>
+
+
+
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="addForm">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+         <h4><i class="fa fa-truck"></i>  Bill Of Lading of {{non_invoice_no}} , Non Quantity: {{totalNonQty}} , Balance Quantity: <span style="color: red;">{{totalNonQty - totalBlQty}} </span>, Shipping Line : {{shipping_line}} , Port : {{port_name}}  <button class="btn btn-primary pull-right"
+          type="button"  (click)="backBl()"
+          >
+          <i class="fa fa-arrow"></i>Back</button>
+       
+       </h4>
+        
+        </div>
+        <div class="card-body">
+           <div class="row" >
+                <div class="col-md-12">
+                  <form [formGroup]="addBlForm" novalidate (ngSubmit) = "onSubmit()" autocomplete="off">
+                  <div class="row">
+
+                      <div class="form-group col-md-3">
+                        <label for="">BL No.</label>
+                        <input type="text"
+                          class="form-control" formControlName = "bill_lading_no"
+                          placeholder="BL Number " >
+                      </div>
+
+                      <div class="form-group col-md-3">
+                        <label for="">BL Date</label>
+                        <input type="text"
+                                                class="form-control"
+                        [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                        #dp="bsDatepicker" formControlName = "bl_date"
+                        bsDatepicker
+                        placeholder="BL Date "  style="background-color: white;">
+                      </div>
+
+                      <div class="form-group col-md-2">
+                        <label for="">Quantity/BL</label>
+                        <input type="text"
+                        class="form-control" formControlName = "bl_qauntity"
+                        placeholder="Quantity Per BL "  (change) ="checkQty($event)" numbersOnly>
+                        <div [innerHTML] = "qtyValidation" style="color: red;"></div>
+                      </div>
+
+                      <div class="form-group col-md-3" *ngIf="!editBlForm">
+                        <label for="">Container No.</label><span style="color: red;">(Each Cntr No. on new line)</span>
+                        <textarea type="text"
+                        class="form-control" formControlName = "container_no"
+                        placeholder="Enter Container No " ></textarea>
+                      </div>
+                    </div>
+
+                    <hr>
+                    <div class="row" *ngIf="bl_edit">
+
+                      <div class="form-group col-md-3">
+                        <label for="">Shipment Type</label>
+                        <ng-select
+                        formControlName = "shipment_type"
+                        placeholder="Select Sipment Type"
+                        [searchable]="true"
+                        [clearable]="true"
+                        bindLabel="name"
+                        bindValue="id"
+                        [items]="shipmentType"
+                        [(ngModel)]="ifHighSeas"
+                        (change) = "onShipmentChange($event)"
+                        >
+                        </ng-select>
+
+
+                      </div>
+
+                      <div class="form-group col-md-3" *ngIf="high_seas">
+                        <label for="">High Seas Invoice Number .</label>
+                        <input type="text"
+                          class="form-control" formControlName = "high_seas_invc_no"
+                          placeholder="High Seas Invoice Number " >
+                      </div>
+
+                      <div class="form-group col-md-3" *ngIf="high_seas">
+                        <label for=""> High Seas Invoice Date </label>
+                        <input type="text"
+                         class="form-control"
+                        [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                        #dp="bsDatepicker" formControlName = "high_seas_invc_dt"
+                        bsDatepicker
+                        placeholder="High Seas Invoice Date "  style="background-color: white;">
+                      </div>
+
+                      <div class="form-group col-md-3" *ngIf="high_seas">
+                        <label for="">High Seas Invoice Rate</label>
+                        <input type="text"
+                        class="form-control" formControlName = "high_seas_invc_rate"
+                        placeholder=" High Seas Invoice Rate " >
+
+                      </div>
+
+                  
+
+                      <div class="form-group col">
+                        <label for="">Noting of Material</label>
+                        <ng-select
+                        formControlName = "noting_of_material"
+                        placeholder="Select Noting of Material "
+                        [searchable]="true"
+                        [clearable]="true"
+                        bindLabel="sub_org_name"
+                        bindValue="sub_org_id"
+                        [items]="noting"
+                        >
+                      </ng-select>
+                      </div>
+
+                      <div class="form-group col">
+                        <label for="">CFS.</label>
+
+                        <ng-select
+                        formControlName = "cfs_dpd"
+                        placeholder="Select CFS/DPD "
+                        [searchable]="true"
+                        [clearable]="true"
+                        bindLabel="sub_org_name"
+                        bindValue="sub_org_id"
+                        [items]="cfsdpd"
+                        >
+                      </ng-select>
+                      </div>
+
+                     
+
+                      <div class="form-group col-md-3">
+                        <label for="">CHA Agent</label>
+
+                        <ng-select
+                        formControlName = "cha_id"
+                        placeholder="Select CHA "
+                        [searchable]="true"
+                        [clearable]="true"
+                        bindLabel="sub_org_name"
+                        bindValue="sub_org_id"
+                        [items]="cha_agent"
+                        >
+                      </ng-select>
+                      </div>
+
+                      
+                      <div class="form-group col">
+                        <label for="">Terminal</label>
+
+                        <ng-select
+                        formControlName = "terminal_id"
+                        placeholder="Select Terminal "
+                        [searchable]="true"
+                        [clearable]="true"
+                        bindLabel="sub_org_name"
+                        bindValue="sub_org_id"
+                        [items]="terminal"
+                        >
+                      </ng-select>
+                      </div>
+
+               
+
+                      <div class="form-group col-md-3">
+                        <label for="">Transporter</label>
+
+                        <ng-select
+                        formControlName = "transporter_id"
+                        placeholder="Select Transporter "
+                        [searchable]="true"
+                        [clearable]="true"
+                        bindLabel="sub_org_name"
+                        bindValue="sub_org_id"
+                        [items]="transporter" 
+                        multiple = true
+                        >
+                      </ng-select>
+                      </div>
+
+                      <div class="form-group col-md-3">
+                        <label for="">Freight Forwarder</label>
+
+                        <ng-select
+                        formControlName = "fob_id"
+                        placeholder="Select FOB "
+                        [searchable]="true"
+                        [clearable]="true"
+                        bindLabel="sub_org_name"
+                        bindValue="sub_org_id"
+                        [items]="FOB" 
+                      
+                        >
+                      </ng-select>
+                      </div>
+
+
+
+
+                      <div class="form-group col-md-3">
+                        <label for="">All clearing Original Doc Received Date</label>
+                        <input type="text"
+                        class="form-control"
+                         formControlName = "clear_original_doc_receive_dt"
+                        placeholder="Original Doc Received Date "  readonly>
+                      </div>
+
+
+                     <div class="form-group col-md-3">
+                        <label for="">Delivery Type</label>
+                        <ng-select
+                        formControlName = "material_in_bond_status"
+                        placeholder="Select "
+                        [searchable]="true"
+                        [clearable]="true"
+                        bindLabel="type"
+                        bindValue="id"
+                        [items]="material_type" (change)="deliveryType($event)"
+                        >
+                        </ng-select>
+                      </div>
+
+                      <div class="form-group col-md-3">
+                        <label for="">In Bond Date</label>
+                        <input type="text"
+                        class="form-control"
+                        [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                        #dp="bsDatepicker" formControlName = "inbond_date"
+                        bsDatepicker
+                        placeholder="In Bond Date "  style="background-color: white;" (bsValueChange) = "enableExBond($event)">
+                      </div>
+
+                      <div class="form-group col-md-3">
+                        <label for="">Material Received Date</label>
+                        <input type="text"
+                        class="form-control"
+                        [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                        #dp="bsDatepicker" formControlName = "material_received_date_logistics"
+                        bsDatepicker
+                        placeholder="Material Received Date"  style="background-color: white;">
+                      </div>
+
+                      <div class="form-group col-md-3"  *ngIf="exbond_details">
+                        <label for="">Bond Godown.</label>
+
+                        <ng-select
+                        formControlName = "bond_id"
+                        placeholder="Select Bond Godown "
+                        [searchable]="true"
+                        [clearable]="true"
+                        bindLabel="godown_name"
+                        bindValue="id"
+                        [items]="godown_bond"
+                        >
+                      </ng-select>
+                      </div>
+
+
+                      <div class="form-group col-md-3">
+                        <label for="">Remark</label>
+                        <textarea type="text"
+                        class="form-control" formControlName = "remark"
+                        placeholder="Remark " ></textarea>
+                      </div>
+
+                      <div class="col-md-12 mb-5" *ngIf="exbond_details">
+                        <button class="btn btn-success btn-sm " type="button" (click)="addRow()">+ Add Ex Bond Details</button>
+                      </div>
+
+                      <div class="col-md-12">
+                        <table class="table table-bordered" style="overflow: auto;">
+                          <thead>
+                            <tr>
+                              <th>Godown</th>
+                              <th>Exbond Date</th>
+                              <th> Quantity</th>
+                              <th>Short Qty</th>
+                              <th>Short Remark</th>
+                              <th>Damage Qty</th>
+                              <th>Damage Remark</th>
+                              <th>Short Debit/credit No</th>
+                              <th>Damage Debit/Credit No</th>
+                              <th>Del</th>
+                            </tr>
+                          </thead>
+                          <tbody >
+                         
+                            <tr formArrayName="ExBondDetails"  *ngFor="let row of template ; let i = index">
+                              <ng-container [formGroupName]="i">
+                              <td> <ng-select
+                                formControlName ="godown_id"
+                                placeholder="Select Godown "
+                                [searchable]="true"
+                                [clearable]="true"
+                                bindLabel="godown_name"
+                                bindValue="id"
+                                [items]="godown"
+                                >
+                              </ng-select></td>
+                              <td>
+                                <input type="text"  formControlName ="exbond_date"
+                                class="form-control"
+                                [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker"
+                                bsDatepicker
+                                placeholder="EX Bond Date "  style="background-color: white;">
+                              </td>
+                              <td>
+                                <input type="text"  formControlName ="exbond_qty"
+                                class="form-control"
+                                placeholder="Quantity " (change)="checkExbondQty( i)" numbersOnly>
+                                <input type="hidden"  formControlName ="idVal"
+                                class="form-control"
+                               >
+                              </td>
+                              <td>
+                                <input type="text"  formControlName ="short_qty"
+                                class="form-control"
+                                placeholder="Quantity " numbersOnly>
+                              </td>
+                              <td>
+                                <input type="text"  formControlName ="short_remark"
+                                class="form-control"
+                                placeholder="Remark " >
+                              </td>
+                              <td>
+                                <input type="text"  formControlName ="damage_qty"
+                                class="form-control"
+                                placeholder="Quantity " numbersOnly>
+                               
+                              </td>
+
+                              <td>
+                                <input type="text"  formControlName ="damage_remark"
+                                class="form-control"
+                                placeholder="Remark " >
+                              </td>
+
+                              <td>
+                                <input type="text"  formControlName ="short_deb_credit_no"
+                                class="form-control"
+                                placeholder=" " >
+                              </td>
+
+                              <td>
+                                <input type="text"  formControlName ="damage_deb_credit_no"
+                                class="form-control"
+                                placeholder=" " >
+                              </td>
+                              <td> <a style="cursor: pointer;" class="btn btn-sm btn-danger" (click)="deleteRow(i)"  ><i class="fa fa-trash"></i></a></td>
+                              </ng-container>
+                            </tr>
+
+                          </tbody>
+
+                        </table>
+                      </div>
+
+
+                    
+
+
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-12">
+                      <button class="btn btn-primary mr-1"
+                      type="submit"  [disabled]="addBlForm.pristine || addBlForm.invalid"
+                      >
+                      <i class="fa fa-dot-circle-o"></i>Submit</button>
+
+                    
+                    </div>
+                  </div>
+                </form>
+              </div>
+          </div>
+       </div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+

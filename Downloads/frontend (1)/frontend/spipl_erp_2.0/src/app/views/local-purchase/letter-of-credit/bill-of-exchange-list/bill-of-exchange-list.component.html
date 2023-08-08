@@ -1,0 +1,323 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4> <i class="fa fa-file"></i> Bill of Exchange</h4>
+        </div>
+
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="col-md-4">
+                <div class="row mb-4">
+                  <div class="col-md-5">
+                    <label for=""><b>Bill of Exchange Date:</b></label>
+                  </div>
+
+                  <div class="col-md-7">
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                      </div>
+                      <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                        (ngModelChange)="onRangeSelect($event, 1)" placeholder=" Lifting Date Range ">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-2 offset-5" *ngIf="isLoading">
+              <app-loading-spinner></app-loading-spinner>
+            </div>
+          </div>
+
+
+          <div class="row" *ngIf="!isLoading">
+            <div class="col-md-12">
+              <p-table #dt [value]="data" dataKey="id" styleClass="ui-table-boe" [rowHover]="true" [rows]="10"
+                [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading"
+                [paginator]="false" [columns]="cols" [scrollable]="true" [virtualRowHeight]="400" scrollHeight="350px"
+                [virtualScroll]="true" (onFilter)="onFilter($event, dt)" [filterDelay]="0" [globalFilterFields]="">
+
+
+                <ng-template pTemplate="caption">
+
+                  <div class="row">
+
+
+                    <div class="col-md-3">
+
+                      <div class="ui-helper-clearfix" style="text-align: left">
+                        <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                          (click)="exportExcel()" style="margin-right: 0.5em;" class="ui-button-success"></button>
+                        <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF"
+                          (click)="exportPdf()" class="ui-button-warning"></button>
+                      
+
+                      </div>
+
+
+
+                    </div>
+
+                    <div class="col-md-2">
+                      <span>
+                        <ng-select [(ngModel)]="selected_status" placeholder="Select status" bindLabel="label"
+                        bindValue="value" [searchable]="false" [clearable]="false" [items]="status"
+                        style="width: 180px !important;" (change)="onRangeSelect($event , 2)"
+                        style="font-size: 11px;">
+                      </ng-select>
+                      </span>
+                   
+                    </div>
+
+
+
+                    <div class="col-md-3">
+
+                      <input pInputText class='form-control' type="text"
+                        (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+
+                    </div>
+
+
+                  </div>
+
+
+
+                </ng-template>
+
+                <ng-template pTemplate="header" let-columns>
+
+
+                  <tr>
+
+                    <th [style.width]="col.style" pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+                      {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                    </th>
+                    <th style="width: 90px;">Status</th>
+
+                  </tr>
+
+                  <tr>
+
+                    <th>
+                      <div *ngIf="supplier_list.length > 0 ">
+                        <p-multiSelect [options]="supplier_list" placeholder="All"
+                          (onChange)="onchange($event,'supplierName')" styleClass="ui-column-filter"
+                          optionLabel='supplierName'>
+                          <ng-template let-op pTemplate="item">
+
+                            <span>&#123;&#123;op.label&#125;&#125;</span>
+
+                          </ng-template>
+                        </p-multiSelect>
+                      </div>
+                    </th>
+
+                    <th>
+                      <div *ngIf="bank_list.length > 0 ">
+                        <p-multiSelect [options]="bank_list" placeholder="All"
+                          (onChange)="onchange($event,'spiplBankName')" styleClass="ui-column-filter"
+                          optionLabel='spiplBankName'>
+                          <ng-template let-op pTemplate="item">
+
+                            <span>&#123;&#123;op.label&#125;&#125;</span>
+
+                          </ng-template>
+                        </p-multiSelect>
+                      </div>
+                    </th>
+                    <th></th>
+                    <th></th>
+
+                    <th>
+                      <input type="text" class="form-control" [(ngModel)]="be_date"
+                        (ngModelChange)="onDateSelect($event,'be_date')"
+                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                        bsDatepicker placeholder="Search by Date">
+                    </th>
+                    <th></th>
+                    <th>
+                      <input type="text" class="form-control" [(ngModel)]="dut_dt"
+                        (ngModelChange)="onDateSelect($event,'dut_dt')"
+                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                        bsDatepicker placeholder="Search by Date">
+                    </th>
+                    <th></th>
+                    <th></th>
+
+                    <th>
+                      <input type="text" class="form-control" [(ngModel)]="conf_issue_dt"
+                        (ngModelChange)="onDateSelect($event,'conf_issue_dt')"
+                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                        bsDatepicker placeholder="Search by Date">
+                    </th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+
+
+                  </tr>
+
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-columns let-index="rowIndex">
+                  <tr class="ui-selectable-row">
+
+
+                    <td style="width:200px">
+                      <span class="ui-column-title">Supplier Name</span>
+                      {{item.supplierName}}
+                    </td>
+
+                    <td style="width:200px">
+                      <span class="ui-column-title">Bank Name</span>
+                      {{item.spiplBankName}}
+                    </td>
+
+                    <td style="width:200px">
+                      <span class="ui-column-title">Download Doc</span>
+                      <span style="cursor: pointer; color: red;" (click)="bexDocDownload(item)">Bex Doc Download <i
+                          class="fa fa-file"></i></span>
+                    </td>
+
+                    <td style="width:150px">
+                      <span class="ui-column-title">Bank Reference Number</span>
+                      {{item.bank_ref_no}} <span *ngIf="item.purchase_invoice_copy">
+                        <span *ngFor="let doc of getDocsArray(item.bex_accept_copy)">
+                          <a href={{doc}} target="_blank"><i class="fa fa-file"></i></a>
+                        </span>
+                      </span>
+                    </td>
+
+
+                    <td style="width:150px">
+                      <span class="ui-column-title">Bill of Exchange Date</span>
+                      {{item.be_date | date: "dd/MM/y E"}}
+                    </td>
+
+
+                    <td style="width:200px">
+                      <span class="ui-column-title">Bill of Exchange Number </span>
+                      {{item.be_no}}
+                    </td>
+
+
+                    <td style="width:300px">
+                      <span class="ui-column-title">Bill of Exchange Due Date</span>
+                      {{item.dut_dt | date: "dd/MM/y E"}}
+                    </td>
+
+                    <td style="width:150px">
+                      <span class="ui-column-title">Amount</span>
+                      {{item.be_amount| currencyInr}}
+                    </td>
+
+                    <td style="width:180px">
+                      <span class="ui-column-title">Remark</span>
+                      {{item.remark}}
+                    </td>
+
+
+                    <td style="width:150px">
+                      <span class="ui-column-title">Bex Issue Date</span>
+                      {{item.conf_issue_dt}}
+                    </td>
+
+                    <td style="width:100px">
+                      <span class="ui-column-title">Bex Discount Date</span>
+                      {{item.discount_date}}
+                    </td>
+
+
+
+                    <td style="width:150px">
+                      <span class="ui-column-title"> Discount Rate</span>
+                      {{item.discount_rate}}
+                    </td>
+
+                    <td style="width:100px">
+                      <span class="ui-column-title">Margin Money</span>
+                      {{item.margin_money}}
+                    </td>
+
+                    <td style="width:100px">
+                      <span class="ui-column-title">Amount Credited To Supplier</span>
+                      {{item.amt_credit_supplier | currencyInr}}
+                    </td>
+
+                    <td pEditableColumn style="width:90px">
+                      <span class="ui-column-title">Update Status</span>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <select class="form-control" (change)="updateStatus($event , item.id)">
+                            <option value=''> Select </option>
+                            <option value='0'>Pending</option>
+                            <option value='1'>Remit</option>
+                          </select>
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span [innerHTML]="getStatus(item.status)"></span>
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+
+
+
+
+
+                  </tr>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                  <tr>
+
+                  
+                    <td style="width: 1400px;" colspan="7"></td>
+                    <td style="width: 150px;">{{beAmount | currencyInr}}</td>
+                    <td style="width: 680px;" colspan="5"></td>
+                
+                    <td style="width: 100px;">{{amountCreditedToSupplier | currencyInr}}</td>
+                    <td style="width: 90px;"></td>
+
+                  </tr>
+                  <tr>
+                    <td colspan="10" style="text-align:left">Total Records: {{filteredValuess?.length}}</td>
+                  </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+
+                  <tr>
+                    <td colspan="10" style="text-align:left">No Data found.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-confirmDialog #cd header="Confirmation" icon="pi pi-info-triangle" [style]="{width: '40vw'}" [visible]="displayPop">
+  <p-footer>
+    <strong>Update Status</strong>
+    <button type="button" pButton class="ui-button-danger" icon="pi pi-times" label="Reject"
+      (click)="onReject()"></button>
+
+    <button type="button" class="ui-button-success" pButton icon="pi pi-check" label="Approve"
+      (click)="cd.accept()"></button>
+  </p-footer>
+</p-confirmDialog>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

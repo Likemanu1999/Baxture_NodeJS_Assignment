@@ -1,0 +1,330 @@
+<div class="animated fadeIn mt-2">
+    <div class="row">
+        <div class="col-md-6 p-0">
+            <div class="form-inline">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><em class="fa fa-calendar"></em></span>
+                        </div>
+                        <input type="text" id="dateRange" class="form-control" bsDaterangepicker [maxDate]="maxDate"
+                            [bsConfig]="datePickerConfig" [(ngModel)]="bsRangeValue" placeholder="Date Range"
+                            style="background-color: white;" (ngModelChange)="clearDropdown(); onDateChange($event)"
+                            placement="bottom">
+                        <app-dropdown-daterange class="ml-4" (dateEvent)="receiveDate($event)"
+                            [uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- <div class="col-md-6 occasion-msg bg-white" *ngIf="is_holiday">
+			<p class="mb-0 h5">
+				<marquee direction="left" scrolldelay="100" behavior="loop">
+					<img [src]="holiday.icon_path" class="img-responsive holiday-icon">&nbsp;
+					<span class="text-dark">Happy {{holiday.name}}</span>
+				</marquee>
+			</p>
+		</div> -->
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6 col-sm-12 p-0 pr-1">
+            <div class="card">
+                <div class="card-header">
+                    Purchase Report
+                    <div class="card-header-actions">
+                        <div class="card-header-actions" style="height: 21px;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p-table #dt dataKey="id" styleClass="sales_purchase_table" [value]="purchaseData" [rows]="10"
+                        [showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+                        [loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="p_cols"
+                        (onFilter)="onFilter($event, 'purchase')"
+                        currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+                        <ng-template pTemplate="caption">
+
+                        </ng-template>
+                        <ng-template pTemplate="header" let-columns>
+                            <tr>
+
+                                <th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+                                    {{col.header}}
+                                    <p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+                                </th>
+                            </tr>
+                            <tr>
+
+                                <th *ngFor="let col of columns">
+                                    <p-multiSelect *ngIf="col.filter" [options]="col.dropdown" defaultLabel="All"
+                                        (onChange)="customFilter($event.value, col.field, 'in' , 'purchase')">
+                                    </p-multiSelect>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-rowData let-expanded="expanded">
+                            <tr class="ui-selectable-row">
+
+                                <td *ngFor="let col of p_cols">
+
+                                    <span class="ui-column-title">{{ col.header }}: </span>
+
+                                    <div *ngIf="col.type == null">
+                                        {{ rowData[col.field] }}
+                                    </div>
+                                    <div *ngIf="col.type == 'Quantity'">
+                                        {{ rowData[col.field] }} {{ rowData.unit_type }}
+                                    </div>
+
+
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="footer" let-columns>
+                            <tr>
+
+                                <td *ngFor="let col of columns">
+                                    <strong *ngIf="col.type == 'Quantity'">
+                                        Total: {{ col.total | number }} MT
+                                    </strong>
+                                    <strong *ngIf="col.type == 'Amount'">
+                                        Total: {{ col.total | currency:'INR' }}
+                                    </strong>
+                                </td>
+
+                            </tr>
+
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+
+                                <td [attr.colspan]="p_cols.length " class="text-center">
+                                    No Data Found
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-sm-12 p-0 pr-1">
+            <div class="card">
+                <div class="card-header">
+                    Sale Report
+                    <div class="card-header-actions">
+                        <div class="card-header-actions" style="height: 21px;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p-table #dt2 dataKey="id" styleClass="sales_purchase_table" [value]="salesData" [rows]="10"
+                        [showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+                        [loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="s_cols"
+                        (onFilter)="onFilter($event, dt2)"
+                        currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+                        <ng-template pTemplate="caption">
+
+                        </ng-template>
+                        <ng-template pTemplate="header" let-columns>
+                            <tr>
+
+                                <th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+                                    {{col.header}}
+                                    <p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+                                </th>
+                            </tr>
+                            <tr>
+
+                                <th *ngFor="let col of columns">
+                                    <p-multiSelect *ngIf="col.filter" [options]="col.dropdown" defaultLabel="All"
+                                        (onChange)="customFilter($event.value, col.field, 'in' , 'sale')">
+                                    </p-multiSelect>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-rowData let-expanded="expanded">
+                            <tr class="ui-selectable-row">
+
+                                <td *ngFor="let col of s_cols">
+
+                                    <span class="ui-column-title">{{ col.header }}: </span>
+                                    <div *ngIf="col.type == null">
+                                        {{ rowData[col.field] }}
+                                    </div>
+                                    <div *ngIf="col.type == 'Quantity'">
+                                        {{ rowData[col.field] }} {{ rowData.unit_type }}
+                                    </div>
+
+
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="footer" let-columns>
+                            <tr>
+
+                                <td *ngFor="let col of columns">
+                                    <strong *ngIf="col.type == 'Quantity'">
+                                        Total: {{ col.total | number }} MT
+                                    </strong>
+                                    <strong *ngIf="col.type == 'Amount'">
+                                        Total: {{ col.total | currency:'INR' }}
+                                    </strong>
+                                </td>
+
+                            </tr>
+
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+
+                                <td [attr.colspan]="s_cols.length " class="text-center">
+                                    No Data Found
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-12 col-sm-12 p-0 pr-1">
+            <div class="card">
+                <div class="card-header">
+                    Sale Purchase Linking
+                    <div class="card-header-actions">
+                        <div class="card-header-actions" style="height: 21px;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p-table #dt3 dataKey="id" styleClass="sales_purchase_table" [value]="salePurchaseLinkData"
+                        [rows]="10" [showCurrentPageReport]="true" [rowHover]="true"
+                        [rowsPerPageOptions]="[10,25,50,100]" [loading]="isLoading" [autoLayout]="true"
+                        [paginator]="true" [columns]="link_cols" (onFilter)="onFilter($event, 'link')"
+                        currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries"
+                        [globalFilterFields]="['sub_org_name','proform_invoice_no','so_no']">
+                        <ng-template pTemplate="caption">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="w-100 mt-1 pull-right">
+                                        <input pInputText type="text" class="form-control"
+                                            (input)="dt3.filterGlobal($event.target.value, 'contains')"
+                                            placeholder="Global Search" />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </ng-template>
+                        <ng-template pTemplate="header" let-columns>
+                            <tr>
+
+                                <th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+                                    {{col.header}}
+                                    <p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+                                </th>
+                            </tr>
+                            <tr>
+
+                                <th *ngFor="let col of columns">
+                                    <p-multiSelect *ngIf="col.filter" [options]="col.dropdown" defaultLabel="All"
+                                        (onChange)="customFilter($event.value, col.field, 'in' , 'link')">
+                                    </p-multiSelect>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-rowData let-expanded="expanded">
+                            <tr class="ui-selectable-row">
+
+                                <td *ngFor="let col of link_cols">
+
+                                    <span class="ui-column-title">{{ col.header }}: </span>
+
+                                    <div *ngIf="col.type == null">
+                                        {{ rowData[col.field] }}
+                                    </div>
+                                    <div *ngIf="col.type == 'Quantity'">
+                                        {{ rowData[col.field] }} {{ rowData.unit_type }}
+                                    </div>
+
+
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="footer" let-columns>
+                            <tr>
+
+                                <td *ngFor="let col of columns">
+                                    <strong *ngIf="col.type == 'Quantity'">
+                                        Total: {{ col.total | number }} MT
+                                    </strong>
+                                    <strong *ngIf="col.type == 'Amount'">
+                                        Total: {{ col.total | currency:'INR' }}
+                                    </strong>
+                                </td>
+
+                            </tr>
+
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+
+                                <td [attr.colspan]="p_cols.length " class="text-center">
+                                    No Data Found
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6 col-sm-12 p-0 pl-1">
+            <div class="card">
+                <div class="card-header">
+                    SURISHA Purchase Summary
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped table-hover table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th scope="col">Id</th>
+                                <th scope="col">LC Issue</th>
+                                <th scope="col">LC Pending</th>
+                                <th scope="col">LC Remit</th>
+                                <th scope="col">TT Payment Done</th>
+                                <th scope="col">TT Payment Pending</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>{{purchase_lc_issue}}</td>
+                                <td>{{purchase_lc_pending}}</td>
+                                <td>{{purchase_lc_remit}}</td>
+                                <td>{{purchase_tt_done}}</td>
+                                <td>{{purchase_tt_pending}}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>

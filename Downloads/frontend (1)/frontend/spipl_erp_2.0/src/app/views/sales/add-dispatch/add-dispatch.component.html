@@ -1,0 +1,484 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-body">
+					<div class="row mb-2">
+						<div class="col-md-9">
+							<h4 class="text-primary order-heading">
+								{{fp_data.customer}} ({{fp_data.location_vilage}}) &nbsp; | &nbsp; {{fp_data.zone}}
+							</h4>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4 mb-1">
+							<strong>Godown: </strong> {{fp_data.godown_name}}
+						</div>
+						<div class="col-md-4 mb-1">
+							<strong>Deal Grade: </strong> {{fp_data.grade_name}}
+						</div>
+						<div class="col-md-4 mb-1">
+							<strong>Deal Rate: </strong> {{fp_data.final_rate | currency:'INR'}}
+						</div>
+						<div class="col-md-4 mb-1">
+							<strong>Deal Quantity: </strong> {{fp_data.quantity}} {{fp_data.unit_type}}
+						</div>
+						<div class="col-md-4 mb-1">
+							<strong>Plan Quantity: </strong> {{fp_data.plan_quantity}} {{fp_data.unit_type}}
+						</div>
+						<div class="col-md-4 mb-1">
+							<strong>Delivery Term: </strong> {{fp_data.delivery_term}}
+						</div>
+						<div class="col-md-4 mb-1">
+							<strong>Freight: </strong> {{fp_data.freight_rate | currency:'INR'}}
+						</div>
+						<div class="col-md-4 mb-1">
+							<strong>N.B.: </strong> {{fp_data.nb | currency:'INR'}}
+						</div>
+						<div class="col-md-4 mb-1">
+							<strong>Payment Term: </strong> {{fp_data.payment_term}}
+						</div>
+						<div class="col-md-4 mb-1">
+							<strong>Total Amount: </strong> {{fp_data.total_amount | currency:'INR'}}
+						</div>
+						<div class="col-md-8 mb-1">
+							<strong>Remark: </strong> {{fp_data.remark}}
+						</div>
+						<div class="col-md-12 mt-1 mb-1 text-success"
+							*ngIf="fp_data.category_request_status_label != null">
+							<strong>* {{fp_data.category_request_status_label}}</strong>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-body">
+					<form [formGroup]="dispatchForm" novalidate (ngSubmit)="submitdispatchForm()" autocomplete="off"
+						class="needs-validation">
+						<div class="form-row">
+							<div class="col-md-2">
+								<div class="form-group">
+									<label for="dispatch_date">
+										Dispatch Date
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<input type="text" class="form-control" id="dispatch_date"
+										formControlName="dispatch_date" placeholder="Dispatch Date"
+										[bsConfig]="datePickerConfig" [maxDate]="max_date" bsDatepicker readonly>
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="form-group">
+									<label for="godown_id">
+										Godown
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<ng-select *ngIf="order_company_id == 1 || order_company_id == 3" id="godown_id"
+										formControlName="godown_id" placeholder="Godown" [searchable]="true"
+										[clearable]="true" bindLabel="godown_name" bindValue="id" [items]="godownList"
+										(change)="onChangeValue($event, 'godown')">
+									</ng-select>
+									<ng-select *ngIf="order_company_id == 2" id="godown_id" formControlName="godown_id"
+										placeholder="Godown" [searchable]="true" [clearable]="true"
+										bindLabel="godown_name" bindValue="id" [items]="subGodownList">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label for="grade_id">
+										Grade
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<ng-select id="grade_id" formControlName="grade_id" placeholder="Grade"
+										[searchable]="true" [clearable]="true" bindLabel="grade_name"
+										bindValue="grade_id" [items]="gradeList"
+										(change)="onChangeValue($event, 'grade')" [readonly]="company_id == 2">
+									</ng-select>
+								</div>
+							</div>
+
+						</div>
+						<div class="form-row">
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="quantity">
+										Quantity
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<div class="input-group">
+										<input type="text" class="form-control" id="quantity" formControlName="quantity"
+											placeholder="Quantity"
+											(change)="onChangeValue($event.target.value, 'quantity')" numbersOnly>
+										<div class="input-group-append">
+											<span class="input-group-text">KG</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3" *ngIf="showLogisticPower">
+								<div class="form-group">
+									<label for="logistic_power" class="mb-0">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="use_logistic_power"
+												formControlName="use_logistic_power"
+												(change)="onChangeValue($event.target.checked, 'use_logistic_power')">
+											<label for="use_logistic_power">Use Logistic Power</label>
+										</div>
+									</label>
+									<div class="input-group">
+										<input type="text" class="form-control" id="logistic_power"
+											formControlName="logistic_power" placeholder="Logistic Power"
+											(change)="onChangeValue($event.target.value, 'logistic_power')" numbersOnly
+											[readonly]="!enableLogisticPower">
+										<div class="input-group-append">
+											<span class="input-group-text">KG</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="lr_no">LR Number</label>
+									<input type="text" class="form-control" id="lr_no" formControlName="lr_no"
+										placeholder="LR Number">
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="lr_date">LR Date</label>
+									<input type="text" class="form-control" id="lr_date" formControlName="lr_date"
+										placeholder="LR Date" [bsConfig]="datePickerConfig" [maxDate]="max_date"
+										bsDatepicker readonly>
+								</div>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="col-md-5">
+								<div class="form-group">
+									<label for="transporter_id">
+										Transporter
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<ng-select id="transporter_id" formControlName="transporter_id"
+										placeholder="Transporter" [searchable]="true" [clearable]="true"
+										bindLabel="sub_org_name" bindValue="sub_org_id" [items]="transportersList"
+										(change)="onChangeValue($event, 'transporter')">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-md-3" *ngIf="enableTempGST">
+								<div class="form-group">
+									<label for="temp_gst_no">Temp GST No</label>
+									<input type="text" class="form-control" id="temp_gst_no"
+										formControlName="temp_gst_no" placeholder="Temp GST No"
+										style="text-transform: uppercase;">
+								</div>
+							</div>
+							<div class="col-md-2">
+								<div class="form-group">
+									<label for="truck_no">Truck No.
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<input type="text" class="form-control" id="truck_no" formControlName="truck_no"
+										placeholder="Truck No." style="text-transform: uppercase;">
+								</div>
+							</div>
+							<div class="col-md-2">
+								<div class="form-group">
+									<label for="driver_mobile_no">Driver Number</label>
+									<input type="text" class="form-control" id="driver_mobile_no"
+										formControlName="driver_mobile_no" placeholder="Driver Mobile No." numbersOnly>
+								</div>
+							</div>
+						</div>
+						<!-- <div class="form-row">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label for="purchase_deal_id">Local Purchase Deal</label>
+									<ng-select id="purchase_deal_id" formControlName="purchase_deal_id"
+										placeholder="Local Purchase Deal" [searchable]="true" [clearable]="true"
+										bindLabel="label" bindValue="value" [items]="purchaseDealList"
+										(change)="onChangeValue($event, 'purchase_deal')">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="purchase_invoice_no">Purchase Invoice Number</label>
+									<input type="text" class="form-control" id="purchase_invoice_no"
+										formControlName="purchase_invoice_no" placeholder="Purchase Invoice Number">
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="purchase_invoice_date">Purchase Invoice Date</label>
+									<input type="text" class="form-control" id="purchase_invoice_date"
+										formControlName="purchase_invoice_date" placeholder="Purchase Invoice Date"
+										[bsConfig]="datePickerConfig" [maxDate]="max_date" bsDatepicker readonly>
+								</div>
+							</div>
+						</div> -->
+						<div class="form-row">
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="load_cross_type">
+										Load/Cross Type
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<ng-select id="load_cross_type" formControlName="load_cross_type"
+										placeholder="Load/Cross Type" [searchable]="false" [clearable]="false"
+										bindLabel="name" bindValue="id" [items]="loadCrossTypeList"
+										(change)="onChangeValue($event.id, 'load_cross')">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-md-3" *ngIf="enableLoad">
+								<div class="form-group">
+									<label for="load_quantity_charges">
+										Load Quantity / Charges
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<div class="input-group">
+										<input type="text" class="form-control" id="load_quantity"
+											formControlName="load_quantity" placeholder="Quantity"
+											(change)="onChangeValue($event.target.value, 'load_quantity')" numbersOnly>
+										<div class="input-group-append">
+											<span class="input-group-text">KG</span>
+										</div>
+										<input type="text" class="form-control load_cross_charges" id="load_charges"
+											formControlName="load_charges" placeholder="Charges" readonly>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3" *ngIf="enableCross">
+								<div class="form-group">
+									<label for="cross_quantity_charges">
+										Cross Quantity / Charges
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<div class="input-group">
+										<input type="text" class="form-control" id="cross_quantity"
+											formControlName="cross_quantity" placeholder="Quantity"
+											(change)="onChangeValue($event.target.value, 'cross_quantity')" numbersOnly>
+										<div class="input-group-append">
+											<span class="input-group-text">KG</span>
+										</div>
+										<input type="text" class="form-control load_cross_charges" id="cross_charges"
+											formControlName="cross_charges" placeholder="Charges" readonly>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-2">
+								<div class="form-group">
+									<label for="is_eway_bill" class="is_eway_label">Is E-Way Bill</label>
+									<br>
+									<p-inputSwitch id="is_eway_bill" formControlName="is_eway_bill"
+										(onChange)="onChangeValue($event, 'is_eway_bill')" onLabel="Yes" offLabel="No">
+									</p-inputSwitch>
+								</div>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="delivery_term">
+										Delivery Term <sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<ng-select id="delivery_term_id" formControlName="delivery_term_id"
+										placeholder="Delivery Term" [searchable]="false" [clearable]="false"
+										bindLabel="term" bindValue="id" [items]="deliveryTermList"
+										(change)="onChangeValue($event, 'delivery_term')">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="freight_rate">
+										Freight Rate
+									</label>
+									<input type="text" class="form-control" id="freight_rate"
+										formControlName="freight_rate" placeholder="Freight Rate"
+										(change)="onChangeValue($event.target.value, 'freight_rate')"
+										[readonly]="!enableFreightRate">
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="transition_type">
+										Transition Type
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<ng-select id="transition_type" formControlName="transition_type"
+										placeholder="Transition Type" [searchable]="false" [clearable]="false"
+										bindLabel="name" bindValue="id" [items]="transitionList"
+										(change)="onChangeValue($event.id, 'transition')">
+									</ng-select>
+								</div>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="col-md-6" *ngIf="enableBillTo">
+								<div class="form-group">
+									<label for="bill_to">Bill To</label>
+									<textarea id="bill_to" formControlName="bill_to" class="form-control"
+										placeholder="Bill To" [readonly]="true"></textarea>
+								</div>
+							</div>
+							<div class="col-md-6" *ngIf="enableBillShip">
+								<div class="form-group">
+									<label for="ship_to" class="w-100">
+										<div class="row">
+											<div class="col-md-10">
+												Ship To <sup class="text-danger"><strong>*</strong></sup>
+											</div>
+											<div class="col-md-2 text-right">
+												<button type="button"
+													class="btn btn-outline-primary btn-sm action-btn rounded-circle"
+													(click)="onAction(rowData, 'View_Ship_To_Address')">
+													<i class="fa fa-plus"></i>
+												</button>
+											</div>
+										</div>
+									</label>
+									<textarea id="ship_to" formControlName="ship_to" class="form-control"
+										placeholder="Ship To"></textarea>
+									<!-- <ng-select id="ship_to" formControlName="ship_to" placeholder="Ship To"
+										[searchable]="true" [clearable]="true" bindLabel="name" bindValue="name"
+										[items]="shipToList" addTagText="Add New Address"
+										[addTag]="createNewShippingAddress">
+									</ng-select> -->
+								</div>
+							</div>
+							<div class="col-md-6" *ngIf="enableBillFrom">
+								<div class="form-group">
+									<label for="bill_from">Bill From</label>
+									<textarea id="bill_from" formControlName="bill_from" class="form-control"
+										placeholder="Bill From" [readonly]="true"></textarea>
+								</div>
+							</div>
+							<div class="col-md-6" *ngIf="enableBillDispatch">
+								<div class="form-group">
+									<label for="dispatch_from" class="w-100">
+										<div class="row">
+											<div class="col-md-10">
+												Dispatch From <sup class="text-danger"><strong>*</strong></sup>
+											</div>
+											<div class="col-md-2 text-right">
+												<button type="button"
+													class="btn btn-outline-primary btn-sm action-btn rounded-circle"
+													(click)="onAction(rowData, 'View_Dispatch_From_Address')">
+													<i class="fa fa-plus"></i>
+												</button>
+											</div>
+										</div>
+									</label>
+									<textarea id="dispatch_from" formControlName="dispatch_from" class="form-control"
+										placeholder="Dispatch From"></textarea>
+									<!-- <ng-select id="dispatch_from" formControlName="dispatch_from"
+										placeholder="Dispatch From" [searchable]="true" [clearable]="true"
+										bindLabel="name" bindValue="name" [items]="dispatchFromList"
+										addTagText="Add New Address" [addTag]="createNewDispatchAddress"
+										[editableSearchTerm]="true">
+									</ng-select> -->
+								</div>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label for="summary">Summary</label>
+									<div class="summary">
+										<div class="row">
+											<div class="col-md-6">
+												<p class="mb-1">
+													<strong class="mr-1">Total Freight: </strong>
+													<i class="fa fa-inr"></i>
+													{{dispatchForm.controls.total_freight.value}}
+												</p>
+											</div>
+											<div class="col-md-6">
+												<p class="mb-1">
+													<strong class="mr-1">Total Load/Cross: </strong>
+													<i class="fa fa-inr"></i>
+													{{dispatchForm.controls.total_load_cross.value}}
+												</p>
+											</div>
+											<div class="col-md-12">
+												<p class="mb-1">
+													<strong class="mr-1">Total Freight + Load/Cross: </strong>
+													<i class="fa fa-inr"></i>
+													{{dispatchForm.controls.total_freight_load_cross.value}}
+												</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label for="remark">Remark</label>
+									<textarea class="form-control" id="remark" formControlName="remark"
+										placeholder="Remark"></textarea>
+								</div>
+							</div>
+						</div>
+						<button type="submit" class="btn btn-primary"
+							[disabled]="dispatchForm.pristine || dispatchForm.invalid || loadingBtn">
+							Submit <i class="fa fa-spinner fa-spin" *ngIf="loadingBtn"></i>
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #dispatchAddressModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="View Deal"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Select Address</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p-table #dt dataKey="id" [value]="dispatchAddressList" [rows]="5" [rowHover]="true" [autoLayout]="true"
+					[paginator]="true" [globalFilterFields]="['name']">
+					<ng-template pTemplate="caption">
+						<div class="row">
+							<div class="col-md-12">
+								<div class="w-100 mt-1 pull-right">
+									<input pInputText type="text" class="form-control"
+										(input)="dt.filterGlobal($event.target.value, 'contains')"
+										placeholder="Global Search" />
+								</div>
+							</div>
+						</div>
+					</ng-template>
+					<ng-template pTemplate="header">
+						<tr>
+							<th>Address</th>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="body" let-rowData>
+						<tr class="ui-selectable-row">
+							<td (click)="onAction(rowData, 'Select_Dispatch_Address')">{{rowData.name}}</td>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="emptymessage">
+						<tr>
+							<td colspan="1" class="text-center">
+								No Data Found
+							</td>
+						</tr>
+					</ng-template>
+				</p-table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

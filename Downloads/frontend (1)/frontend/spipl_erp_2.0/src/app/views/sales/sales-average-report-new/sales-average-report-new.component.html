@@ -1,0 +1,450 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-12">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+
+					<!-- HEADER START -->
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-inline">
+								<div class="form-group">
+									<div class="input-group">
+										<div class="input-group-prepend">
+											<span class="input-group-text"><em class="fa fa-calendar"></em></span>
+										</div>
+										<input pInputText [(ngModel)]="selected_date_range"
+											(ngModelChange)="clearDropdown (); getData()" [bsConfig]="datePickerConfig"
+											#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+											placeholder="Choose Date Range" class="form-control page-filter" readonly />
+										<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+											[uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+									</div>
+								</div>
+								<div class="form-group">
+									<p-dropdown placeholder="Select Report Type" [options]="reportTypesList"
+										[(ngModel)]="selected_report_type" optionLabel="name"
+										(onChange)="onAction(null, 'Report_Type', $event.value)">
+									</p-dropdown>
+								</div>
+								<div class="form-group ml-2">
+									<p-multiSelect *ngIf="selected_report_type.id == 1" placeholder="Select Zone"
+										[options]="zonesList" [filter]="true" [(ngModel)]="selected_zone"
+										optionLabel="full_name" (onChange)="onAction(null, 'Zone', $event.value)">
+									</p-multiSelect>
+									<p-multiSelect *ngIf="selected_report_type.id == 2" placeholder="Select State"
+										[options]="statesList" [filter]="true" [(ngModel)]="selected_state"
+										optionLabel="name" (onChange)="onAction(null, 'State', $event.value)">
+									</p-multiSelect>
+									<p-multiSelect *ngIf="selected_report_type.id == 3" placeholder="Select Product"
+										[options]="productsList" [filter]="true" [(ngModel)]="selected_product"
+										optionLabel="name" (onChange)="onAction(null, 'Product', $event.value)">
+									</p-multiSelect>
+								</div>
+								<div class="form-group ">
+									<p-dropdown [options]="companyList" [(ngModel)]="selected_company"
+										optionLabel="name" defaultLabel="All" (onChange)="onChangeCompany($event)">
+									</p-dropdown>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- HEADER END -->
+
+					<!-- ZONE DATA START -->
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<div class="card">
+								<div class="card-header">
+									<div class="row">
+										<div class="col-md-1">
+											<button type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+												(click)="exportData('zone')" class="ui-button-danger"></button>
+										</div>
+										<div class="col-md-5">
+											{{zoneTitle}}
+										</div>
+
+										<div class="col-md-6 text-right">
+											<p-toggleButton onLabel="Chart" offLabel="Table" onIcon=" fa-pie-chart"
+												offIcon="fa fa-th" [(ngModel)]="zoneMode"></p-toggleButton>
+										</div>
+									</div>
+								</div>
+								<div class="card-body">
+									<p-chart *ngIf="zoneMode" type="bar" [data]="zoneChartData"></p-chart>
+									<p-table *ngIf="!zoneMode" #dt [value]="zoneData" [columns]="zoneCols"
+										styleClass="sales_average_report_table" [rowHover]="true" [rows]="10"
+										[rowsPerPageOptions]="[10,25,50,100]" [loading]="isLoading" [paginator]="true"
+										[filterDelay]="0">
+										<ng-template pTemplate="header" let-columns>
+											<tr>
+												<th class="text-center">Sr.No.</th>
+												<th *ngFor="let col of columns">{{col.header}}</th>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+											<tr class="ui-selectable-row">
+												<td class="text-center">{{rowIndex + 1}}</td>
+												<td *ngFor="let col of zoneCols">
+													<div *ngIf="col.field != 'action'">
+														<span class="ui-column-title">{{ col.header }}: </span>
+														<div *ngIf="col.type == null">
+															{{ rowData[col.field] }}
+														</div>
+														<div *ngIf="col.type == 'Quantity'">
+															{{ rowData[col.field] }} MT
+														</div>
+														<div *ngIf="col.type == 'Amount'">
+															{{ rowData[col.field] | currency:'INR' }}
+														</div>
+													</div>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="footer" let-columns>
+											<tr>
+												<td></td>
+												<td *ngFor="let col of columns">
+													<strong *ngIf="col.type == 'Quantity'">
+														Total: {{ col.total }} MT
+													</strong>
+													<strong *ngIf="col.type == 'Amount'">
+														Total: {{ zoneFooterTotal | currency:'INR' }}
+													</strong>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="emptymessage">
+											<tr>
+												<td [attr.colspan]="zoneCols.length" class="text-center">
+													No Data Found
+												</td>
+											</tr>
+										</ng-template>
+									</p-table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- ZONE DATA END -->
+
+					<!-- STATE DATA START -->
+					<div class="row mt-2">
+						<div class="col-md-12">
+							<div class="card">
+								<div class="card-header">
+									<div class="row">
+										<div class="col-md-1">
+											<button type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+												(click)="exportData('state')" class="ui-button-danger"></button>
+										</div>
+										<div class="col-md-5">
+											{{stateTitle}}
+										</div>
+										<div class="col-md-6 text-right">
+											<p-toggleButton onLabel="Chart" offLabel="Table" onIcon="fa-pie-chart"
+												offIcon="fa fa-th" [(ngModel)]="stateMode"></p-toggleButton>
+										</div>
+									</div>
+								</div>
+								<div class="card-body">
+									<p-chart *ngIf="stateMode" type="bar" [data]="stateChartData"></p-chart>
+									<p-table *ngIf="!stateMode" #dt [value]="stateData" [columns]="stateCols"
+										styleClass="sales_average_report_table" [rowHover]="true" [rows]="10"
+										[rowsPerPageOptions]="[10,25,50,100]" [loading]="isLoading" [paginator]="true"
+										[filterDelay]="0">
+										<ng-template pTemplate="header" let-columns>
+											<tr>
+												<th class="text-center">Sr.No.</th>
+												<th *ngFor="let col of columns">{{col.header}}</th>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+											<tr class="ui-selectable-row">
+												<td class="text-center">{{rowIndex + 1}}</td>
+												<td *ngFor="let col of stateCols">
+													<div *ngIf="col.field != 'action'">
+														<span class="ui-column-title">{{ col.header }}: </span>
+														<div *ngIf="col.type == null">
+															{{ rowData[col.field] }}
+														</div>
+														<div *ngIf="col.type == 'Quantity'">
+															{{ rowData[col.field] }} MT
+														</div>
+														<div *ngIf="col.type == 'Amount'">
+															{{ rowData[col.field] | currency:'INR' }}
+														</div>
+													</div>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="footer" let-columns>
+											<tr>
+												<td></td>
+												<td *ngFor="let col of columns">
+													<strong *ngIf="col.type == 'Quantity'">
+														Total: {{ col.total }} MT
+													</strong>
+													<strong *ngIf="col.type == 'Amount'">
+														Total: {{ stateFooterTotal | currency:'INR' }}
+													</strong>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="emptymessage">
+											<tr>
+												<td [attr.colspan]="stateCols.length" class="text-center">
+													No Data Found
+												</td>
+											</tr>
+										</ng-template>
+									</p-table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- STATE DATA END -->
+
+					<!-- MAIN GRADE DATA START -->
+					<div class="row mt-2">
+						<div class="col-md-12">
+							<div class="card">
+								<div class="card-header">
+									<div class="row">
+										<div class="col-md-1">
+											<button type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+												(click)="exportData('main')" class="ui-button-danger"></button>
+										</div>
+										<div class="col-md-5">
+											{{mainGradeTitle}}
+										</div>
+										<div class="col-md-6 text-right">
+											<p-toggleButton onLabel="Chart" offLabel="Table" onIcon="fa-pie-chart"
+												offIcon="fa fa-th" [(ngModel)]="mainGradeMode"></p-toggleButton>
+										</div>
+									</div>
+								</div>
+								<div class="card-body">
+									<p-chart *ngIf="mainGradeMode" type="doughnut" [data]="mainGradeChartData">
+									</p-chart>
+									<p-table *ngIf="!mainGradeMode" #dt [value]="mainGradeData"
+										[columns]="mainGradeCols" styleClass="sales_average_report_table"
+										[rowHover]="true" [rows]="10" [rowsPerPageOptions]="[10,25,50,100]"
+										[loading]="isLoading" [paginator]="true" [filterDelay]="0">
+										<ng-template pTemplate="header" let-columns>
+											<tr>
+												<th class="text-center">Sr.No.</th>
+												<th *ngFor="let col of columns">{{col.header}}</th>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+											<tr class="ui-selectable-row">
+												<td class="text-center">{{rowIndex + 1}}</td>
+												<td *ngFor="let col of mainGradeCols">
+													<div *ngIf="col.field != 'action'">
+														<span class="ui-column-title">{{ col.header }}: </span>
+														<div *ngIf="col.type == null">
+															{{ rowData[col.field] }}
+														</div>
+														<div *ngIf="col.type == 'Quantity'">
+															{{ rowData[col.field] }} MT
+														</div>
+														
+														<div *ngIf="col.type == 'Amount'">
+															{{ rowData[col.field] == 0 ? '0' : rowData[col.field] | currency:'INR' }}
+														</div>
+													</div>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="footer" let-columns>
+											<tr>
+												<td></td>
+												<td *ngFor="let col of columns">
+													<strong *ngIf="col.type == 'Quantity'">
+														Total: {{ col.total }} MT
+													</strong>
+													<strong *ngIf="col.type == 'Amount'">
+														Total: {{ mainGradeFooterTotal | currency:'INR' }}
+													</strong>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="emptymessage">
+											<tr>
+												<td [attr.colspan]="mainGradeCols.length" class="text-center">
+													No Data Found
+												</td>
+											</tr>
+										</ng-template>
+									</p-table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- MAIN GRADE DATA END -->
+
+					<!-- GRADE DATA START -->
+					<div class="row mt-2">
+						<div class="col-md-12">
+							<div class="card">
+								<div class="card-header">
+									<div class="row">
+										<div class="col-md-1">
+											<button type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+												(click)="exportData('grade')" class="ui-button-danger"></button>
+										</div>
+										<div class="col-md-5">
+											{{gradeTitle}}
+										</div>
+										<div class="col-md-6 text-right">
+											<p-toggleButton onLabel="Chart" offLabel="Table" onIcon="fa-pie-chart"
+												offIcon="fa fa-th" [(ngModel)]="gradeMode"></p-toggleButton>
+										</div>
+									</div>
+								</div>
+								<div class="card-body">
+									<p-chart *ngIf="gradeMode" type="bar" [data]="gradeChartData"></p-chart>
+									<p-table *ngIf="!gradeMode" #dt [value]="gradeData" [columns]="gradeCols"
+										styleClass="sales_average_report_table" [rowHover]="true" [rows]="10"
+										[rowsPerPageOptions]="[10,25,50,100]" [loading]="isLoading" [paginator]="true"
+										[filterDelay]="0">
+										<ng-template pTemplate="header" let-columns>
+											<tr>
+												<th class="text-center">Sr.No.</th>
+												<th *ngFor="let col of columns">{{col.header}}</th>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+											<tr class="ui-selectable-row">
+												<td class="text-center">{{rowIndex + 1}}</td>
+												<td *ngFor="let col of gradeCols">
+													<div *ngIf="col.field != 'action'">
+														<span class="ui-column-title">{{ col.header }}: </span>
+														<div *ngIf="col.type == null">
+															{{ rowData[col.field] }}
+														</div>
+														<div *ngIf="col.type == 'Quantity'">
+															{{ rowData[col.field] }} MT
+														</div>
+														<div *ngIf="col.type == 'Amount'">
+															{{ rowData[col.field] | currency:'INR' }}
+														</div>
+													</div>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="footer" let-columns>
+											<tr>
+												<td></td>
+												<td *ngFor="let col of columns">
+													<strong *ngIf="col.type == 'Quantity'">
+														Total: {{ col.total }} MT
+													</strong>
+													<strong *ngIf="col.type == 'Amount'">
+														Total: {{ gradeFooterTotal | currency:'INR' }}
+													</strong>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="emptymessage">
+											<tr>
+												<td [attr.colspan]="gradeCols.length" class="text-center">
+													No Data Found
+												</td>
+											</tr>
+										</ng-template>
+									</p-table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- GRADE DATA END -->
+
+					<!-- CUSTOMER DATA START -->
+					<div class="row mt-2">
+						<div class="col-md-12">
+							<div class="card">
+								<div class="card-header">
+									<div class="row">
+										<div class="col-md-1">
+											<button type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+												(click)="exportData('cust')" class="ui-button-danger"></button>
+										</div>
+										<div class="col-md-5">
+											{{customerTitle}}
+										</div>
+									</div>
+								</div>
+								<div class="card-body">
+									<p-table *ngIf="!customerMode" #dt [value]="customerData" [columns]="customerCols"
+										styleClass="sales_average_report_table" [rowHover]="true" [rows]="10"
+										[rowsPerPageOptions]="[10,25,50,100]" [loading]="isLoading" [paginator]="true"
+										[filterDelay]="0">
+										<ng-template pTemplate="header" let-columns>
+											<tr>
+												<th class="text-center">#</th>
+												<th *ngFor="let col of columns">{{col.header}}</th>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+											<tr class="ui-selectable-row">
+												<td class="text-center">{{rowIndex + 1}}</td>
+												<td *ngFor="let col of customerCols">
+													<div *ngIf="col.field != 'action'">
+														<span class="ui-column-title">{{ col.header }}: </span>
+														<div *ngIf="col.type == null">
+															{{ rowData[col.field] }}
+														</div>
+														<div *ngIf="col.type == 'Quantity'">
+															{{ rowData[col.field] }}
+														</div>
+														<div *ngIf="col.type == 'Amount'">
+															{{ rowData[col.field] | currency:'INR' }}
+														</div>
+													</div>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="footer" let-columns>
+											<tr>
+												<td></td>
+												<td *ngFor="let col of columns">
+													<strong *ngIf="col.type == 'Quantity'">
+														Total: {{ col.total }} MT
+													</strong>
+													<strong *ngIf="col.type == 'Amount'">
+														Total: {{ customerFooterTotal | currency:'INR' }}
+													</strong>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="emptymessage">
+											<tr>
+												<td [attr.colspan]="customerCols.length" class="text-center">
+													No Data Found
+												</td>
+											</tr>
+										</ng-template>
+									</p-table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- CUSTOMER DATA END -->
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

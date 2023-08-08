@@ -1,0 +1,317 @@
+<div class="animated fadeIn">
+
+
+    <div class="row">
+        <div class="col-md-12 p-0">
+            <div class="card">
+                <div class="card-header">
+                    <h2> Sales Purcahse Dispatch Stock Report</h2>
+                </div>
+                <div class="card-body overflow-auto">
+                    <div class="row mb-1">
+
+
+                        <div class="col-md-1">
+                            <label for=""><b>Date</b></label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+
+                                <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                                    placeholder="Date">
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-1">
+                            <label for=""><b>Main Grade</b></label>
+                        </div>
+                        <div class="col-md-2">
+                            <ng-select id="id" placeholder="Select Main Grade" [searchable]="true" [clearable]="true"
+                                bindLabel="name" bindValue="id" [items]="main_grade" [multiple]=true
+                                [(ngModel)]="main_grade_ids" appendTo="body">
+                            </ng-select>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label for=""><b>Godown</b></label>
+                        </div>
+                        <div class="col-md-2">
+                            <ng-select id="id" placeholder="Select Godown" [searchable]="true" [clearable]="true"
+                                bindLabel="godown_name" bindValue="id" [items]="godown_arr" [multiple]=true
+                                [(ngModel)]="godown_ids" appendTo="body">
+                            </ng-select>
+                        </div>
+
+
+                        <div class="col-md-1">
+                            <button class="btn btn-dark mr-1" type="button" (click)="getDetailUnsold()">
+                                <i class="fa fa-search"></i> Search</button>
+                        </div>
+                        <div class="col-md-2">
+                            <!-- <div class="btn btn-dark" (click)="downloadImage()"><i class="fa fa-download"
+                                    aria-hidden="true"> Download Report</i></div> -->
+                            <div class="col-md-2">
+                                <div class="btn btn-dark" (click)="downloadImage()"><i class="fa fa-download"
+                                        aria-hidden="true"> Unsold</i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row" #screen *ngIf="viewDetails">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Sales Booking Details</h4>
+                </div>
+                <div class="card-body">
+
+                    <table class="table table-striped table-hover table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th>Godown</th>
+                                <th>Grade</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of data_sales">
+                                <td>{{item.godown_name}}</td>
+                                <td>{{item.name}}</td>
+                                <td>{{item.sales_booking_qty}}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>Total</th>
+                                <th>{{data_sales | totalsum : 'sales_booking_qty' | currencyInr}}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                 <h4>Local Purchase Booking Details</h4>
+                </div>
+                <div class="card-body">
+
+                    <table class="table table-striped table-hover table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th>Godown</th>
+                                <th>Grade</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item_lp of data_local_purchase">
+                                <td>{{item_lp.godown_name}}</td>
+                                <td>{{item_lp.name}}</td>
+                                <td>{{item_lp.purchase_booking_qty}}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>Total</th>
+                                <th>{{data_local_purchase | totalsum : 'purchase_booking_qty' | currencyInr}}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                  <h4>Dispatch Details</h4>
+                </div>
+                <div class="card-body">
+
+                    <table class="table table-striped table-hover table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th>Godown</th>
+                                <th>Grade</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item_d of data_dispatch_details">
+                                <td>{{item_d.godown_name}}</td>
+                                <td>{{item_d.name}}</td>
+                                <td>{{item_d.dispatch_qty}}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>Total</th>
+                                <th>{{data_dispatch_details | totalsum : 'dispatch_qty' | currencyInr}}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Total Unsold</h4>
+                </div>
+                <div class="card-body">
+
+                    <table class="table table-striped table-hover table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th>Unsold</th>
+                                <th>{{allUnsold}}</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Unosld Details</h4>
+                </div>
+                <div class="card-body">
+
+                    <table class="table table-striped table-hover table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th>Godown</th>
+                                <th>Grade</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item_unsold of data_unsold_details">
+                                <td>{{item_unsold.main_godown.godown_name}}</td>
+                                <td>{{item_unsold.main_grade.name}}</td>
+                                <td>{{((item_unsold.tot_non_pending + item_unsold.tot_reg_intransite +
+                                    item_unsold.tot_local_intransite + item_unsold.tot_stock_transfer_intransite +
+                                    item_unsold.tot_inventory + item_unsold.tot_bond_intransite)-
+                                    (item_unsold.tot_sales_pending))}}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>Total</th>
+                                <th>{{data_unsold_details | totalsum : 'unsold' | currencyInr}}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Unosld Intransite Details</h4>
+                </div>
+                <div class="card-body">
+
+                    <table class="table table-striped table-hover table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th>Godown</th>
+                                <th>Grade</th>
+                                <th>Regular</th>
+                                <th>Bond</th>
+                                <th>Local</th>
+                                <th>Stock Transfer</th>
+                                <th>Godown</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item_unsold of data_unsold_details">
+                                <td>{{item_unsold.main_godown.godown_name}}</td>
+                                <td>{{item_unsold.main_grade.name}}</td>
+                                <td>{{item_unsold.tot_reg_intransite}}</td>
+                                <td>{{item_unsold.tot_bond_intransite}}</td>
+                                <td>{{item_unsold.tot_local_intransite}}</td>
+                                <td>{{item_unsold.tot_stock_transfer_intransite}}</td>
+                                <td>{{item_unsold.tot_inventory}}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>Total</th>
+                                <th>{{data_unsold_details | totalsum : 'tot_reg_intransite' | currencyInr}}</th>
+                                <th>{{data_unsold_details | totalsum : 'tot_bond_intransite' | currencyInr}}</th>
+                                <th>{{data_unsold_details | totalsum : 'tot_local_intransite' | currencyInr}}</th>
+                                <th>{{data_unsold_details | totalsum : 'tot_stock_transfer_intransite' | currencyInr}}
+                                </th>
+                                <th>{{data_unsold_details | totalsum : 'tot_inventory' | currencyInr}}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Sales Order Pending</h4>
+                </div>
+                <div class="card-body">
+
+                    <table class="table table-striped table-hover table-responsive-lg">
+                        <thead>
+                            <tr>
+                                <th>Godown</th>
+                                <th>Grade</th>
+                                <th>Order Pending</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item_unsold of data_unsold_details">
+                                <td>{{item_unsold.main_godown.godown_name}}</td>
+                                <td>{{item_unsold.main_grade.name}}</td>
+                                <td>{{item_unsold.tot_sales_pending}}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>Total</th>
+                                <th>{{data_unsold_details | totalsum : 'tot_sales_pending' | currencyInr}}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+</div>
+
+<div id="download">
+    <img #canvas>
+    <a #downloadLink></a>
+</div>

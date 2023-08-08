@@ -1,0 +1,168 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0" *ngIf="view_opt">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-12">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="sales_register_table" [value]="data" [rows]="50"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<!-- [scrollable]="true" scrollHeight="700px"  [tableStyle]="{'min-width': '250rem'}" -->
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+
+												<div class="form-group mb-1 mr-1">
+													<div *ngIf="dateType==1;then A else B">
+													</div>
+													<ng-template #A>
+														<input pInputText [(ngModel)]="selected_date_range"
+															(ngModelChange)="clearDropdown(); getData()"
+															[bsConfig]="datePickerConfig" #dp="bsDaterangepicker"
+															[maxDate]="maxDate" bsDaterangepicker
+															placeholder="Choose Date Range"
+															class="form-control page-filter" readonly />
+													</ng-template>
+													<ng-template #B>
+														<input pInputText [(ngModel)]="currentDate"
+															(ngModelChange)="clearDropdown(); getData()"
+															[bsConfig]="datePickerConfig1" #dp="bsDatepicker"
+															[maxDate]="maxDate" bsDatepicker
+															placeholder="Choose Date Range"
+															class="form-control page-filter" readonly />
+													</ng-template>
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+												</div>
+												<div class="form-group mb-1 mr-1 font-weight-normal">
+													<ng-select placeholder="Payment Status" [searchable]="true"
+														[clearable]="true" bindLabel="name" bindValue="id"
+														[items]="dateRange" [(ngModel)]="type"
+														(ngModelChange)="ChooseDateType($event)">
+													</ng-select>
+												</div>
+
+
+
+											</div>
+										</div>
+
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != 'action'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													{{ rowData[col.field] }}
+												</div>
+												<div *ngIf="col.type == '$'">
+													{{ rowData[col.field] | currency:'USD'}}
+												</div>
+
+												<div *ngIf="col.type == 'Quantity'">
+													{{ rowData[col.field] }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'action'">
+												<!-- <a class="btn btn-outline-dark btn-sm action-btn mr-1 mb-1"
+													data-toggle="tooltip" data-placement="top" title="View Order"
+													(click)="onAction(rowData, 'View')">
+													<i class="fa fa-eye"></i>
+												</a> -->
+
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total }} MT
+											</strong>
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+											<!-- <strong *ngIf="col.type == 'Avg'">
+												Avg.Rate: {{ col.total | currency:'USD' }}
+											</strong> -->
+											<strong *ngIf="col.type == '$'">
+												<div *ngIf="col.field=='total_amount';then p else q"></div>
+												<ng-template #p>
+													Total : &nbsp;{{ col.total | currency:'USD' }}
+												</ng-template>
+												<ng-template #q>
+													Total Avg :&nbsp;{{ totalAvg | currency:'USD' }}
+												</ng-template>
+
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

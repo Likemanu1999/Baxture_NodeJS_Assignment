@@ -1,0 +1,122 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-inline">
+								<div class="form-group">
+									<div class="input-group">
+										<div class="input-group-prepend">
+											<span class="input-group-text"><em class="fa fa-calendar"></em></span>
+										</div>
+										<input type="text" id="dateRange" class="form-control page-filter"
+											bsDaterangepicker [(ngModel)]="selected_date_range" placeholder="Date Range"
+											[bsConfig]="datePickerConfig" [maxDate]="maxDate"
+											(ngModelChange)="clearDropdown(); onDateChange($event)" placement="bottom">
+										<app-dropdown-daterange class="ml-4" (dateEvent)="receiveDate($event)"
+											[uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-2">
+							<div class="callout callout-warning">
+								<small class="text-muted">To Be Dispatch Quantity</small><br>
+								<strong class="h5">{{!totalAmt ? 0.00 : totalAmt | number :
+									'1.2-3'}} MT</strong>
+							</div>
+						</div>
+							<div class="col-sm-2">
+								<div class="callout callout-warning">
+									<small class="text-muted">Dispatch Count</small><br>
+									<strong class="h5">{{!lenghtOfRecord ? 0.00 : lenghtOfRecord | number :
+										'1.2-3'}} MT</strong>
+								</div>
+							</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6">
+							<hr class="mt-0">
+							<div class="progress-group" *ngFor="let item of godownWise">
+								<div class="progress-group-header align-items-end">
+									<div>{{item.godown_name}}</div>
+									<div class="ml-auto font-weight-bold mr-2">Quantity: {{item.balQty| number :
+										'1.2-3' }} MT</div>
+								</div>
+								<div class="progress-group-bars">
+									<div class="progress progress-xs">
+										<div class="progress-bar bg-success" role="progressbar"
+											[style.width.%]="item.balQty/totalAmt*100"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div style="display: block;margin-top: -10px;">
+								<canvas baseChart 
+								  [datasets]="barChartData"
+								  [labels]="barChartLabels"
+								  [options]="barChartOptions"
+								  [plugins]="barChartPlugins"
+								  [legend]="barChartLegend"
+								  [chartType]="barChartType">
+								</canvas>
+							  </div>
+						</div>
+					</div>	
+				<div class="row">
+					<div class="col-md-12">
+						<p-table #dt dataKey="id" styleClass="dispatch_report_table" [value]="data" [rows]="10"
+							[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+							[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+							[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+							(onLazyLoad)="onFilter($event, dt)"
+							currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+
+							<ng-template pTemplate="header" let-columns>
+								<tr>
+									<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+										{{col.header}}
+										<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+									</th>
+								</tr>
+								<tr>
+									<th *ngFor="let col of columns">
+										<p-multiSelect *ngIf="col.filter" [options]="col.dropdown" defaultLabel="All"
+											(onChange)="customFilter($event.value, col.field, 'in')">
+										</p-multiSelect>
+									</th>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+								<tr class="ui-selectable-row">
+									<td *ngFor="let col of cols">
+										<span class="ui-column-title">{{ col.header }}: </span>
+										<div *ngIf="col.type == null">
+											{{ rowData[col.field] }}
+										</div>
+										<div *ngIf="col.type == 'name'">
+											{{ rowData[col.field] }}
+										</div>
+									</td>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="emptymessage">
+								<tr>
+									<td [attr.colspan]="cols.length" class="text-center">
+										No Data Found
+									</td>
+								</tr>
+							</ng-template>
+						</p-table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

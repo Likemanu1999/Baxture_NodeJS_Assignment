@@ -1,0 +1,215 @@
+<div class="row">
+    <div class="col-md-2 offset-5" *ngIf="isLoading">
+        <app-loading-spinner></app-loading-spinner>
+    </div>
+</div>
+
+
+
+<div class="row" *ngIf="!isLoading">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+
+
+                <div class="col-md-12">
+                    <div class="row">
+                        <h4><i class="fa fa-money"></i> Other Charges
+
+                            <button class="btn btn-outline-primary active pull-right" (click)="addOtherCharges()">
+                                +
+                                Add New Charges</button>
+                        </h4>
+                        <div class="col-md-2">
+                            <label for=""><b>Entered Charges : </b></label>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <ng-select placeholder="Entered By Status" [searchable]="true" [clearable]="true"
+                                    bindLabel="name" bindValue="id" [items]="status"
+                                    [(ngModel)]="complete_pending_status" (change)="onStatusChange($event)">
+                                </ng-select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="w-100 mt-1 pull-right">
+                                <input pInputText type="text" class="form-control"
+                                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                    placeholder="Global Search" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-md-3">
+
+                        <div class="input-group">
+                            <label for=""><b>Added Date</b></label> &nbsp;
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                            </div>
+                            <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                                (ngModelChange)="onSelect($event,'1')" placeholder="">
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <p-table #dt [value]="otherChargesList" styleClass="ui-table-bank-other-charges" [rowHover]="true"
+                    [rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100,150,200]"
+                    [paginator]="true" [columns]="selectedColumns" [autoLayout]="true" (onFilter)="onFilter($event, dt)"
+                    currentPageReportTemplate="Total Records : &#123;&#123;otherChargesList.length&#125;&#125; "
+                    [filterDelay]="0" [globalFilterFields]="['bank_name']" [scrollable]="true" [virtualRowHeight]="500"
+                    scrollHeight="400px" [virtualScroll]="true">
+                    <!-- <div class="ui-table-globalfilter-container">
+					<input pInputText type="text" class="form-control" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+
+				</div> -->
+                    <ng-template pTemplate="header">
+
+
+                        <tr>
+                            <th style="width:150px;" pSortableColumn="{{col.field}}" *ngFor="let col of cols">
+                                {{col.header}}</th>
+                        </tr>
+                        <tr>
+
+                            <th *ngIf=" getColumnPresent('bank_name')">
+                                <div *ngIf="banks.length > 0 ">
+                                    <p-multiSelect [options]="banks" placeholder="All" appendTo="body"
+                                        (onChange)="onchange($event,'bank_name')" styleClass="ui-column-filter"
+                                        optionLabel='bank_name'>
+                                        <ng-template let-op pTemplate="item">
+
+                                            <span>&#123;&#123;op.label&#125;&#125;</span>
+
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </div>
+                            </th>
+                            <th></th>
+                            <th *ngIf=" getColumnPresent('charges_category')">
+                                <div *ngIf="banks.length > 0 ">
+                                    <p-multiSelect [options]="banks" placeholder="All" appendTo="body"
+                                        (onChange)="onchange($event,'charges_category')" styleClass="ui-column-filter"
+                                        optionLabel='charges_category'>
+                                        <ng-template let-op pTemplate="item">
+
+                                            <span>&#123;&#123;op.label&#125;&#125;</span>
+
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </div>
+                            </th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+
+                    </ng-template>
+                    <ng-template pTemplate="body" let-otherChargesList let-index="rowIndex">
+                        <tr class="ui-selectable-row">
+
+                            <td style="width:150px;">
+                                <span class="ui-column-title">Bank Name</span>
+                                {{otherChargesList.spipl_bank.bank_name}}
+                            </td>
+                            <td style="width:150px;">
+                                <span class="ui-column-title">Date</span>
+                                {{otherChargesList.charges_date | date:'dd-MM-y'}}
+                            </td>
+                            <td style="width:150px;">
+                                <span class="ui-column-title">Charges Category</span>
+                                {{otherChargesList.charges_stage_master.name}}
+                            </td>
+                            <td style="width:150px;">
+                                <span class="ui-column-title">Charges Description</span>
+                                {{otherChargesList.charges_description}}
+                            </td>
+
+                            <td style="width:150px;">
+                                <span class="ui-column-title">Total Charges</span>
+                                {{otherChargesList.total_charges}}
+
+                            </td>
+                            <td style="width:150px;">
+                                <a title="PDF" (click)="generatePdf(otherChargesList)">
+                                    <i class="fa fa-file-pdf-o" aria-hidden="true" style="font-size:25px;color:red"></i>
+                                </a>
+                                &nbsp;
+                                <a class="btn btn-outline-info custom-action-btn" data-toggle="tooltip"
+                                    data-placement="left" title="Edit" (click)="onEdit(otherChargesList.id)"
+                                    *ngIf="other_charges_edit">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+
+                                <a class="btn btn-outline-danger custom-action-btn" data-toggle="tooltip"
+                                    data-placement="left" title="Delete" mwlConfirmationPopover
+                                    [popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+                                    [confirmText]="confirmText" [cancelText]="cancelText" [placement]="placement"
+                                    [closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="danger"
+                                    cancelButtonType="success" (confirm)="onDelete(otherChargesList.id)"
+                                    (cancel)="cancelClicked = true" *ngIf="other_charges_delete"><i
+                                        class="fa fa-trash"></i></a>
+                            </td>
+
+                            <td style="width:150px;">
+
+                                <button class="btn btn-outline-warning" (click)="checkVoucher(otherChargesList.id,1)"
+                                    *ngIf="other_charges_checked_by">Check ?? </button>
+                                <p *ngIf="otherChargesList.checked_date"><span
+                                        class="badge badge-warning">{{otherChargesList.checked_date | date: 'dd-MM-y
+                                        HH:mm:ss'}} </span><br>
+                                    <span class="badge badge-warning">{{otherChargesList.otherChargesChecked.checkedBy
+                                        }} </span>
+                                </p>
+
+                            </td>
+
+                            <td style="width:150px;">
+
+                                <button class="btn btn-outline-success" (click)="checkVoucher(otherChargesList.id,2)"
+                                    *ngIf="other_charges_entered_by">Enter ?? </button>
+
+                                <p *ngIf="otherChargesList.entered_date"><span
+                                        class="badge badge-pill badge-success">{{otherChargesList.entered_date | date:
+                                        'dd-MM-y HH:mm:ss'}} </span><br>
+                                    <span
+                                        class="badge badge-pill badge-success">{{otherChargesList.otherChargesEntered.enteredBy
+                                        }} </span>
+                                </p>
+                            </td>
+
+
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="footer">
+                        <tr>
+                            <td colspan="8" style="text-align: right;width:150px;"></td>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+
+                            <td colspan="8" style="text-align:left">No Records found.</td>
+                        </tr>
+                    </ng-template>
+
+                </p-table>
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

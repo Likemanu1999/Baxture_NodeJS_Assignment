@@ -1,0 +1,34 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa fa-whatsapp"></i> Send Whatsapp
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                               
+                                <ng-select id="type" #zone
+                                    placeholder="Select Zone  " bindLabel="name" bindValue="id" [(ngModel)]="zone_id"
+                                    [items]="zone_type" required>
+                                </ng-select>
+                            </div>
+
+                       
+
+
+                        </div>
+
+                        <div class="col-md-1">
+                            <button type ="button"  class="btn btn-primary" (click) ="getData()"> Submit  </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

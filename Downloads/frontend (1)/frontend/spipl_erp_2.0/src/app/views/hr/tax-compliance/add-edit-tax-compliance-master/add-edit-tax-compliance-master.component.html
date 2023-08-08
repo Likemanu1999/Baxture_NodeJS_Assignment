@@ -1,0 +1,123 @@
+<div class="animated fadeIn">
+    <form [formGroup]="taxComplianceMasterForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+        <div class="row">
+           
+
+            <div class="col-md-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Tax Compliance Master Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="from_dt">From Date</label>
+                                    <i class="fa fa-calendar"></i>
+                                    <input type="text" class="form-control" id="from_dt" formControlName="from_dt"
+                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                        #dp="bsDatepicker" bsDatepicker 
+                                        placeholder="Enter From Date ">
+                                </div>
+
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="to_dt">To Date</label>
+                                    <i class="fa fa-calendar"></i>
+                                    <input type="text" class="form-control" id="to_dt" formControlName="to_dt"
+                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                        #dp="bsDatepicker" bsDatepicker 
+                                        placeholder="Enter To Date ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="tax_type_id">Compliance Type</label>
+                                    <ng-select id="tax_type_id" formControlName="tax_type_id"
+                                        placeholder="Select Tax Type" [searchable]="true" [clearable]="true"
+                                        bindLabel="type" bindValue="id" [items]="tax_type_list"  (change) ="getReturnType($event)">
+                                    </ng-select>
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="return_type_id">Return Type</label>
+                                    <ng-select id="return_type_id" formControlName="return_type_id"
+                                        placeholder="Select Return Type" [searchable]="true" [clearable]="true"
+                                        bindLabel="name" bindValue="id" [items]="return_type_list">
+                                    </ng-select>
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="state_flag">State/Co</label>
+                                    <ng-select id="state_flag" formControlName="state_flag" placeholder="Select Type "
+                                        [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                        [items]="stateFlagStaticVal">
+                                    </ng-select>
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="month_year_flag">Periodicity</label>
+                                    <ng-select id="month_year_flag" formControlName="month_year_flag"
+                                        placeholder="Select Type " [searchable]="true" [clearable]="true"
+                                        bindLabel="name" bindValue="id" [items]="monthYearStaticVal"
+                                        (change)= "onChangeMonthYear($event)">
+                                    </ng-select>
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3" >
+                                <div class="form-group">
+                                    <label class="col-form-label" for="date_of_year">Date In Year</label>
+                                    <i class="fa fa-calendar"></i>
+                                    <input type="text" class="form-control" id="date_of_year"
+                                        formControlName="date_of_year"
+                                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                        #dp="bsDatepicker" bsDatepicker
+                                        placeholder="Enter Date " [readonly]="dateOfYear">
+                                </div>
+                            </div>
+
+
+                            <div class="col-6 col-md-3"  >
+                                <div class="form-group">
+                                    <label class="col-form-label" for="day_of_month">Day Of Month
+                                    </label>
+                                    <input type="text" class="form-control" id="day_of_month"
+                                        formControlName="day_of_month" placeholder="Enter Charges " [readonly]="dayOfMonth">
+                                </div>
+                            </div>
+
+
+
+
+
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn btn-primary mr-1" type="submit"
+                            [disabled]="taxComplianceMasterForm.pristine || taxComplianceMasterForm.invalid">
+                            <i class="fa fa-dot-circle-o"></i>Submit</button>
+
+                        <button class="btn btn-primary" type="button" (click)="onBack()"><i
+                                class="fa fa-undo"></i>Back</button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

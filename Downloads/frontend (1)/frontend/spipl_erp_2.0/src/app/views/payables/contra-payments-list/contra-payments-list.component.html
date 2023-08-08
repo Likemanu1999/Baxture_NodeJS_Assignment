@@ -1,0 +1,469 @@
+<div class="animated fadeIn custom_body">
+    <div class="row">
+        <div class="col-md-12 p-0">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <i class="fa fa-list"></i> {{ page_title }}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p-table #dt dataKey="id" styleClass="contra_payments_table" [value]="data" [rows]="10"
+                                [showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+                                [loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+                                [globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+                                (onLazyLoad)="onFilter($event, dt)"
+                                currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+                                <ng-template pTemplate="caption">
+                                    <div class="row">
+                                        <div class="col-md-9">
+                                            <div class="form-inline">
+                                                <a class="btn btn-success text-white mb-1 mr-2"
+                                                    (click)="exportData('Excel')" data-toggle="tooltip"
+                                                    data-placement="top" title="Excel">
+                                                    <i class="fa fa-file-excel-o"></i>
+                                                    <span class="export-text d-none">Excel</span>
+                                                </a>
+                                                <a class="btn btn-danger text-white mb-1 mr-2"
+                                                    (click)="exportData('PDF')" data-toggle="tooltip"
+                                                    data-placement="top" title="PDF">
+                                                    <i class="fa fa-file-pdf-o"></i>
+                                                    <span class="export-text d-none">PDF</span>
+                                                </a>
+                                                <div class="form-group mb-1">
+                                                    <input pInputText [(ngModel)]="selected_date_range"
+                                                        (ngModelChange)="clearDropdown (); getData()"
+                                                        [bsConfig]="datePickerConfig" #dp="bsDaterangepicker"
+                                                        [maxDate]="maxDate" bsDaterangepicker
+                                                        placeholder="Choose Date Range" class="form-control page-filter"
+                                                        readonly />&nbsp;
+                                                    <app-dropdown-daterange (dateEvent)="receiveDate($event)"
+                                                        [uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+                                                </div>
+                                                <div class="form-group mb-1">
+                                                    <p-dropdown [options]="spipl_bank_list"
+                                                        [(ngModel)]="selected_from_bank" optionLabel="bank_name"
+                                                        (onChange)="onAction($event, 'from_bank')">
+                                                    </p-dropdown>
+                                                </div>
+                                                <!-- <div class="form-group mb-1">
+													<p-dropdown [options]="spipl_bank_list"
+														[(ngModel)]="selected_to_bank" optionLabel="bank_name"
+														(onChange)="onAction($event, 'to_bank')">
+													</p-dropdown>
+												</div> -->
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="w-100 mt-1 pull-right">
+                                                <input pInputText type="text" class="form-control"
+                                                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                    placeholder="Global Search" />
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+                                        <th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+                                            {{col.header}}
+                                            <p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th *ngFor="let col of columns">
+                                            <p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+                                                defaultLabel="All"
+                                                (onChange)="customFilter($event.value, col.field, 'in')">
+                                            </p-multiSelect>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-rowData let-expanded="expanded">
+                                    <tr class="ui-selectable-row">
+                                        <td *ngFor="let col of cols">
+                                            <div *ngIf="col.field != 'action'">
+                                                <span class="ui-column-title">{{ col.header }}: </span>
+                                                <div *ngIf="col.type == null">
+                                                    {{ rowData[col.field] }}
+                                                </div>
+                                                <div *ngIf="col.type == 'Quantity'">
+                                                    {{ rowData[col.field] }} MT
+                                                </div>
+                                                <div *ngIf="col.type == 'Amount'">
+                                                    {{ rowData[col.field] | currency:'INR' }}
+                                                </div>
+                                                <div *ngIf="col.type == 'Date'">
+                                                    {{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+                                                </div>
+                                                <div *ngIf="col.type == 'Date_Time'">
+                                                    {{ rowData[col.field] | date:'dd-MMM-yyyy hh:mm a' }}
+                                                </div>
+                                            </div>
+                                            <!-- <div *ngIf="col.field == 'action'">
+											</div> -->
+                                        </td>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="footer" let-columns>
+                                    <tr>
+                                        <td *ngFor="let col of columns">
+                                            <!-- <strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total }} MT
+											</strong> -->
+                                            <strong *ngIf="col.type == 'Amount'">
+                                                Total: {{ col.total | currency:'INR' }}
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td [attr.colspan]="cols.length" class="text-center">
+                                            No Data Found
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+
+
+
+
+<div class="animated fadeIn">
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fa fa-rupee"></i> Contra Payments List
+                        <button class="btn btn-primary pull-right" (click)="onRefresh()"><i
+                                class="fa fa-refresh"></i></button>
+                    </h4>
+
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            
+                            <div class="row">
+                                <div class="form-group col-6 col-md-4">
+                                    <div class="row">
+                                        <div class="col-md-3"> <label for="">Paid Date</label></div>
+                                        <div class="col-md-9">
+
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                                </div>
+                                                <input type="text" class="form-control " bsDaterangepicker
+                                                    [(ngModel)]="bsRangeValue" (ngModelChange)="onchangeDate()"
+                                                    placeholder="From Date - To Date" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <form class="form-inline">
+                                    <div class="col-md-6">
+                                    <label for="">From Bank</label>
+                                    <p-multiSelect [options]="Bank_list" placeholder="All"
+                                                                    appendTo="body"
+                                                                    (onChange)="onchange($event,'spiplbank')"
+                                                                    optionLabel="spiplbank">
+                                        <ng-template let-opt pTemplate="item">
+                                        <span>{{opt.label}}</span>
+
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="">To Bank</label>
+                                                                <p-multiSelect [options]="Bank_list" placeholder="All"
+                                                                                                    appendTo="body"
+                                                                                                    (onChange)="onchange($event,'spiplbank')"
+                                                                                                    optionLabel="spiplbank">
+                                                                                                    <ng-template let-opt pTemplate="item">
+                                
+                                                                                                        <span>{{opt.label}}</span>
+                                
+                                                                                                    </ng-template>
+                                                                                                </p-multiSelect>
+                                                                                                </div>
+                                </form>
+                            </div>
+
+                                                                
+
+
+
+                            <div class="row">
+                                <div class="col-md-12">
+
+                                    <p-table #dt [value]="contraPaymentList" dataKey="id"
+                                        styleClass="ui-table-past-purchase" [rowHover]="true" [rows]="10"
+                                        [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]"
+                                        [paginator]="false" [columns]="selectedColumns"
+                                        (onFilter)="onFilter($event, dt)" [scrollable]="true" [loading]="isLoading"
+                                        scrollHeight="400px" [virtualScroll]="true" [virtualRowHeight]="500"
+                                        [filterDelay]="0"
+                                        [globalFilterFields]="['category','org_emp_name','beneficiary_bank_name','beneficiary_account_no','beneficiary_bank_ifsc','cheque_no','utr_no','spiplbank']">
+
+                                        <ng-template pTemplate="caption">
+
+                                            <div class="row">
+
+                                                <div class="col-md-4">
+
+                                                    <div class="ui-helper-clearfix" style="text-align: left">
+                                                        <button type="button" *ngIf="excel_download" pButton
+                                                            icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                                            (click)="exportExcel()" style="margin-right: 0.5em;"
+                                                            class="ui-button-success"></button>
+                                                        <button *ngIf="pdf_download" type="button" pButton
+                                                            icon="pi pi-file-pdf" iconPos="left" label="PDF"
+                                                            (click)="exportPdf()" class="ui-button-warning"></button>
+
+
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="col-md-2">
+
+                                                    <ng-select placeholder="Company " [searchable]="true"
+                                                        [clearable]="true" bindLabel="label" bindValue="id"
+                                                        [items]="company" [(ngModel)]="company_id"
+                                                        style="font-size: 10px;" (ngModelChange)="getContraPaymentList()">
+                                                    </ng-select>
+                                                </div>
+
+
+                                                <div class="col-md-3" style="text-align: left">
+                                                    <p-multiSelect [options]="cols" [(ngModel)]="selectedColumns"
+                                                        optionLabel="header" selectedItemsLabel="{0} columns selected"
+                                                        [style]="{minWidth: '200px'}" defaultLabel="Choose Columns">
+                                                    </p-multiSelect>
+                                                </div>
+
+
+                                                <div class="col-md-3">
+
+                                                    <input pInputText class='form-control' type="text"
+                                                        (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                        placeholder="Global Search" />
+
+                                                </div>
+
+
+                                            </div>
+
+
+
+                                        </ng-template>
+
+                                        <ng-template pTemplate="header" let-columns>
+
+                                            <tr>
+                                                <th [style.width]="col.style" pSortableColumn="{{col.field}}"
+                                                    *ngFor="let col of columns">
+                                                    {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                                                </th>
+                                            </tr>
+
+                                            <tr>
+                                                <ng-container *ngFor="let col of cols">
+                                                    <th *ngIf="getColumnPresent(col.field)" [style.width]="col.style">
+                                                        <span *ngIf="col.field == 'category'">
+                                                            <div *ngIf="category_list.length > 0">
+                                                                
+                                                                <div>
+                                                                    <ng-template let-opt pTemplate="item">
+                                                                        <span>{{opt.label}}</span>
+                                                                    </ng-template>
+                                                                </div>
+                                                                </div>
+                                                            
+                                                        </span>
+
+                                                        <span *ngIf="col.field == 'org_emp_name'">
+
+                                                            <div *ngIf="supplier_list.length > 0">
+                                                                <p-multiSelect [options]="supplier_list"
+                                                                    placeholder="All" appendTo="body"
+                                                                    (onChange)="onchange($event,'org_emp_name')"
+                                                                    optionLabel="org_emp_name">
+                                                                    <ng-template let-opt pTemplate="item">
+
+                                                                        <span>{{opt.label}}</span>
+
+                                                                    </ng-template>
+                                                                </p-multiSelect>
+                                                            </div>
+
+                                                        </span>
+
+                                                        <span *ngIf="col.field == 'spiplbank'">
+
+                                                            <div *ngIf="Bank_list.length > 0">
+                                                                <p-multiSelect [options]="Bank_list" placeholder="All"
+                                                                    appendTo="body"
+                                                                    (onChange)="onchange($event,'spiplbank')"
+                                                                    optionLabel="spiplbank">
+                                                                    <ng-template let-opt pTemplate="item">
+
+                                                                        <span>{{opt.label}}</span>
+
+                                                                    </ng-template>
+                                                                </p-multiSelect>
+                                                            </div>
+
+                                                        </span>
+
+
+                                                        <span *ngIf="col.field == 'approved_by_name'">
+
+                                                            <div *ngIf="approveArr.length > 0">
+                                                                <p-multiSelect [options]="approveArr" placeholder="All"
+                                                                    appendTo="body"
+                                                                    (onChange)="onchange($event,'approved_by_name')"
+                                                                    optionLabel="approved_by_name">
+                                                                    <ng-template let-opt pTemplate="item">
+
+                                                                        <span>{{opt.label}}</span>
+
+                                                                    </ng-template>
+                                                                </p-multiSelect>
+                                                            </div>
+
+                                                        </span>
+
+
+                                                        <span *ngIf="col.field == 'added_by_name'">
+
+                                                            <div *ngIf="requestArr.length > 0">
+                                                                <p-multiSelect [options]="requestArr" placeholder="All"
+                                                                    appendTo="body"
+                                                                    (onChange)="onchange($event,'added_by_name')"
+                                                                    optionLabel="added_by_name">
+                                                                    <ng-template let-opt pTemplate="item">
+
+                                                                        <span>{{opt.label}}</span>
+
+                                                                    </ng-template>
+                                                                </p-multiSelect>
+                                                            </div>
+
+                                                        </span>
+
+                                                    </th>
+                                                </ng-container>
+                                            </tr>
+                                        </ng-template>
+
+
+
+
+                                        <ng-template pTemplate="body" let-payableRequest let-columns>
+                                            <tr class="ui-selectable-row">
+                                                
+                                                <ng-container *ngFor="let col of cols">
+                                                    <td *ngIf="getColumnPresent(col.field)" [style.width]="col.style">
+                                                        <span class="ui-column-title">{{col.header}}</span>
+                                                        {{payableRequest[col.field]}}
+                                                    </td>
+                                                </ng-container>
+
+
+
+
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="footer">
+                                            <tr>
+
+                                                <ng-container *ngFor="let col of cols">
+                                                    <td *ngIf="getColumnPresent(col.field)" [style.width]="col.style">
+                                                        <span *ngIf="col.field == 'paid_amount'">{{totalPaidAmt |
+                                                            currencyInr}}</span>
+
+                                                    </td>
+                                                </ng-container>
+                                            </tr>
+
+                                            <tr>
+                                                <td colspan="15" style="text-align:left">Total Records:
+                                                    {{filteredValuess?.length}}</td>
+                                            </tr>
+                                        </ng-template>
+
+                                        <ng-template pTemplate="emptymessage">
+                                            <tr>
+                                                <td colspan="15" style="text-align:left">No Data found.</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+
+
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+ -->

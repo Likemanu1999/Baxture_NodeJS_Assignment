@@ -1,0 +1,66 @@
+input.ng-invalid.ng-touched {
+	border: 1px solid red;
+}
+
+.outer_box_mobile {
+	display: none;
+}
+.outer_box {
+	padding: 9rem !important;
+}
+.outer_box .logo {
+	width: 120px;
+	height: 120px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+.outer_box li {
+	position: absolute;
+	width: 0;
+	height: 100%;
+	list-style-type: none;
+	left: 50%;
+	top: 0%;
+}
+.outer_box .box_icons {
+	width: 60px;
+	height: 60px;
+	margin: 1rem !important;
+}
+
+@media only screen and (max-width: 64em) {
+	.outer_box {
+		display: none;
+	}
+	.outer_box_mobile {
+		display: block;
+	}
+	.outer_box_mobile .box_icons {
+		width: 30px;
+		height: 30px;
+		margin: 0.3rem !important;
+	}
+	.outer_box_mobile .logo {
+		width: 100px;
+		height: 100px;
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	h1.heading {
+		font-size: 1.5rem !important;
+	}
+	h1.login-text {
+		font-size: 1.5rem !important;
+	}
+	.login-text {
+		text-align: center;
+	}
+	.app-body {
+		margin-top: 0px !important;
+	}
+	.list-inline-item:not(:last-child) {
+		margin-right: 0 !important;
+	}
+}

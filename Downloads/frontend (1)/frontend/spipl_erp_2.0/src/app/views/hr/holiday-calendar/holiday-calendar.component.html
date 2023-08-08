@@ -1,0 +1,24 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+
+        <div class="card-body">
+          <div *ngIf="events.length > 0 ; else viewCalender">
+            <p-fullCalendar [events]="events" [options]="options" ></p-fullCalendar>
+
+          </div>
+
+          <ng-template #viewCalender>
+            <p-fullCalendar [events]="events" [options]="options" ></p-fullCalendar>
+          </ng-template>
+
+
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+

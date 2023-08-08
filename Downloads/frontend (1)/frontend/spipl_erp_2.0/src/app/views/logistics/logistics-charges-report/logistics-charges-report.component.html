@@ -1,0 +1,150 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa fa-file"></i> Logistics Charges List
+
+
+                </div>
+
+
+
+                <div class="row">
+                    <div class="col-md-12">
+
+                        <div class="col-md-3 mb-3">
+                            <label for="">BL Date</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                </div>
+                                <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                                    placeholder="" (ngModelChange)="getList()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col-md-12">
+                      
+                 
+                        <p-table #dt [value]="be_list" dataKey="id" styleClass="ui-table-license"
+                        [rowHover]="true" [rows]="50" [showCurrentPageReport]="true"
+                        [rowsPerPageOptions]="[10,25,50,100]" [paginator]="false" [columns]="cols"
+                        (onFilter)="onFilter($event, dt)"
+                        currentPageReportTemplate="Total records: {{be_list.length}}"
+                        [filterDelay]="0" [scrollable]="true" scrollHeight="400px" [virtualScroll]="true"
+                        [virtualRowHeight]="500" [loading]="isLoading"
+                        [globalFilterFields]="['non_invoice','bl_invoice']">
+
+
+
+                        <ng-template pTemplate="caption">
+                            <div class="ui-table-globalfilter-container">
+                                <input pInputText type="text" class="form-control"
+                                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                    placeholder="Global Search" />
+                            </div>
+                            <div class="ui-helper-clearfix" style="text-align: left">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <button type="button" pButton icon="pi pi-file-excel" iconPos="left"
+                                            label="EXCEL" (click)="exportExcel()" style="margin-right: 0.5em;"
+                                            class="ui-button-success"></button>
+
+                                            <button type="button" pButton icon="pi pi-file" iconPos="left"
+                                            label="PDF" (click)="exportPdf()" style="margin-right: 0.5em;"
+                                            class="ui-button-success"></button>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+
+                        <ng-template pTemplate="header" let-columns>
+                            <tr>
+
+
+                                <th pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+                                    [style.width.px]='col.style'>
+                                    {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                                </th>
+
+
+                            </tr>
+
+                            <tr>
+
+                                <th>
+                                    <div *ngIf="port_list.length > 0">
+                                        <p-multiSelect [options]="port_list" placeholder="All" appendTo="body"
+                                            (onChange)="onchange($event,'port_name')" optionLabel="port_name">
+                                            <ng-template let-opt pTemplate="item">
+
+                                                <span>{{opt.label}}</span>
+
+                                            </ng-template>
+                                        </p-multiSelect>
+                                    </div>
+                                </th>
+                                <th colspan="12"></th>
+                              
+
+
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item let-columns let-i="rowIndex">
+                            <tr class="ui-selectable-row">
+                                <td style="width: 100px;">{{item.port_name}}</td>
+                               <td style="width: 100px;">{{item.non_invoice}}</td>
+                                <td style="width: 100px;">{{item.bl_invoice}}</td>
+                                <td style="width: 100px;">{{item.cha_total }}</td>
+                                <td style="width: 100px;">{{item.shipping_charges + item.shipping_cgst + item.shipping_sgst}}</td>
+                                <td style="width: 100px;">{{item.cfs_total}}</td>
+                                <td style="width: 100px;">{{item.terminal_total }}</td>
+                                <td style="width: 100px;">{{item.bond_total}}</td>
+                                <td style="width: 100px;">{{item.transporter_total}}</td>
+                                <td style="width: 100px;">{{item.load_cross}}</td>
+                                <td style="width: 100px;">{{item.citpl_total}}</td>
+                                <td style="width: 100px;">{{item.storage_total}}</td>
+                                <td style="width: 100px;">{{item.fob_total}}</td>
+                                <td style="width: 100px;"><b>{{item.total_charges}}</b></td> 
+
+                               
+                            </tr>
+                        </ng-template>
+
+                        <ng-template pTemplate="footer" let-columns>
+                            
+                                <tr>
+                                    <td *ngFor="let col of columns" [style.width.px]="col.style">{{col.total | number}}</td>
+
+
+                                </tr>
+                                 <tr>
+                                    <td colspan="12" style="text-align:left">Total Records: {{be_list?.length}}
+                                    </td>
+                                </tr> 
+                            
+                           
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="18" style="text-align:left">No Data found.</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                    </div>
+
+
+                </div>
+
+
+
+
+            </div>
+        </div>
+    </div>
+</div>

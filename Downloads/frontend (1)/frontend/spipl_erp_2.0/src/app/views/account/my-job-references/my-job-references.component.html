@@ -1,0 +1,242 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-9">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+						<div class="col-md-3 text-right">
+							<button type="button" class="btn btn-primary" (click)="onAction(null, 'Add_New')">
+								<i class="fa fa-plus"></i> Add New
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="job_reference_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getData()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter" readonly />
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != ('action' && 'status_name')">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													{{ rowData[col.field] }}
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+												</div>
+												<div *ngIf="col.type == 'Date_Time'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy hh:mm a' }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'status_name'">
+												<span class="{{rowData.status_text_color}}">
+													<strong>{{rowData.status_name}}
+													</strong>
+												</span>
+											</div>
+											<div *ngIf="col.field == 'action'">
+												<a *ngIf="rowData.cv_copy != null" [ngClass]="back"
+													class="btn btn-success btn-sm action-btn mr-1 mb-1"
+													data-toggle="tooltip" data-placement="top" title="Download CV"
+													[href]="rowData.cv_copy " target="_blank" download>
+													<i class="fa fa-download"></i>
+												</a>
+												<a *ngIf="rowData.status == 0"
+													class="btn btn-primary btn-sm action-btn mr-1 mb-1"
+													(click)="onAction(rowData, 'Edit')">
+													<i class="fa fa-pencil text-white"></i>
+												</a>
+												<a *ngIf="rowData.status == 0"
+													class="btn btn-danger btn-sm action-btn mb-1" mwlConfirmationPopover
+													[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage2"
+													[confirmText]="confirmText" [cancelText]="cancelText"
+													[placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+													confirmButtonType="success" cancelButtonType="danger"
+													(confirm)="onAction(rowData, 'Delete')"
+													(cancel)="cancelClicked = true">
+													<i class="fa fa-trash text-white"></i>
+												</a>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Job Reference Modal -->
+<div bsModal #jobReferenceModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Job Reference Modal" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<form [formGroup]="jobReferenceForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+				<div class="modal-header">
+					<h4 class="modal-title">Job Reference Form</h4>
+					<button type="button" class="close" (click)="onCloseModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-form-label" for="first_name">First Name</label>
+								<input type="text" class="form-control" id="first_name" formControlName="first_name"
+									placeholder="Enter First Name">
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-form-label" for="last_name">Last Name</label>
+								<input type="text" class="form-control" id="last_name" formControlName="last_name"
+									placeholder="Enter Last Name">
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-form-label" for="mobile">Mobile</label>
+								<input type="text" class="form-control" id="mobile" formControlName="mobile"
+									placeholder="Enter Mobile">
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-form-label" for="alter_mobile">Alternate Mobile</label>
+								<input type="text" class="form-control" id="alter_mobile" formControlName="alter_mobile"
+									placeholder="Enter Alter Mobile">
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-form-label" for="email">Email</label>
+								<input type="email" class="form-control" id="email" formControlName="email"
+									placeholder="Enter Email">
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="gender" class="col-form-label">Gender</label>
+								<ng-select id="gender" formControlName="gender" bindLabel="name" bindValue="id"
+									[items]="gender_list" placeholder="Select Gender" [clearable]="true">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-form-label" for="qualification_id">Qualification</label>
+								<ng-select id="qualification_id" formControlName="qualification_id"
+									placeholder="Select Qualification" [searchable]="true" [clearable]="true"
+									bindLabel="name" bindValue="id" [items]="qualification_list">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-form-label" for="experience">Experience</label>
+								<ng-select id="experience" formControlName="experience" placeholder="Select experience"
+									[searchable]="true" [clearable]="true" [items]="experience_list">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-form-label" for="department_id">Department</label>
+								<ng-select id="department_id" formControlName="department_id"
+									placeholder="Select Deprtment" [searchable]="true" [clearable]="true"
+									bindLabel="dept_name" bindValue="id" [items]="department_list">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="cv_copy">Upload CV</label>
+								<input type="file" class="form-control" id="cv_copy" formControlName="cv_copy"
+									placeholder="Upload Resume" (change)="onFileChange($event)">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary mr-1"
+						[disabled]="jobReferenceForm.pristine || jobReferenceForm.invalid || loadingBtn">
+						Submit <i class="fa fa-spinner fa-spin" *ngIf="loadingBtn"></i>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

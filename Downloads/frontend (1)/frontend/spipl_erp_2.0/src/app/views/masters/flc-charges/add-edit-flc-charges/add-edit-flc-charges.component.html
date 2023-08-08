@@ -1,0 +1,401 @@
+
+<div class="animated fadeIn">
+    <form [formGroup]="flcChargesForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Bank & Dates</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 col-md-4">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="bank_id">Bank Name</label>
+                                <ng-select
+                                id="bank_id"
+                                formControlName="bank_id"
+                                placeholder="Select Bank"
+                                [searchable]="true"
+                                [clearable]="true"
+                                bindLabel="bank_name"
+                                bindValue="id"
+                                [items]="spipl_bank"
+                                >
+                                </ng-select>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="from_date">From Date</label>
+                                    <i class="fa fa-calendar"></i>
+                                    <input type="text"
+                                    class="form-control"
+                                    id="from_date"
+                                    formControlName="from_date"
+                                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                    #dp="bsDatepicker"
+                                    bsDatepicker
+                                    readonly
+                                    [maxDate]="today"
+                                    placeholder="Enter From Date ">
+                                  </div>
+      
+                            </div>
+
+                            <div class="col-6 col-md-4">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="to_date">To Date</label>
+                                    <i class="fa fa-calendar"></i>
+                                    <input type="text"
+                                    class="form-control"
+                                    id="to_date"
+                                    formControlName="to_date"
+                                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                    #dp="bsDatepicker"
+                                    bsDatepicker
+                                    readonly
+                                    [maxDate]="today"
+                                    placeholder="Enter To Date ">
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-money"></i> LC Ammendment Charges</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col-6 col-md-6">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_ammend_clause">Ammendment Charges on
+                                        Clause(Flat)</label>
+                                    <input type="text" class="form-control" id="lc_ammend_clause"
+                                        formControlName="lc_ammend_clause" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+
+                            <div class="col-6 col-md-6">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_ammend_swift">Ammendment Swift Charges
+                                        (Flat)</label>
+                                    <input type="text" class="form-control" id="lc_ammend_swift"
+                                        formControlName="lc_ammend_swift" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-money"></i> LC Opening Charges</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+
+                            <!-- <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="col-form-label" for="org_id">Select Bank</label>
+                        <ng-select id="bank_id" formControlName="bank_id"
+                            placeholder="Select Bank" [searchable]="true" [clearable]="true"
+                            bindLabel="bank_name" bindValue="bank_id" [items]="spiplBank">
+                        </ng-select>
+                    </div>
+                </div> -->
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_open_first_qtr">First Quarter Charges
+                                        (%)</label>
+                                    <input type="text" class="form-control" id="lc_open_first_qtr"
+                                        formControlName="lc_open_first_qtr" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_open_after_qtr_per_month">After First Quarter
+                                        Per Month Charges (%)</label>
+                                    <input type="text" class="form-control" id="lc_open_after_qtr_per_month"
+                                        formControlName="lc_open_after_qtr_per_month" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_open_per_annum">Per Annum</label>
+                                    <input type="text" class="form-control" id="lc_open_per_annum"
+                                        formControlName="lc_open_per_annum" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_open_concession">Concession (%) on LC
+                                        Open</label>
+                                    <input type="text" class="form-control" id="lc_open_concession"
+                                        formControlName="lc_open_concession" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_open_concession_exceed">Concession (%) Exceed
+                                        after Perticular amount cross</label>
+                                    <input type="text" class="form-control" id="lc_open_concession_exceed"
+                                        formControlName="lc_open_concession_exceed" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_open_at_sight_bob_first_qtr">At Sight LC First
+                                        Quarter Charges (%)(BOB)</label>
+                                    <input type="text" class="form-control" id="lc_open_at_sight_bob_first_qtr"
+                                        formControlName="lc_open_at_sight_bob_first_qtr" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_open_at_sight_bob_after_qtr_per_month">At
+                                        Sight After First Quarter Per Month Charges (%)(BOB)</label>
+                                    <input type="text" class="form-control"
+                                        id="lc_open_at_sight_bob_after_qtr_per_month"
+                                        formControlName="lc_open_at_sight_bob_after_qtr_per_month"
+                                        placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lc_open_swift">LC Open Swift (Flat) </label>
+                                    <input type="text" class="form-control" id="lc_open_swift"
+                                        formControlName="lc_open_swift" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-money"></i> NON-LC Remittance Charges</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="nonlc_remittance">NONLC Remittance Charges
+                                        (%)</label>
+                                    <input type="text" class="form-control" id="nonlc_remittance"
+                                        formControlName="nonlc_remittance" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="nonlc_remittance_min_value">NONLC Remittance Min
+                                        Value (Flat)</label>
+                                    <input type="text" class="form-control" id="nonlc_remittance_min_value"
+                                        formControlName="nonlc_remittance_min_value" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="nonlc_remittance_max_value">NONLC Remittance Max
+                                        Value (Flat)</label>
+                                    <input type="text" class="form-control" id="nonlc_remittance_max_value"
+                                        formControlName="nonlc_remittance_max_value" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="nonlc_remittance_swift">NONLC Remittance Swift
+                                        (Flat)</label>
+                                    <input type="text" class="form-control" id="nonlc_remittance_swift"
+                                        formControlName="nonlc_remittance_swift" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-money"></i> Payment Remittance Charges</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="remitance">Payment Remittance Charges
+                                        (Flat)</label>
+                                    <input type="text" class="form-control" id="remitance" formControlName="remitance"
+                                        placeholder="Enter Charges ">
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="remittance_swift">Payment Remittance Swift
+                                        Charges (Flat)</label>
+                                    <input type="text" class="form-control" id="remittance_swift"
+                                        formControlName="remittance_swift" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="supplier_remit_percentage">Supplier Usance
+                                        Remittance (%)</label>
+                                    <input type="text" class="form-control" id="supplier_remit_percentage"
+                                        formControlName="supplier_remit_percentage" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="supplier_remit_min">Supplier Usance Remittance
+                                        Min Value (Flat)</label>
+                                    <input type="text" class="form-control" id="supplier_remit_min"
+                                        formControlName="supplier_remit_min" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="supplier_remit_max">Supplier Usance Remittance
+                                        Max Value (Flat)</label>
+                                    <input type="text" class="form-control" id="supplier_remit_max"
+                                        formControlName="supplier_remit_max" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="supplier_usance_swift">Supplier Usance Swift
+                                        (Flat)</label>
+                                    <input type="text" class="form-control" id="supplier_usance_swift"
+                                        formControlName="supplier_usance_swift" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="confirmation_swift">Confrimation Swift
+                                        (Flat)</label>
+                                    <input type="text" class="form-control" id="confirmation_swift"
+                                        formControlName="confirmation_swift" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="roll_over_interest_swift">Roll Over Interest
+                                        Swift (Flat)</label>
+                                    <input type="text" class="form-control" id="roll_over_interest_swift"
+                                        formControlName="roll_over_interest_swift" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="roll_over_remittance_swift">Roll Over Remittance
+                                        Swift (Flat)</label>
+                                    <input type="text" class="form-control" id="roll_over_remittance_swift"
+                                        formControlName="roll_over_remittance_swift" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="discrepancy">Discrepancy Charges</label>
+                                    <input type="text" class="form-control" id="discrepancy"
+                                        formControlName="discrepancy" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="lou">LOU Charges</label>
+                                    <input type="text" class="form-control" id="lou"
+                                        formControlName="lou" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="sblc">SBLC Charges</label>
+                                    <input type="text" class="form-control" id="sblc" formControlName="sblc"
+                                        placeholder="Enter Charges ">
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-money"></i> Forward Booking Charges</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 col-md-4">
+                                <div class="form-group">
+                                    <label class="col-form-label" for="forward_booking">Forward Booking Charges</label>
+                                    <input type="text" class="form-control" id="forward_booking"
+                                        formControlName="forward_booking" placeholder="Enter Charges ">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+						<button class="btn btn-primary mr-1" type="submit"
+							[disabled]="flcChargesForm.pristine || flcChargesForm.invalid">
+							<i class="fa fa-dot-circle-o"></i>Submit</button>
+						
+						<button class="btn btn-primary" type="button" (click)="onBack()"><i
+								class="fa fa-undo"></i>Back</button>
+					</div>
+
+
+                </div>
+            </div>
+
+
+        </div>
+    </form>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

@@ -1,0 +1,355 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4> <i class="fa fa-file"></i> Logistics Charges Master <button
+                            class="btn btn-sm btn-primary pull-right" (click)="formShow()"><em
+                                class="fa fa-plus"></em></button></h4>
+                </div>
+                <div class="card-body" *ngIf="formEnable">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form [formGroup]="addForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+                                <div class="row">
+
+
+
+
+                                    <div class="form-group col-md-2">
+                                        <label for="">Port</label>
+                                        <ng-select formControlName="port_id" placeholder="Select Port"
+                                            [searchable]="true" [clearable]="true" bindLabel="port_name" bindValue="id"
+                                            [items]="ports">
+                                        </ng-select>
+                                    </div>
+
+                                    <div class="form-group col-md-2">
+                                        <label for="">Select Charges Head</label>
+                                        <ng-select formControlName="charges_head_id" placeholder="Select Head"
+                                            [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                            [items]="charges_head" (change)="getAgent($event , 0)">
+                                        </ng-select>
+                                    </div>
+
+                                    <div class="form-group col-md-8" *ngIf="!bond">
+                                        <label for="">Shipping Agent</label>
+                                        <ng-select formControlName="shipping_agent_id" placeholder="Select Agent"
+                                            [searchable]="true" [clearable]="true" bindLabel="sub_org_name"
+                                            bindValue="sub_org_id" [items]="agents">
+                                        </ng-select>
+                                    </div>
+
+                                    <div class="form-group col-md-3" *ngIf="bond">
+                                        <label for="">Bond Godown</label>
+                                        <ng-select formControlName="bond_godown_id" placeholder="Select "
+                                            [searchable]="true" [clearable]="true" bindLabel="godown_name"
+                                            bindValue="id" [items]="agents">
+                                        </ng-select>
+                                    </div>
+
+
+
+
+                                    <div class="form-group col-md-2">
+                                        <label for="">Container Type</label>
+                                        <ng-select formControlName="container_type" placeholder="Select Container Type"
+                                            [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                            [items]="containers">
+                                        </ng-select>
+                                    </div>
+
+                                    <div class="form-group col-md-2">
+                                        <label for="">From Date</label>
+                                        <input type="text" class="form-control"
+                                            [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                                            #dp="bsDatepicker" formControlName="from_date" bsDatepicker
+                                            placeholder="From Date " style="background-color: white;">
+                                    </div>
+
+
+                                    <div class="form-group col-md-2">
+                                        <label for="">To Date</label>
+                                        <input type="text" class="form-control"
+                                            [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                                            #dp="bsDatepicker" formControlName="to_date" bsDatepicker
+                                            placeholder="To Date " style="background-color: white;">
+                                    </div>
+
+                                    <!-- 
+                                    <div class="form-group col-md-2">
+                                        <label for="">Rate Type</label>
+                                        <ng-select formControlName="rate_type" placeholder="Select Type"
+                                            [searchable]="true" [clearable]="true" bindLabel="type" bindValue="id"
+                                            [items]="ratetype">
+                                        </ng-select>
+                                    </div> -->
+
+                                    <div class="form-group col-md-2">
+                                        <label for="">Rate</label>
+                                        <input type="text" class="form-control" formControlName="rate"
+                                            placeholder="Enter Rate " numbersOnly>
+                                    </div>
+
+                                    <div class="form-group col-md-2" *ngIf="transporter">
+                                        <label for="">Cgst Percent</label>
+                                        <input type="text" class="form-control" formControlName="cgst_transporter"
+                                            placeholder="Enter Cgst " numbersOnly>
+                                    </div>
+
+
+                                    <div class="form-group col-md-2" *ngIf="transporter">
+                                        <label for="">Sgst Percent</label>
+                                        <input type="text" class="form-control" formControlName="sgst_transporter"
+                                            placeholder="Enter Sgst " numbersOnly>
+                                    </div>
+
+
+                                    <div class="form-group col-md-2" *ngIf="bond">
+                                        <label for=""> Insurance Charges Percent</label>
+                                        <input type="text" class="form-control" formControlName="bond_insurance_percent"
+                                            placeholder="Enter Rate " numbersOnly>
+                                    </div>
+
+
+
+                                    <div class="col-md-12">
+                                        <button class="btn btn-primary mr-1" type="submit"
+                                            [disabled]="addForm.pristine || addForm.invalid">
+                                            <i class="fa fa-dot-circle-o"></i>Submit</button>
+                                        <button type="button" class="btn btn-primary" (click)="resetData()">
+                                            Back</button>
+
+
+                                    </div>
+
+
+
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body" *ngIf="!formEnable">
+
+
+                    <div class="row">
+                        <div class="col-md-2 offset-5" *ngIf="isLoading">
+                            <app-loading-spinner></app-loading-spinner>
+                        </div>
+                    </div>
+
+                    <div class="row text-left mb-3" >
+                        <div class="col-md-3">
+                            <input pInputText type="text" class="form-control"
+                            (input)="dt.filterGlobal($event.target.value, 'contains')"
+                            placeholder="Global Search" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <p-table #dt [value]="chargesList" dataKey="id" styleClass="ui-table-non " [rowHover]="true"
+                            [rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]"
+                            [paginator]="true" [columns]="cols"
+                            currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+                            [filterDelay]="0" [globalFilterFields]="['port_master.port_name','sub_org_name','godown_name','']">
+
+                           
+
+                            <ng-template pTemplate="header" let-columns>
+                                <tr>
+
+                                    <th pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+                                        [style.width.px]='col.style'> {{col.header}} <p-sortIcon field="{{col.field}}">
+                                        </p-sortIcon>
+                                    </th>
+
+                                    <th>Edit </th>
+                                    <th>Del </th>
+                                    <th>Copy </th>
+
+                                </tr>
+
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+
+                                    <th>
+                                        <div *ngIf="portlist.length > 0">
+
+                                            <p-multiSelect [options]="portlist" placeholder="All"
+                                                (onChange)="onchange($event,'port_name')" styleClass="ui-column-filter"
+                                                optionLabel="port_name">
+                                                <ng-template let-opt pTemplate="item">
+                                                    <div class="ui-multiselect-representative-option">
+
+                                                        <span>{{opt.label}}</span>
+                                                    </div>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th></th>
+
+                                    <th>
+                                        <div *ngIf="cha.length > 0">
+
+                                            <p-multiSelect [options]="cha" placeholder="All"
+                                                (onChange)="onchange($event,'sub_org_name')"
+                                                styleClass="ui-column-filter" optionLabel="sub_org_name">
+                                                <ng-template let-opt pTemplate="item">
+                                                    <div class="ui-multiselect-representative-option">
+
+                                                        <span>{{opt.label}}</span>
+                                                    </div>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+
+                                    <th></th>
+
+
+                                    <th>
+                                        <div *ngIf="container_type.length > 0">
+
+                                            <p-multiSelect [options]="container_type" placeholder="All"
+                                                (onChange)="onchange($event,'container_type')"
+                                                styleClass="ui-column-filter" optionLabel="container_type">
+                                                <ng-template let-opt pTemplate="item">
+                                                    <div class="ui-multiselect-representative-option">
+
+                                                        <span>{{getContainer(opt.label)}}</span>
+                                                    </div>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+
+
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+
+                                </tr>
+
+                            </ng-template>
+
+                            <ng-template pTemplate="body" let-item let-columns>
+                                <tr class="ui-selectable-row">
+
+
+
+                                    <td>
+                                        <span class="ui-column-title">From Date</span>
+
+                                        <span class="badge badge-success">{{item.from_date | date: 'dd-MM-yyyy'}}</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="ui-column-title">To Date</span>
+
+                                        <span class="badge badge-success">{{item.to_date | date: 'dd-MM-yyyy'}}</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="ui-column-title">Port</span>
+                                        <span>
+                                            {{item.port_master.port_name}}</span>
+
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Charges Head</span>
+                                        <span>
+                                            {{getHeadName(item.charges_head_id)}}</span>
+
+                                    </td>
+
+
+                                    <td>
+                                        <span class="ui-column-title">Agent Name</span>
+                                        <span>
+                                            {{item.sub_org_name}}</span>
+
+                                    </td>
+
+
+                                    <td>
+                                        <span class="ui-column-title">Bond Godown</span>
+                                        <span>
+                                            {{item.godown_name}}</span>
+
+                                    </td>
+
+
+                                    <td>
+                                        <span class="ui-column-title">Container Type</span>
+                                        <span>
+                                            {{ getContainer(item.container_type)}}</span>
+
+                                    </td>
+
+
+
+                                    <td>
+                                        <span class="ui-column-title">Rate </span>
+                                        <span>
+                                            {{item.rate}}</span>
+
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            <span class="ui-column-title">Edit </span>
+                                            <button class="btn btn-primary btn-sm" (click)="edit(item)"><i
+                                                    class="fa fa-pencil"></i></button>
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            <span class="ui-column-title">Delete</span>
+                                            <button class="btn btn-danger btn-sm" mwlConfirmationPopover
+                                                [popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+                                                [confirmText]="confirmText" [cancelText]="cancelText"
+                                                [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+                                                confirmButtonType="danger" cancelButtonType="success"
+                                                (confirm)="delete(item.id)" (cancel)="cancelClicked = true"><i
+                                                    class="fa fa-trash"></i></button></span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            <span class="ui-column-title">Copy </span>
+                                            <button class="btn btn-primary btn-sm" (click)="copy(item)"><i
+                                                    class="fa fa-plus"></i></button>
+                                        </span>
+
+                                    </td>
+
+
+
+
+
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="10" style="text-align:left">No Data found.</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

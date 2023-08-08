@@ -1,0 +1,131 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-header">
+					<i class="fa fa-exchange"></i> Sales Utility
+				</div>
+				<div class="card-body">
+					<div class="row mb-3">
+						<div class="col-md-12">
+							<div class="form-inline">
+								<div class="form-group">
+									<label for="dateRange" class="font-weight-bold">Customer: </label>
+									<div class="form-group mx-sm-3">
+										<ng-select id="sub_org_id" laceholder="Select Customer" bindLabel="name"
+											bindValue="sub_org_id" [items]="customersList" placeholder="Select Customer"
+											(change)="onCustomer($event)" style="width: 400px !important;">
+										</ng-select>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div *ngIf="!isLoading">
+						<p-table #dt dataKey="id" [value]="data" styleClass="ui-p-table" [rowHover]="true" [rows]="10"
+							[showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100,200,500]"
+							[loading]="isLoading" [paginator]="true" [columns]="selectedColumns"
+							currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+							[filterDelay]="0"
+							[globalFilterFields]="[	'customerName','invoice_no','invoice_date','total_amount','interest_amount','actual_payment','total_recieved']">
+							<ng-template pTemplate="caption">
+								<div class="ui-table-globalfilter-container">
+									<input pInputText type="text" class="form-control"
+										(input)="dt.filterGlobal($event.target.value, 'contains')"
+										placeholder="Global Search" />
+								</div>
+								<div class="ui-helper-clearfix" style="text-align: left;">
+									<!--  -->
+								</div>
+							</ng-template>
+							<ng-template pTemplate="header" let-columns>
+								<tr>
+									<th style="width: 3em;"></th>
+									<th pSortableColumn="{{col.field}}" *ngFor="let col of columns"> {{col.header}}
+										<p-sortIcon field="{{col.field}}">
+										</p-sortIcon>
+									</th>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="body" let-item let-columns let-i="rowIndex">
+								<tr class="ui-selectable-row">
+									<td class="text-success">
+										<i *ngIf="item.actual_payment == item.total_recieved" class="fa fa-check"></i>
+									</td>
+									<td>
+										<span class="ui-column-title">Customer Name</span>
+										<span>{{item.sub_org_name}}</span>
+									</td>
+									<td>
+										<span class="ui-column-title">Invoice No</span>
+										<span>{{item.invoice_no}}</span>
+									</td>
+									<td>
+										<span class="ui-column-title">Invoice Date</span>
+										<span>{{item.invoice_date}}</span>
+									</td>
+									<td>
+										<span class="ui-column-title">Total Amount</span>
+										<span>{{item.total_amount}}</span>
+									</td>
+									<td pEditableColumn>
+										<p-cellEditor>
+											<ng-template pTemplate="input">
+												<input pInputText class="form-control" type="text"
+													[(ngModel)]="item.interest_amount"
+													(keydown.enter)="update($event, item.id, 'interest_amount', item)"
+													(change)="update($event, item.id , 'interest_amount',item)">
+											</ng-template>
+											<ng-template pTemplate="output">
+												<span class="ui-column-title">Interest Amount</span>
+												{{item.interest_amount}}
+											</ng-template>
+										</p-cellEditor>
+									</td>
+									<td>
+										<span class="ui-column-title">Actual Payment</span>
+										<span>{{item.actual_payment}}</span>
+									</td>
+									<td pEditableColumn>
+										<p-cellEditor>
+											<ng-template pTemplate="input">
+												<input pInputText class="form-control" type="text"
+													[(ngModel)]="item.total_recieved"
+													(keydown.enter)="update($event, item.id, 'total_recieved', item)"
+													(change)="update($event, item.id , 'total_recieved',item)">
+											</ng-template>
+											<ng-template pTemplate="output">
+												<span class="ui-column-title">Total Recieved</span>
+												{{item.total_recieved}}
+											</ng-template>
+										</p-cellEditor>
+									</td>
+									<td>
+										<span class="ui-column-title">Total Pending</span>
+										<span>{{item.total_pending}}</span>
+									</td>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="footer" let-columns>
+								<tr>
+									<td colspan="6"></td>
+									<td>Total :{{actual_payment}}</td>
+									<td>Total :{{total_recieved}}</td>
+									<td>Total :{{total_outstanding}}</td>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="emptymessage">
+								<tr>
+									<td colspan="9" class="text-center">No Data found.</td>
+								</tr>
+							</ng-template>
+						</p-table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

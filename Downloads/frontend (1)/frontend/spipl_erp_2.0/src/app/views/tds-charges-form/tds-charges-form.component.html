@@ -1,0 +1,561 @@
+<div style="font-size:large;" class="animated fadeIn">
+    <form [formGroup]="tdsChargeForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="row tds_header">
+                        <div class="col-md-3 card-header" align="center" style="background-color: white;">
+                            <img src="assets/img/logo.png" width="100" height="100">
+                        </div>
+                        <div class="col-md-7 card-header" align="center" style="background-color: white;">
+                            <span style="font-size: 40px;color:brown;">
+                                <b>Sushila Parmar International Pvt. Ltd.</b></span>
+                            <h5><b><span style="font-size: 25px;color:brown;">TDS and TCS Questionnaire</span></b></h5>
+                        </div>
+                        <div class="col-md-2 card-header" align="center" style="background-color: white;"></div>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="form-row centered">
+
+                            <div class="col-3 ">
+                                <label for="org_name" class="font-weight-bold">Enter your Organization name :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input required type="text" formControlName="org_name" id="org_name"
+                                    class="form-control" placeholder="Enter Organization Name">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-row centered">
+
+                            <div class="col-3 ">
+                                <label for="org_name" class="font-weight-bold">Incorporation Date</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input type="text" class="form-control" formControlName="incorporation_date"
+                                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                    #dp="bsDatepicker" bsDatepicker style="background-color: white;" readonly>
+
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label for="gst_no" class="font-weight-bold">GST No.:</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input type="text" formControlName="gst_no" id="gst_no" class="form-control"
+                                    placeholder="Enter GST No."
+                                    [ngClass]="{ 'is-invalid':f.gst_no.errors && f.gst_no.touched}">
+
+                                <div *ngIf="f.gst_no.errors && f.gst_no.touched" class="invalid-feedback">
+                                    <div *ngIf="f.gst_no.errors.required">GST No. is required</div>
+                                    <div *ngIf="f.gst_no.errors.pattern">Enter Valid GST number.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label for="org_name" class="font-weight-bold">Are You Vendor or Customer :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" formControlName="vendor_customer"
+                                            id="vendor" value="Vendor" required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Vendor
+                                        </label>
+                                    </div> &nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" formControlName="vendor_customer"
+                                            id="customer" value="Customer" required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Customer
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <!-- <div class="form-row centered ">
+                            <div class="col-3 ">
+                                <label class="font-weight-bold">Do You have Valid Pan :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="form-check">
+                                        <input class="form-check-input valid_pan_status" type="radio"
+                                            formControlName="valid_pan_status" id="valid_pan_yes" value="yes">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Yes
+                                        </label>
+                                    </div> &nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input valid_pan_status" type="radio"
+                                            formControlName="valid_pan_status" id="valid_pan_no" checked="checked"
+                                            value="no">
+                                        <label class="form-check-label" for="gridCheck">
+                                            No
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr> -->
+
+                        <div class="form-row centered ">
+                            <div class="col-3">
+                                <label class="font-weight-bold">Please Enter PAN :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input type="text" class="form-control" formControlName="pan_number" id="pan_number"
+                                    placeholder="Enter PAN No.">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label class="font-weight-bold">Is your turnover in FY {{PreviousFinacialYear}} is more
+                                    than INR 10 Crore
+                                    :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                            formControlName="turnover_20_21_status" id="turnover_20_21_yes" value="yes"
+                                            required="" (change)="CheckTurnOver($event)">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Yes
+                                        </label>
+                                    </div> &nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                            formControlName="turnover_20_21_status" id="turnover_20_21_no" value="no"
+                                            (change)="CheckTurnOver($event)" required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            No
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+
+
+                        <div *ngIf="showTan">
+                            <div class="form-row centered ">
+                                <div class="col-3">
+                                    <label class="font-weight-bold">Please Enter TAN :</label>
+                                </div>
+                                <div class="col-3 ">
+                                    <input type="text" class="form-control" formControlName="tan_no" id="tan_no"
+                                        placeholder="Enter TAN No.">
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+
+
+
+                        <!-- <div class="form-row centered">
+                            <div class="col-3">
+                                <label class="font-weight-bold">Have You Filed ROI for FY 2018-19 :</label>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-row ">
+                                    <div class="form-check">
+                                        <input class="form-check-input roistatus3" type="radio"
+                                            formControlName="roi_18_19_status" id="roi_18_19_yes" value="yes"
+                                            required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Yes
+                                        </label>
+                                    </div> &nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input roistatus3" type="radio"
+                                            formControlName="roi_18_19_status" id="roi_18_19_no" value="no" required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            No
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label class="font-weight-bold">If Filed, Please mention ack number, attach proof
+                                    :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="">
+                                        <input type="text" class="form-control" formControlName="ack_number_18_19"
+                                            id="ack_number_18_19">
+                                    </div>
+                                    &nbsp;&nbsp;
+
+                                    <div class="">
+                                        <input type="file" class="form-control" formControlName="ack_proof_18_19"
+                                            (change)="ack1819docs($event)" multiple>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr> -->
+                        <!-- <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label class="font-weight-bold">Is your turnover in FY 2019-20 is more than INR 10 Crore
+                                    :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                            formControlName="turnover_19_20_status" id="turnover_19_20_yes" value="yes"
+                                            required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Yes
+                                        </label>
+                                    </div> &nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                            formControlName="turnover_19_20_status" id="turnover_19_20_no" value="no"
+                                            required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            No
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr> -->
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label class="font-weight-bold">Have You Filed ITR for FY
+                                    {{PreviousofPreviousFinacialYear}} :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="form-check">
+                                        <input class="form-check-input roistatus" type="radio" id="roi_19_20_yes"
+                                            formControlName="roi_19_20_status" value="yes" required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Yes
+                                        </label>
+                                    </div> &nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input roistatus" type="radio" id="roi_19_20_no"
+                                            formControlName="roi_19_20_status" value="no" required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            No
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label class="font-weight-bold">If Filed, Please mention ack number, attach proof
+                                    :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="">
+                                        <input type="text" class="form-control" formControlName="ack_number_19_20"
+                                            id="ack_number_19_20">
+                                    </div>
+                                    &nbsp;&nbsp;
+
+                                    <div class="">
+                                        <input type="file" class="form-control" formControlName="ack_proof_19_20"
+                                            (change)="ack1920docs($event)" multiple>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <!-- 
+                        <div class="form-row centered ">
+                            <div class="col-3">
+                                <label class="font-weight-bold">Have You Filed ROI for FY 2020-21 :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="form-check">
+                                        <input class="form-check-input roistatus2" type="radio" id="roi_20_21_yes"
+                                            formControlName="roi_20_21_status" value="yes" required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Yes
+                                        </label>
+                                    </div> &nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input roistatus2" type="radio" id="roi_20_21_no"
+                                            formControlName="roi_20_21_status" value="no" required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            No
+                                        </label>
+                                    </div>&nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input roistatus2" type="radio" id="roi_20_21_not_due"
+                                            formControlName="roi_20_21_status" value="not-due" required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Not Due
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="form-row  centered">
+                            <div class="col-3 ">
+                                <label class="font-weight-bold">If Filed, Please mention ack number, attach proof
+                                    :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="">
+                                        <input type="text" class="form-control" formControlName="ack_number_20_21"
+                                            id="ack_number_20_21" >
+                                    </div>
+                                    &nbsp;&nbsp;
+
+                                    <div class="">
+                                        <input type="file" class="form-control" formControlName="ack_proof_20_21"
+                                            (change)="ack2021docs($event)" multiple>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr> -->
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label class="font-weight-bold">Is Your TDS + TCS in FY
+                                    {{PreviousofPreviousFinacialYear}} > INR 50,000 :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                            formControlName="tds_tcs_19_20_status" id="tds_tcs_19_20_yes" value="yes"
+                                            required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            Yes
+                                        </label>
+                                    </div> &nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                            formControlName="tds_tcs_19_20_status" id="tds_tcs_19_20_no" value="no"
+                                            required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            No
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label class="font-weight-bold">Is Your TDS + TCS in FY {{PreviousFinacialYear}} > INR
+                                    50,000 :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <div class="form-row ">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                            formControlName="tds_tcs_20_21_status" id="tds_tcs_20_21_yes" value="yes"
+                                            required="">
+                                        <label class="form-check-label " for="gridCheck">
+                                            Yes
+                                        </label>
+                                    </div> &nbsp;&nbsp;
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio"
+                                            formControlName="tds_tcs_20_21_status" id="tds_tcs_20_21_no" value="no"
+                                            required="">
+                                        <label class="form-check-label" for="gridCheck">
+                                            No
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+
+
+                        <div class="form-row centered">
+                            <div class="col-8">
+                                <label class="font-weight-bold">
+                                    <h4>Contact Details</h4>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label for="org_name" class="font-weight-bold">Name of the person filling the form
+                                    :</label>
+                            </div>
+                            <div class="col-3">
+                                <input required type="text" formControlName="person_name" id="person_name"
+                                    class="form-control" placeholder="Enter Name">
+                            </div>
+                        </div>
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label for="designation" class="font-weight-bold">Designation :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input type="text" formControlName="designation" id="designation" class="form-control"
+                                    placeholder="Enter Designation">
+                            </div>
+                        </div>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label for="address" class="font-weight-bold">Address :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input type="text" formControlName="address" id="address" class="form-control"
+                                    placeholder="Enter Address">
+                            </div>
+                        </div>
+
+                        <div class="form-row centered">
+
+                            <div class="col-3 ">
+                                <label for="city" class="font-weight-bold">City :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input type="text" formControlName="city" id="city" class="form-control"
+                                    placeholder="Enter City">
+                            </div>
+                        </div>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label for="state" class="font-weight-bold">State :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input type="text" formControlName="state" id="state" class="form-control"
+                                    placeholder="Enter State">
+                            </div>
+                        </div>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label for="pincode" class="font-weight-bold">Pin Code :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input type="text" formControlName="pincode" id="pincode" class="form-control"
+                                    placeholder="Enter Pincode">
+                            </div>
+
+                        </div>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label for="email_id" class="font-weight-bold">Email Address :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input required type="email" formControlName="email_id" id="email_id"
+                                    class="form-control" placeholder="Enter Email ID">
+                            </div>
+                        </div>
+
+                        <div class="form-row centered">
+                            <div class="col-3 ">
+                                <label for="phone_number" class="font-weight-bold">Phone Number :</label>
+                            </div>
+                            <div class="col-3 ">
+                                <input required type="text" formControlName="phone_number" id="phone_number"
+                                    class="form-control" placeholder="Enter Phone No.">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-row centered">
+                            <div class="col-8">
+
+                                <div class="form-check">
+                                    <label class="font-weight-bold">Any liability arising to SPIPL on account of false /
+                                        incorrect declaration, the same shall be recovered along with interest from
+                                        vendor/customer as the case may be.
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                        <hr>
+                        <div class="form-row centered">
+                            <div class="col-8">
+                                <div class="form-check">
+                                    <!-- [(ngModel)]="agree" -->
+                                    <input class="form-check-input" required type="checkbox" id="acknowledge"
+                                        formControlName="acknowledge" required="">
+                                    <label class="form-check-label font-weight-bold" for="gridCheck">Yes, I accept and
+                                        hereby confirm that the above mentioned information furnished is true and to the
+                                        best of my belief and knowledge.
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center" style="background-color: white;">
+
+                        <div class="row">
+                            <div class="col-md-2 offset-5" *ngIf="isLoading">
+                                <app-loading-spinner></app-loading-spinner>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-lg" type="submit"
+                            [disabled]="tdsChargeForm.pristine || tdsChargeForm.invalid">
+                            Submit</button>
+                    </div>
+                    <hr>
+                    <div class="form-row centered">
+                        <div class="col-8">
+                            <h5><b>Note:</b></h5>
+                        </div>
+                    </div>
+                    <div class="form-row centered">
+                        <div class="col-8">
+                            <label>1) If You are vendor of SPIPL, please note that SPIPL Turnover for FY {{PreviousofPreviousFinacialYear}}
+                                exceeds
+                                Rs. 10 Cr., therefore, you don’t need to levy TCS on Invoices raised to SPIPL. SPIPL
+                                Will Dedcut TDS on such Invoices as per Sec. 194Q</label>
+                        </div>
+
+                    </div>
+
+                    <div class="form-row centered">
+                        <div class="col-8">
+                            <label>2) If you are customer of SPIPL, please ensure whether you are liable for TDS
+                                dedcution u/s. 194Q on SPIPL Invocies. If you are not liable for TDS, then SPIPL will
+                                levy TCS as per Sec. 206C(1H).</label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

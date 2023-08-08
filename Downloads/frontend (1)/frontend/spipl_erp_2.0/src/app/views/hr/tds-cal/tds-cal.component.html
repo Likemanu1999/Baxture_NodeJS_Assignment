@@ -1,0 +1,137 @@
+    <div class="animated fadeIn">
+     <div class="row">
+      <div class="col-md-12">
+      <div class="card">
+          <div class="card-header">
+            <i class="fa fa-calculator"></i> TDS Report
+            &nbsp;&nbsp;
+            <b>
+            <label class="radio-inline lg"><input type="radio"  value="0" [(ngModel)]="optradio">Budget List</label>&nbsp;&nbsp;
+            <label class="radio-inline lg"><input type="radio"  value="1" [(ngModel)]="optradio"> Actual List</label>
+            </b>
+            <button class="btn btn-sm btn-light pull-right" (click)="isCollapsedActual = !isCollapsedActual">
+              <i *ngIf="isCollapsedActual" class="fa fa-chevron-down"></i>
+              <i *ngIf="!isCollapsedActual" class="fa fa-chevron-up"></i>
+            </button>
+          </div>
+          <div class="card-body"
+          [collapse]="isCollapsedActual">
+          <div class="row" *ngIf="optradio === '0'">
+            <div class="col-md-4 col-12">
+              <div class="form-group">
+                <div class="input-group margin bottom">
+                  <input type="text"
+                  class="form-control"
+                  [textMask]="{mask: yearMask}"
+                  placeholder="Enter Financial Year"
+                  [(ngModel)]="financial_year">
+                  &nbsp;
+                  <span class="input-group-append">
+                    <button type="button"
+                    class="btn btn-primary active inbox_search_height m-t-10"
+                    (click)="getBudgetList()"
+                   >Calculate</button>
+                  </span>
+                </div>
+                </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="optradio === '1'">
+              <div class="col-md-4 col-12">
+                <div class="form-group">
+                  <div class="input-group margin bottom">
+                    <input type="text"
+                    class="form-control"
+                    [bsConfig]="bsConfig"
+                    #dp="bsDatepicker"
+                    bsDatepicker
+                    [(bsValue)]="bsValue"
+                    readonly>
+                    &nbsp;
+                    &nbsp;
+                    <input type="text"
+                    class="form-control"
+                    [bsConfig]="bsConfig"
+                    #dp="bsDatepicker"
+                    bsDatepicker
+                    [(bsValue)]="bsValue2"
+                    readonly>
+                    &nbsp;
+                    <span class="input-group-append">
+                      <button type="button"
+                      class="btn btn-primary active inbox_search_height m-t-10"
+                      (click)="getActualList()"
+                     >Calculate</button>
+                    </span>
+                  </div>
+                 <!--  first :  {{ first_financial_year }}
+                  second :  {{ second_financial_year }} -->
+                  </div>
+              </div>
+            </div>
+          </div>
+
+      </div>
+      </div>
+    </div>
+
+      <div class="row">
+        <div class="col-md-2 offset-5" *ngIf="isLoading">
+           <app-loading-spinner ></app-loading-spinner>
+        </div>
+      </div>
+      <div class="card" *ngIf="result">
+        <div class="card-header">
+          <i class="fa fa-calculator"></i> {{ cardTitle }}
+          &nbsp;&nbsp;
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+                <div class="col-md-12" style="margin-top:14px;">
+                    <p-table #dt [value]="result"
+                    dataKey="id"
+                    styleClass="ui-table-customers"
+                    [rowHover]="true"
+                    [rows]="10"
+                    [showCurrentPageReport]="true"
+                    [rowsPerPageOptions]="[10,25,50]"
+                    [loading]="isLoading"
+                    [paginator]="true"
+                    [autoLayout]="true"
+                    [resizableColumns]="true"
+                    currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+                    [filterDelay]="0" [globalFilterFields]="['emp_name']" >
+                      <ng-template pTemplate="caption">
+                          <div class="ui-table-globalfilter-container">
+                              <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+                          </div>
+                        <div class="ui-helper-clearfix" style="text-align: left">
+                            <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL" (click)="exportExcel()" style="margin-right: 0.5em;" class="ui-button-success"></button>
+                          <!--   <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF" (click)="exportPdf()" class="ui-button-warning"></button> -->
+                        </div>
+                    </ng-template>
+                  <ng-template pTemplate="header">
+                    <tr>
+                        <th  pResizableColumn pSortableColumn="{{col.field}}" *ngFor="let col of cols"> {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon></th>
+                    </tr>
+                  </ng-template>
+                      <ng-template pTemplate="body" let-result>
+                          <tr class="ui-selectable-row">
+                            <td *ngFor="let col of cols">
+                              <span class="ui-column-title">{{col.header}} :</span>
+                             {{result[col.field]}}
+                            </td>
+                           </tr>
+                      </ng-template>
+                      <ng-template pTemplate="emptymessage">
+                          <tr>
+                              <td colspan="52" style="text-align:left">No Records found.</td>
+                          </tr>
+                      </ng-template>
+                  </p-table>
+                </div>
+          </div>
+      </div>
+      </div>
+     </div>
+      <toaster-container [toasterconfig]="toasterconfig"></toaster-container>

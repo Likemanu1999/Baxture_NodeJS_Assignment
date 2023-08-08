@@ -1,0 +1,233 @@
+<p>charges-report works!</p>
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fa fa-file"></i> Charges Chart
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <label for="">Date</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                </div>
+                                <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                                    (ngModelChange)="onSelect($event)" placeholder="">
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <br>
+
+                    <div class="row">
+                        <div class="col-md-2 offset-5" *ngIf="isLoading">
+                            <app-loading-spinner></app-loading-spinner>
+                        </div>
+                    </div>
+
+
+                    <div *ngIf="!isLoading">
+
+                        <p-table #dt [value]="all_charges_list" dataKey="id" styleClass="ui-table-charges"
+                            [rowHover]="true" [rows]="10" [showCurrentPageReport]="true"
+                            [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading" [paginator]="true"
+                            [columns]="selectedColumns" (onFilter)="onFilter($event, dt)"
+                            currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+                            [filterDelay]="0"
+                            [globalFilterFields]="['bank_name','charges_type','charges_date','system_charges_amount','bank_charges_amount']">
+
+
+                            <ng-template pTemplate="caption">
+
+                                <div class="ui-table-globalfilter-container">
+                                    <input pInputText type="text" class="form-control"
+                                        (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                        placeholder="Global Search" />
+
+                                </div>
+
+                                <div class="ui-helper-clearfix" style="text-align: left">
+
+                                    <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                        (click)="exportExcel()" style="margin-right: 0.5em;"
+                                        class="ui-button-success"></button>
+                                    <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF"
+                                        (click)="exportPdf()" class="ui-button-warning"></button>
+                                </div>
+                            </ng-template>
+
+                            <ng-template pTemplate="header" let-columns>
+
+
+                                <tr>
+                                    <th style="width: 3rem">
+                                        <p-tableHeaderCheckbox (click)="onCheckAll(a.checked)" #a>
+                                        </p-tableHeaderCheckbox>
+                                    </th>
+                                   
+                                    <th pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+                                        style="width: 200px;"> {{col.header}} <p-sortIcon field="{{col.field}}">
+                                        </p-sortIcon>
+                                    </th>
+                                </tr>
+                                <tr>
+
+
+                                    <th></th>
+                                    <th *ngIf="getColumnPresent('bank_name')">
+                                        <div *ngIf="bank_list.length > 0 ">
+                                            <p-multiSelect [options]="bank_list" placeholder="All"
+                                                (onChange)="onchange($event,'bank_name')" styleClass="ui-column-filter"
+                                                optionLabel='bank_name'>
+                                                <ng-template let-op pTemplate="item">
+
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+
+                                    <th *ngIf="getColumnPresent('supplier_name')">
+                                        <div *ngIf="supplier_list.length > 0 ">
+                                            <p-multiSelect [options]="supplier_list" placeholder="All"
+                                                (onChange)="onchange($event,'supplier_name')" styleClass="ui-column-filter"
+                                                optionLabel='supplier_name'>
+                                                <ng-template let-op pTemplate="item">
+
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+
+                                    <th *ngIf=" getColumnPresent('charges_type')">
+                                        <div *ngIf="charges_type_list.length > 0">
+
+                                            <p-multiSelect [options]="charges_type_list" placeholder="All"
+                                                (onChange)="onchange($event,'charges_type')"
+                                                styleClass="ui-column-filter" optionLabel="charges_type">
+                                                <ng-template let-opt pTemplate="item">
+                                                    <div class="ui-multiselect-representative-option">
+
+                                                        <span>{{opt.label}}</span>
+                                                    </div>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <!-- <th *ngIf="getColumnPresent('charges_date')">
+                                        <input type="text" class="form-control" [(ngModel)]="ship_date"
+                                            (ngModelChange)="onDateSelect($event,'charges_date')"
+                                            [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                            #dp="bsDatepicker" bsDatepicker [maxDate]="today"
+                                            placeholder="Search by Date">
+                                    </th> -->
+                                    <th *ngIf="getColumnPresent('system_charges_amount')"></th>
+                                    <th *ngIf="getColumnPresent('bank_charges_amount')"></th>
+                                </tr>
+
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item let-columns>
+                                <tr class="ui-selectable-row">
+                                    <td>
+                                        <input type="checkbox" [value]="item" #inputs #checkboxes
+                                            (click)="onCheck(checkboxes.checked,item)">
+                                    </td>
+
+                                    <td *ngIf="getColumnPresent('bank_name')">
+                                        <span class="ui-column-title">Bank Name</span>
+
+                                        <span
+                                            style="vertical-align: middle; margin-left: .5em">&#123;&#123;item.bank_name&#125;&#125;</span>
+                                    </td>
+
+                                    
+                                    <td *ngIf="getColumnPresent('supplier_name')">
+                                        <span class="ui-column-title">Supplier Name</span>
+
+                                        <span
+                                            style="vertical-align: middle; margin-left: .5em">&#123;&#123;item.supplier_name&#125;&#125;</span>
+                                    </td>
+
+                                    <td *ngIf="getColumnPresent('charges_type')">
+                                        <span class="ui-column-title">Charges Type </span>
+                                        &#123;&#123;item.charges_type&#125;&#125;
+                                    </td>
+
+
+
+                                    <!-- <td *ngIf="getColumnPresent('charges_date')">
+                                        <span class="ui-column-title">Charges Date </span>
+                                        {{item.charges_date | date: 'dd/MM/yy'}}
+                                    </td> -->
+
+                                    <td *ngIf="getColumnPresent('system_charges_amount')">
+                                        <span class="ui-column-title"> Quantity </span>
+                                        &#123;&#123;item.system_charges_amount&#125;&#125;
+                                    </td>
+                                    <td *ngIf="getColumnPresent('bank_charges_amount')">
+                                        <span class="ui-column-title"> Quantity </span>
+                                        &#123;&#123;item.bank_charges_amount&#125;&#125;
+                                    </td>
+
+                                    
+
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="footer">
+                                <tr>
+                                    <td></td>
+                                    <td *ngIf="getColumnPresent('bank_name')"></td>
+                                    <td *ngIf="getColumnPresent('supplier_name')"></td>
+                                    <td *ngIf="getColumnPresent('charges_type')"></td>
+                                    <!-- <td *ngIf="getColumnPresent('charges_date')"></td> -->
+                                    <td *ngIf="getColumnPresent('system_charges_amount')">{{total_system_charges | currencyInr}}</td>
+                                    <td *ngIf="getColumnPresent('bank_charges_amount')">{{total_bank_charges | currencyInr}}</td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="5" style="text-align:left">No Data found.</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

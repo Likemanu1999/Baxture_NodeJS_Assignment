@@ -1,0 +1,431 @@
+<div class="animated fadeIn">
+	<form [formGroup]="orgRegistrationForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+		<div class="row">
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-header">
+						<i class="icon-home"></i> {{mode}} {{box_title}} 
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="org_id">Main Organization <sup class="text-danger"><strong>*</strong></sup></label>
+									<ng-select id="org_id" formControlName="org_id"
+										placeholder="Select Main Organization" [searchable]="true" [clearable]="true"
+										bindLabel="org_name" bindValue="org_id" [items]="mainOrg">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-8 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="sub_org_name">Organization Name <sup class="text-danger"><strong>*</strong></sup></label>
+									<input type="text" class="form-control" id="sub_org_name"
+										formControlName="sub_org_name" placeholder="Enter organization Name">
+								</div>
+							</div>
+							<div class="col-12 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="org_unit">Unit Type <sup class="text-danger"><strong>*</strong></sup></label>
+									<ng-select id="org_unit" formControlName="org_unit" placeholder="Select Unit"
+										[searchable]="true" [clearable]="true" bindLabel="unit_type" bindValue="ut_id"
+										[items]="unit_list">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="country_id">Country <sup class="text-danger"><strong>*</strong></sup></label>
+									<ng-select id="country_id" formControlName="country_id" placeholder="Select Country"
+										[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+										[items]="countries" (change)="onCountryChange($event.id)"
+										(clear)="onCountryClear()">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="state_id">State <sup class="text-danger"><strong>*</strong></sup></label>
+									<ng-select id="state_id" formControlName="state_id" placeholder="Select State"
+										[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+										[items]="states" (change)="onStateChange($event.id)" (clear)="onStateClear()">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="city_id">City <sup class="text-danger"><strong>*</strong></sup></label>
+									<ng-select id="city_id" formControlName="city_id" placeholder="Select City"
+										[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+										[items]="cities">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="location_village">Location/Village <sup class="text-danger"><strong>*</strong></sup></label>
+									<input type="text" class="form-control" id="location_village" required
+										formControlName="location_village" placeholder="Enter Location ">
+								</div>
+							</div>
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="pin_code">Pin Code</label>
+									<input type="text" class="form-control" id="pin_code" formControlName="pin_code"
+										placeholder="Enter Pin Code">
+								</div>
+							</div>
+
+							<div class="col-12 col-md-12">
+								<div class="form-group">
+									<label class="col-form-label" for="org_address">Organization Address <sup class="text-danger"><strong>*</strong></sup></label>
+									<input type="text" class="form-control" id="org_address"
+										formControlName="org_address" placeholder="Enter Organization Address ">
+								</div>
+							</div>
+							<div class="col-12 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="sales_acc_holder">Sales Account Holder</label>
+									<ng-select id="sales_acc_holder" formControlName="sales_acc_holder"
+										placeholder="Select Sales Account Holder " [searchable]="true"
+										[clearable]="true" bindLabel="first_name" bindValue="id" [items]="staff">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-12 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="purchase_acc_holder">Purchase Account
+										Holder</label>
+									<ng-select id="purchase_acc_holder" formControlName="purchase_acc_holder"
+										placeholder="Select Purchase Account Holder " [searchable]="true"
+										[clearable]="true" bindLabel="first_name" bindValue="id" [items]="purchase_acc_list">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-12 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="trader_manufacture">Trader/Manufature</label>
+									<ng-select id="trader_manufacture" formControlName="trader_manufacture"
+										placeholder="Select Trader/Manufacture " [searchable]="true"
+										[clearable]="true" bindLabel="name" bindValue="id" [items]="trade_manu">
+									</ng-select>
+								</div>
+							</div>
+
+							<div class="col-12 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="product_type">Company<sup class="text-danger"><strong>*</strong></sup></label>
+									<ng-select id="product_type" formControlName="product_type"
+										placeholder="Select Product Type " [searchable]="true"
+										[clearable]="true" bindLabel="name" bindValue="id" [items]="product_type_list">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="port_id">Port </label>
+									<ng-select id="port_id" formControlName="port_id"
+										placeholder="Select Port" [searchable]="true" [clearable]="true"
+										bindLabel="port_name" bindValue="id" [items]="ports">
+									</ng-select>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-header">
+						<i class="fa fa-plus"></i>{{mode}} Details
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col-6 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="pan_no">PAN Number</label>
+									<input type="text" class="form-control" id="pan_no" formControlName="pan_no"
+										placeholder="Enter PAN Number">
+								</div>
+							</div>
+
+							<div class="col-6 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="tan_no">TAN Number</label>
+									<input type="text" class="form-control" id="tan_no" formControlName="tan_no"
+										placeholder="Enter TAN Number">
+								</div>
+							</div>
+							<div class="col-6 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="iec">IEC</label>
+									<input type="text" class="form-control" id="iec" formControlName="iec"
+										placeholder="Enter IEC ">
+								</div>
+							</div>
+							<div class="col-6 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="gst_no">GST Number</label>
+									<input type="text" class="form-control" id="gst_no" formControlName="gst_no"
+										placeholder="Enter GST Number">
+								</div>
+							</div>
+							<div class="col-6 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="virtual_acc_no">Virtual Account Number</label>	
+									<input type="text" class="form-control " id="virtual_acc_no" 
+										#virtual_acc_no formControlName="virtual_acc_no" placeholder="Enter Virtual Account Number" maxlength="16" title="Only character & numbers are allowed e.g. PARMARZ123"
+										[ngClass]="{ 'is-invalid':f.virtual_acc_no.errors}"
+										
+										>
+								</div>
+								<span *ngIf="f.virtual_acc_no.errors" style="color:red"><h6> Only character & numbers are allowed e.g. PARMARZ123</h6>
+								 
+									<span *ngIf="f.virtual_acc_no.errors.min" style="color:red"><h6>VA number min 3 letters required</h6></span>
+								</span>
+
+								<!-- <span *ngIf="virtual_acc_no.valid" style="color:green">Valid Virtual Account Number</span> -->
+							</div>
+							<div class="col-12 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="category_id">Category <sup class="text-danger"><strong>*</strong></sup></label>
+									<ng-select id="category_id" formControlName="category_id"
+										placeholder="Select Category" [searchable]="true" [clearable]="true"
+										bindLabel="cont_type" bindValue="id" [items]="categories" [multiple]=true>
+									</ng-select>
+								</div>
+							</div>
+
+							<div class="col-12 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="product_tag_id">Product Tags</label>
+									<ng-select id="product_tag_id" formControlName="product_tag_id"
+										placeholder="Select Product Tag" [searchable]="true" [clearable]="true"
+										bindLabel="name" bindValue="id" [items]="product_tags" [multiple]=true>
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-6 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label" for="product_id">Product</label>
+									<ng-select id="product_id" formControlName="product_id" placeholder="Select Product"
+										[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+										[items]="products" [multiple]=true>
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-6 col-md-6">
+								<div class="form-group">
+									<label class="col-form-label">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox"
+												formControlName="is_advance_payment" id="is_advance_payment"
+												(change)="setAdvancePaymentTerm($event.target.checked)" autofocus>
+											<label class="form-check-label" for="is_advance_payment">Advance
+												Payment</label>
+										</div>
+									</label>
+									<div class="input-group mb-3">
+										<input type="text" class="form-control" id="payment_term"
+											formControlName="payment_term" placeholder="Payment Term" numbersOnly
+											[readonly]="isAdvancePayment"
+											(change)="onChangePaymentTerm($event.target.value)">
+										<div class="input-group-append">
+											<span class="input-group-text">Days</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="base_limit">Base Limit</label>
+									<input type="text" class="form-control" id="base_limit" formControlName="base_limit"
+										placeholder="Enter Base Limit"
+										(change)="onChangeBaseLimit($event.target.value)">
+								</div>
+							</div>
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="adhoc_limit">Adhoc Limit</label>
+									<input type="text" class="form-control" id="adhoc_limit"
+										formControlName="adhoc_limit" placeholder="Enter Adhoc Limit" (change)="onChangeAdhocLimit($event.target.value)">
+								</div>
+							</div>
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="overdue_limit">Overdue Limit</label>
+									<input type="text" class="form-control" id="overdue_limit"
+										formControlName="overdue_limit" placeholder="Enter Overdue Limit">
+								</div>
+							</div>
+
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="transit_days">Transit Days</label>
+									<input type="text" class="form-control" id="transit_days"
+										formControlName="transit_days" placeholder="Enter Days">
+								</div>
+							</div>
+
+							
+							<div class="col-6 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="bcd_lic_percent">BCD Licence  %</label>
+									<input type="text" class="form-control" id="bcd_lic_percent"
+										formControlName="bcd_lic_percent" placeholder="Enter Days">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-header">
+						<i class="fa fa-plus"></i>{{mode}} Bank Details
+					</div>
+
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="bank_name">
+										Bank Name <sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<input type="text" id="bank_name" class="form-control" formControlName="bank_name"
+										placeholder="Bank Name">
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="account_no">
+										Account Number <sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<input type="text" id="account_no" class="form-control" formControlName="account_no"
+										placeholder="Account Number">
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="account_name">
+										Account Name
+									</label>
+									<input type="text" id="account_name" class="form-control" formControlName="account_name"
+										placeholder="Account Name">
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="branch_name">
+										Branch Name
+									</label>
+									<input type="text" id="branch_name" class="form-control" formControlName="branch_name"
+										placeholder="Branch Name">
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="swift_code">
+										Swift Code </label>
+									<input type="text" id="swift_code" class="form-control" formControlName="swift_code"
+										placeholder="Swift Code">
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="ifsc_code">
+										IFSC Code
+									</label>
+									<input type="text" id="ifsc_code" class="form-control" formControlName="ifsc_code"
+										placeholder="IFSC Code">
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label for="bank_address">
+										Bank Address <sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<input type="text" id="bank_address" class="form-control" formControlName="bank_address"
+										placeholder="Bank Address">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-header">
+						<i class="fa fa-plus"></i>{{mode}} Cheque Details
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col-6 col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="chq_status">Cheque Status</label>
+									<ng-select id="chq_status" formControlName="chq_status"
+										placeholder="Select Cheque Status " [searchable]="true" bindLabel="name"
+										bindValue="id" [items]="chq_status" [clearable]="false">
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-6 col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="chq_no">Cheque Number</label>
+									<input type="text" class="form-control" id="chq_no" formControlName="chq_no"
+										placeholder="Enter Cheque Number ">
+								</div>
+							</div>
+							<div class="col-6 col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="chq_amount">Cheque Amount</label>
+									<input type="text" class="form-control" id="chq_amount" formControlName="chq_amount"
+										placeholder="Enter Cheque Amount ">
+								</div>
+							</div>
+							<div class="col-6 col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="chq_scan_copy">Cheque Scan Copy</label>
+									<input type="file" class="form-control custom-file-input" id="chq_scan_copy"
+										formControlName="chq_scan_copy" multiple
+										(change)="chequeCopyUploadEvent($event)">
+								</div>
+							</div>
+							<div class="col-6 col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="intro_mail_scan_copy">Other Documents</label>
+									<input type="file" class="form-control custom-file-input" id="intro_mail_scan_copy"
+										formControlName="intro_mail_scan_copy" multiple
+										(change)="mailCopyUploadEvent($event)">
+								</div>
+							</div>
+							<div class="col-12 col-md-4">
+								<div class="form-group">
+									<label class="col-form-label" for="note">Note</label>
+									<input type="text" class="form-control" id="note" formControlName="note"
+										placeholder="Enter Note">
+								</div>
+							</div>
+							<input type="hidden" formControlName="mail_copy_hidden" id="mail_copy_hidden">
+							<input type="hidden" formControlName="chq_copy_hidden" id="chq_copy_hidden">
+						</div>
+					</div>
+					<div class="card-footer">
+						<button class="btn btn-primary mr-1" type="submit"
+							[disabled]="orgRegistrationForm.pristine || orgRegistrationForm.invalid">
+							<i class="fa fa-dot-circle-o"></i>Submit</button>
+						<button class="btn btn-danger" type="reset"><i class="fa fa-ban"></i>Reset</button>
+						<button class="btn btn-primary" type="button" (click)="onBack()"><i
+								class="fa fa-undo"></i>Back</button>
+					</div>
+				</div>
+			</div>
+
+
+			
+		</div>
+		<div class="col-md-6"></div>
+	</form>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

@@ -1,0 +1,1137 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<!-- *ngIf="view_opt"> -->
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-3">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+						<div class="col-md-9 text-right">
+							<button *ngIf="enableApproveAll" type="button" class="btn btn-success"
+								(click)="onAction(null, 'Approve_All')">
+								<i class="fa fa-check"></i> Approve All
+							</button>
+							<button *ngIf="add_opt" type="button" class="btn btn-primary"
+								(click)="onAction(null, 'Add Sales Order')">
+								<i class="fa fa-plus"></i> Add Sales Order
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="sales_orders_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="selectedColumns"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt , null)"
+								(onLazyLoad)="onFilter($event, dt , null)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-10">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div class="form-group mb-1 mr-1">
+													<p-multiSelect [options]="cols" [(ngModel)]="selectedColumns"
+														optionLabel="header" selectedItemsLabel="{0} columns selected"
+														defaultLabel="Choose Columns">
+													</p-multiSelect>
+												</div>
+												<div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="clearDropdown(); getData()"
+														[bsConfig]="datePickerConfig" #dp="bsDaterangepicker"
+														[maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly />
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+
+												</div>
+												<div class="form-group mb-1">
+													<p-dropdown [options]="statusList" [(ngModel)]="selected_status"
+														optionLabel="name" (onChange)="onChangeStatus($event)">
+													</p-dropdown>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-2">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in' , null)">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of selected_cols"
+											[ngClass]="(rowData.is_open == 0) ? 'font-weight-bold' : ''">
+											<div *ngIf="getColumnPresent(col.field)">
+												<div *ngIf="col.field == 'id'" class="cell">
+													<span class="ui-column-title">{{ col.header }}: </span>
+													{{ rowData[col.field] }}
+													<br class="expand-btn">
+													<span *ngIf="rowData.extend_con_id != null"
+														class="badge badge-primary custom-badge" pTooltip="Extend On: {{rowData.extend_date | date:'dd-MMM-yyyy'}} 
+														Extend By : {{rowData.extend_days}} Days">
+														E
+													</span>
+													<span *ngIf="rowData.renewed_con_id != null"
+														class="badge badge-success custom-badge"
+														pTooltip="Renew On: {{rowData.renewed_date | date:'dd-MMM-yyyy'}}">
+														R
+													</span>
+													<button
+														class="btn btn-secondary btn-sm custome-expand-btn expand-btn"
+														[pRowToggler]="rowData">
+														<i
+															[ngClass]="expanded ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+													</button>
+												</div>
+												<div
+													*ngIf="col.field != 'id' && col.field != 'action' && col.field != 'received_amount' && col.field != 'deliveryPeriod'">
+													<span class="ui-column-title">{{ col.header }}: </span>
+
+													<div *ngIf="col.type == null">
+														<div *ngIf="col.field == 'days_left'">
+															<span class="badge badge-warning round-badge" pTooltip="Expired On: 
+																{{rowData.expiry_date | date:'dd-MMM-yyyy'}}">
+																{{ rowData[col.field] }}
+															</span>
+														</div>
+														<div *ngIf="col.field != 'days_left'">
+															{{ rowData[col.field] }}
+														</div>
+													</div>
+													<div *ngIf="col.type == 'Quantity'">
+														{{ rowData[col.field] }} {{ rowData.unit_type }}
+													</div>
+													<div *ngIf="col.type == 'Amount'">
+														{{ rowData[col.field] | currency:rowData.currency }}
+													</div>
+													<div *ngIf="col.type == 'Date'">
+														{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+													</div>
+													<div *ngIf="col.type == 'pp'">
+														{{ rowData[col.field] == 0 ? 'No' : 'Yes'}}
+													</div>
+												</div>
+
+												<div style="width: 100px;" *ngIf=" col.field == 'deliveryPeriod'">
+													{{ rowData['eta'] | date:'dd-MMM-yyyy'}} - {{ rowData['expiry_date']
+													| date:'dd-MMM-yyyy'}}
+												</div>
+
+												<div *ngIf="col.field == 'action'">
+													<a class="btn btn-outline-dark btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="View Order"
+														(click)="onAction(rowData, 'View')">
+														<i class="fa fa-eye"></i>
+													</a>
+													<a *ngIf="edit_opt && rowData.enable_edit_option"
+														class="btn btn-outline-info btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="Edit Order"
+														(click)="onAction(rowData, 'Edit')">
+														<i class="fa fa-pencil"></i>
+													</a>
+
+													<a *ngIf="edit_payment_term"
+														class="btn btn-outline-info btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Edit Payment Term"
+														(click)="onAction(rowData, 'Payment Term')">
+														<i class="fa fa-edit"></i>
+													</a>
+
+													<a *ngIf="delete_opt && (rowData.status == 0 || (rowData.quantity == rowData.finance_balance))"
+														class="btn btn-outline-danger btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="Delete Order"
+														mwlConfirmationPopover [popoverTitle]="popoverTitle"
+														[popoverMessage]="popoverMessage1" [confirmText]="confirmText"
+														[cancelText]="cancelText" [placement]="placement"
+														closeOnOutsideClick="true" confirmButtonType="success"
+														cancelButtonType="danger"
+														(confirm)="onAction(rowData, 'Delete')"
+														(cancel)="cancelClicked = true">
+														<i class="fa fa-trash"></i>
+													</a>
+													<a *ngIf="rowData.so_copy == null"
+														class="btn btn-outline-dark btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="Generate SO"
+														(click)="onAction(rowData, 'Generate')">
+														Generate SO
+													</a>
+													<a *ngIf="rowData.so_copy != null"
+														class="btn btn-outline-success btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="Download SO"
+														(click)="onAction(rowData, 'Download')">
+														<i class="fa fa-download"></i>
+													</a>
+													<a *ngIf="rowData.company_id == 2 && finance_opt && (rowData.status == 1 || rowData.status == 2 || rowData.status == 3)"
+														class="btn btn-outline-success btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Add Finance Planning"
+														(click)="onAction(rowData, 'Finance')">
+														<i class="fa fa-plus"></i>
+													</a>
+													<a *ngIf="rowData.company_id == 1 && finance_opt"
+														class="btn btn-outline-success btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Add Finance Planning"
+														(click)="onAction(rowData, 'Finance')">
+														<i class="fa fa-plus"></i>
+													</a>
+													<a *ngIf="renew_opt && rowData.status == 5"
+														class="btn btn-outline-success btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="Renew Order"
+														(click)="onAction(rowData, 'Renew')">
+														<i class="fa fa-refresh"></i>
+													</a>
+													<a *ngIf="rowData.status != 4 && (knock_off_opt && rowData.finance_balance > rowData.cancel_quantity && rowData.is_knock_off == 0) || (knock_off_opt && rowData.dispatch_balance > rowData.cancel_quantity && rowData.is_knock_off == 0)"
+														class="btn btn-outline-danger btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="Knock Off"
+														(click)="onAction(rowData, 'Cancel')">
+														<i class="fa fa-remove"></i>
+													</a>
+													<a *ngIf="extend_opt && rowData.finance_balance > 0 && (rowData.days_left < 3 || rowData.days_left == '*')"
+														class="btn btn-outline-dark btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="Extend Order"
+														(click)="onAction(rowData, 'Extend')">
+														Extend
+													</a>
+													<a *ngIf="payment_reverse && rowData.status == 0 && rowData.payment_reverse == 0"
+														class="btn btn-outline-dark btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Payment Reverse" mwlConfirmationPopover
+														[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage4"
+														[confirmText]="confirmText" [cancelText]="cancelText"
+														[placement]="placement" closeOnOutsideClick="true"
+														confirmButtonType="success" cancelButtonType="danger"
+														(confirm)="onAction(rowData, 'Payment_Reverse')"
+														(cancel)="cancelClicked = true">
+														Payment Reverse
+													</a>
+													<a *ngIf="rowData.company_id == 2 && approve_sales_order && (rowData.status == 0 || rowData.status == 1)"
+														class="btn btn-sm btn-sm action-btn mb-1 approve_btn"
+														[ngClass]="rowData.status == 0 ? 'btn-outline-warning text-dark' : 'btn-outline-success text-white'"
+														mwlConfirmationPopover [popoverTitle]="popoverTitle"
+														[popoverMessage]="popoverMessage2" [confirmText]="confirmText"
+														[cancelText]="cancelText" [placement]="top"
+														closeOnOutsideClick="true" confirmButtonType="success"
+														cancelButtonType="danger"
+														(confirm)="onAction(rowData, 'Approve')"
+														(cancel)="cancelClicked = true">
+														{{ rowData.status_name }}
+													</a>
+												</div>
+												<div
+													*ngIf="col.field == 'advance_amount' && rowData['advance_to_be_received'] > 0 && (rowData['advance_to_be_received'] > rowData['advance_amount'])">
+													<a class="btn btn-outline-success btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Add Advance Amount"
+														(click)="onAction(rowData, 'Credit_Amount')">
+														<i class="fa fa-inr"></i>
+													</a>
+												</div>
+
+												<div
+													*ngIf="col.field == 'balance_received' &&  (rowData['balance_to_be_received'] > rowData['balance_received'])">
+													<a class="btn btn-outline-success btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Add Balance Amount"
+														(click)="onAction(rowData, 'Balance_Amount')">
+														<i class="fa fa-inr"></i>
+													</a>
+												</div>
+												<div *ngIf="col.field == 'utilized_summary'" style="width: 100px;">
+													<a class="btn btn-outline-dark btn-sm action-btn mb-2 mr-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Utilize Amount"
+														(click)="onAction(rowData, 'Utilized_Summary')">
+														Utilize Amount<i class="fa fa-retweet ml-2"></i>
+													</a>
+													<a class="btn btn-outline-success btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Advance Summary"
+														(click)="onAction(rowData, 'Advance_Summary')">
+														Advance Summary<i class="fa fa-file-text-o ml-2"></i>
+													</a>
+													<a class="btn btn-outline-primary btn-sm action-btn mb-2 mr-1"
+														data-toggle="tooltip" data-placement="top"
+														title="Balance Summary"
+														(click)="onAction(rowData, 'Balance_Summary')">
+														Balance Summary<i class="fa fa-file-text-o ml-2"></i>
+													</a>
+												</div>
+												<div *ngIf="col.field == 'received_amount'">
+													{{(rowData['received_amount'] ? rowData['received_amount'] : 0.00) |
+													currency:rowData.currency }}
+												</div>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="rowexpansion" let-rowData let-columns="columns">
+									<td [attr.colspan]="columns.length + 1" class="expanded_row">
+										<div class="ui-g ui-fluid mt-2">
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Con ID: </strong>
+														{{ rowData.id }}
+													</div>
+													<div class="col-md-5">
+														<strong>Customer: </strong>
+														{{ rowData.customer }}
+													</div>
+													<div class="col-md-4">
+														<strong>Zone: </strong>
+														{{ rowData.zone }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Godown: </strong>
+														{{ rowData.godown_name }}
+													</div>
+													<div class="col-md-5">
+														<strong>Grade Name: </strong>
+														{{ rowData.grade_name }}
+													</div>
+													<div class="col-md-4">
+														<strong>Main Grade: </strong>
+														{{ rowData.main_grade }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Quantity: </strong>
+														{{ rowData.quantity }} {{ rowData.unit_type }}
+													</div>
+													<div class="col-md-5">
+														<strong>Deal Rate: </strong>
+														{{ rowData.deal_rate | currency:rowData.currency }}
+													</div>
+													<div class="col-md-4">
+														<strong>Delivery Term: </strong>
+														{{ rowData.delivery_term }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>N.B.: </strong>
+														{{ rowData.nb | currency:rowData.currency }}
+													</div>
+													<div class="col-md-5">
+														<strong>Freight Rate: </strong>
+														{{ rowData.freight_rate | currency:rowData.currency }}
+													</div>
+													<div class="col-md-4">
+														<strong>Booking Date: </strong>
+														{{ rowData.booking_date | date:'dd-MMM-yyyy' }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Added On: </strong>
+														{{ rowData.added_date | date:'dd-MMM-yyyy' }}
+													</div>
+													<div class="col-md-5">
+														<strong>Payment Term: </strong>
+														{{ rowData.payment_term_label }}
+													</div>
+													<div class="col-md-4"></div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Added By: </strong>
+														{{ rowData.added_by_name }}
+													</div>
+													<div class="col-md-5">
+														<strong>Remark: </strong>
+														{{ rowData.remark }}
+													</div>
+													<div class="col-md-4">
+														<strong>Status: </strong>
+														<a *ngIf="approve_sales_order && (rowData.status == 0 || rowData.status == 1)"
+															class="btn btn-sm"
+															[ngClass]="rowData.status == 0 ? 'btn-warning text-dark' : 'btn-success text-white'"
+															mwlConfirmationPopover [popoverTitle]="popoverTitle"
+															[popoverMessage]="popoverMessage2"
+															[confirmText]="confirmText" [cancelText]="cancelText"
+															[placement]="placement1" closeOnOutsideClick="true"
+															confirmButtonType="success" cancelButtonType="danger"
+															(confirm)="onAction(rowData, 'Approve')"
+															(cancel)="cancelClicked = true">
+															<strong>{{ rowData.status_name }}</strong>
+														</a>
+
+														<a *ngIf="rowData.status == 2"
+															class="btn btn-primary btn-sm text-white">
+															{{ rowData.status_name }}
+														</a>
+														<a *ngIf="rowData.status == 3"
+															class="btn btn-danger btn-sm text-white">
+															{{ rowData.status_name }}
+														</a>
+													</div>
+												</div>
+											</div>
+										</div>
+									</td>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<!-- <td *ngIf="approve_sales_order"></td> -->
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total | number }} MT
+											</strong>
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="selected_cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #extendModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Extend Deal"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+			<form [formGroup]="extendForm" novalidate (ngSubmit)="submitExtendForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">{{extendForm.controls.type.value}} Deal</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="extend_days">
+									<strong>
+										Extend Days <sup class="text-danger">*</sup>
+									</strong>
+								</label>
+								<input type="text" id="extend_days" class="form-control" formControlName="extend_days"
+									placeholder="Extend Days" numbersOnly>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary"
+						[disabled]="extendForm.pristine || extendForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div bsModal #advanceBalanceModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Extend Deal" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">{{ isAdvance ? 'Advance Summary' : 'Balance Summary'}}</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-12">
+						<p-table #advanceBalanceTable styleClass="sales_orders_table" [value]="advanceBalanceOrders"
+							[rows]="10" [showCurrentPageReport]="true" [rowHover]="true"
+							[rowsPerPageOptions]="[10,25,50,100]" [loading]="isLoading" [autoLayout]="true"
+							[paginator]="true" [columns]="advanceBalanceCols"
+							[globalFilterFields]="	advanceBalanceFilter"
+							(onFilter)="onFilter($event, advanceBalanceTable ,'advance' )"
+							(onLazyLoad)="onFilter($event, advanceBalanceTable , 'advance')"
+							currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+							<ng-template pTemplate="caption">
+								<div class="row ">
+									<div class="col-md-2 ">
+										<div class="w-100 mt-1 pull-right">
+											<input pInputText type="text" class="form-control"
+												(input)="advanceBalanceTable.filterGlobal($event.target.value, 'contains')"
+												placeholder="Global Search" />
+										</div>
+									</div>
+								</div>
+							</ng-template>
+							<ng-template pTemplate="header" let-columns>
+								<tr>
+									<th pSortableColumn="{{col.field}}" *ngFor="let col of advanceBalanceCols"
+										[style.width]='col.style'>
+										{{col.header}}
+										<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+									</th>
+								</tr>
+								<tr>
+									<th *ngFor="let col of advanceBalanceCols" [style.width]='col.style'>
+										<p-multiSelect *ngIf="col.filter" [options]="col.dropdown" defaultLabel="All"
+											(onChange)="customFilter($event.value, col.field, 'in' , 'advance')">
+										</p-multiSelect>
+									</th>
+								</tr>
+							</ng-template>
+
+							<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+								<tr class="ui-selectable-row ">
+									<td *ngFor="let col of advanceBalanceCols" [style.width]='col.style'
+										[ngClass]="(rowData.is_open == 0) ? 'font-weight-bold' : ''">
+										<div *ngIf="getColumnPresent(col.field , 'advanceBalanceCols')">
+											<div *ngIf="col.field != 'id' && col.field != 'advancePayment'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div
+													*ngIf="col.type == null &&col.field != 'added_by' && col.field != 'is_forward' && col.field != 'company_id'">
+													<div>
+														{{ rowData[col.field] }}
+													</div>
+												</div>
+												<!-- <div *ngIf="col.field == 'customer'">
+																	{{rowData['sales_order.sub_org_master.sub_org_name']}}
+																</div> -->
+												<div *ngIf="col.field == 'company_id'">
+													{{ getCompanyName(rowData[col.field])}}
+												</div>
+												<div *ngIf="col.field == 'added_by'">
+													{{rowData['first_name']}} {{rowData['last_name']}}
+												</div>
+												<div *ngIf="col.field == 'is_forward'">
+													{{ rowData[col.field] ? 'Forward': 'Regular' }}
+												</div>
+												<div *ngIf="col.type == 'amount'">
+													₹{{ (rowData[col.field] ? rowData[col.field] : 0.00) | number :
+													'1.2-3'}}
+												</div>
+												<div *ngIf="col.type == 'date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy HH:mm:ss' }}
+												</div>
+											</div>
+										</div>
+									</td>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="footer" let-columns>
+								<tr>
+									<td *ngFor="let col of advanceBalanceCols">
+										<strong *ngIf="col.type == 'amount'">
+											Total: ₹{{col.total | number : '1.2-3' }}
+										</strong>
+									</td>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="emptymessage">
+								<tr>
+									<td [attr.colspan]="advanceBalanceCols.length" class="text-center">
+										No Data Found
+									</td>
+								</tr>
+							</ng-template>
+						</p-table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #utilizeSummaryModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Extend Deal" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Utilize Balance</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="card-body">
+					<div>
+						<div class="mb-3" style="font-size: 16px;">
+							<div>
+								<strong>SO ID: </strong>{{selected_deal?.id}}
+							</div>
+							<div>
+								<strong>Customer:</strong> {{selected_deal?.customer}}
+							</div>
+							<div>
+								<strong>Balance Amount:</strong> {{selected_deal?.balance_amount | number : '1.2-3'}}
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #utilizeSummaryTable styleClass="sales_orders_table" [value]="utilizeSummaryOrders"
+								[rows]="10" [showCurrentPageReport]="true" [rowHover]="true"
+								[rowsPerPageOptions]="[10,25,50,100]" [loading]="isLoading" [autoLayout]="true"
+								[paginator]="true" [columns]="utilizeSummaryCols"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of utilizeSummaryCols"
+											[style.width]='col.style'>
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row"  [ngClass]="rowData['status'] == 1 ? 'completedRecord': (rowData['status'] == 0 ? 'partialRecord' : '')">
+										<td *ngFor="let col of utilizeSummaryCols" [style.width]='col.style'
+											[ngClass]="(rowData.is_open == 0) ? 'font-weight-bold' : ''">
+											<div *ngIf="getColumnPresent(col.field , 'utilizeSummaryCols')">
+												<div>
+													<span class="ui-column-title">{{ col.header }}: </span>
+													<div *ngIf="col.type == null">
+														<div>
+															{{ rowData[col.field] }}
+														</div>
+													</div>
+													<div *ngIf="col.type == 'amount'">
+														₹{{ (rowData[col.field] ? rowData[col.field] : 0.00) | number :
+														'1.2-3'}}
+													</div>
+													<div *ngIf="col.type == 'date'">
+														{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+													</div>
+												</div>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of utilizeSummaryCols">
+											<strong *ngIf="col.type == 'amount'">
+												Total: ₹{{col.total | number : '1.2-3' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="utilizeSummaryCols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="submit" (click)="utilizeBalanceAmount()" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div bsModal #paymentTermEdit="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Renew Deal"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form *ngIf="!isLoading" [formGroup]="paymentTermForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off"
+				class="needs-validation">
+				<div class="card">
+					<div class="card-header">
+						<div class="row">
+							<div class="col-md-3 card-heading-left">
+								Update Payment Term
+							</div>
+						</div>
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col-md-4">
+								<strong>Booking Date: </strong>
+								<i class="fa fa-calendar mx-1"></i>
+								{{ paymentTermForm.controls.booking_date.value | date: 'dd-MMM-yyyy' }} &nbsp;
+							</div>
+							<div class="col-md-4">
+								<ng-select class="company-dropdown" formControlName="company_id" placeholder="Compamy"
+									[searchable]="false" [clearable]="false" bindLabel="name" bindValue="id"
+									[items]="companyList" (change)="onChangeValue($event, 'company')" [readonly]='true'>
+								</ng-select>
+							</div>
+
+
+						</div>
+						<div class="form-row" *ngIf="company_id == 1">
+							<div class="col-md-3">
+								<div class="form-group">
+									<div class="ui-g">
+										<div class="ui-g-6">
+											<p-radioButton name="is_forward" formControlName="is_forward" value="1"
+												(click)="onChangeValue($event, 'is_forward')" disabled
+												label="Forward Deal"></p-radioButton>
+										</div>
+										<div class="ui-g-6">
+											<p-radioButton name="is_forward" formControlName="is_forward" value="0"
+												(click)="onChangeValue($event, 'is_forward')" disabled
+												label="Spot Deal"></p-radioButton>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3" *ngIf="paymentTermForm.controls.is_forward.value == '1'">
+								<span class="form-group" style="display: flex !important;">
+									<label for="eta" style="width: 45px;">ETA <sup
+											class="text-danger"><strong>*</strong></sup>
+									</label>
+									<input type="text" class="form-control" id="eta" formControlName="eta"
+										placeholder="Select ETA Date" [bsConfig]="datePickerConfig" bsDatepicker
+										readonly>
+								</span>
+							</div>
+							<div class="col-md-3" *ngIf="paymentTermForm.controls.is_forward.value == '1'">
+								<span class="form-group" style="display: flex !important;">
+									<label for="eta" style="width: 165px;">Expiry Date <sup
+											class="text-danger"><strong>*</strong></sup>
+									</label>
+									<input type="text" class="form-control" id="expiry_date"
+										formControlName="expiry_date" placeholder="Select Expiry Date"
+										[bsConfig]="datePickerConfig" bsDatepicker readonly>
+								</span>
+							</div>
+						</div>
+						<!-- For PVC -->
+						<div>
+							<div class="form-row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label for="sub_org_id">Customer
+											<sup class="text-danger"><strong>*</strong></sup>
+										</label>
+										<input type="text" class="form-control rate_field" id="sub_org_id"
+											formControlName="sub_org_id" placeholder="Customer" readonly>
+									</div>
+								</div>
+								<div class="col-md-3">
+									<div class="form-group">
+										<label for="zone">Zone
+											<sup class="text-danger"><strong>*</strong></sup>
+										</label>
+										<input type="text" class="form-control rate_field" id="zone_id"
+											formControlName="zone_id" placeholder="Zone" readonly>
+									</div>
+								</div>
+								<div class="col-md-3">
+									<div class="form-group">
+										<label for="godown_id">Godown
+											<sup class="text-danger"><strong>*</strong></sup>
+										</label>
+										<input type="text" class="form-control rate_field" id="godown"
+											formControlName="godown" placeholder="Godown" readonly>
+									</div>
+								</div>
+							</div>
+							<div class="form-row">
+								<div class="col-md-4">
+									<div class="form-group">
+										<label for="grade_id">Grade
+											<sup class="text-danger"><strong>*</strong></sup>
+										</label>
+										<input type="text" class="form-control rate_field" id="grade"
+											formControlName="grade" placeholder="Grade" readonly>
+									</div>
+								</div>
+
+								<div class="col-md-2">
+									<div class="form-group">
+										<label for="deal_rate">Deal Rate
+											<sup class="text-danger"><strong>*</strong></sup>
+										</label>
+										<div class="input-group">
+											<div class="input-group-append">
+												<span class="input-group-text">
+													<i class="fa fa-inr"></i>
+												</span>
+											</div>
+											<input type="text" class="form-control rate_field" id="deal_rate"
+												formControlName="deal_rate" placeholder="Deal Rate" readonly
+												numbersOnly>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label for="quantity">Quantity
+											<sup class="text-danger"><strong>*</strong></sup>
+										</label>
+										<div class="input-group">
+											<input type="text" class="form-control" id="quantity"
+												formControlName="quantity" placeholder="Quantity" numbersOnly readonly>
+											<div class="input-group-append">
+												<span class="input-group-text">
+													{{paymentTermForm.controls.unit_type.value}}
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label for="payment_type">Payment Type
+											<sup class="text-danger"><strong>*</strong></sup>
+										</label>
+										<ng-select id="payment_type" formControlName="payment_type"
+											(change)="onChangeValue($event.id, 'payment_type')"
+											placeholder="Payment Type" bindLabel="name" bindValue="id"
+											[searchable]="false" [clearable]="false" [items]="paymentTypesList"
+											#selectpaymentType
+											(close)="selectpaymentType.blur(); selectpaymentType.focus()"
+											[readonly]="edit_pe_pp">
+										</ng-select>
+									</div>
+								</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label for="payment_term">Payment Term
+											<sup class="text-danger"><strong>*</strong></sup>
+										</label>
+										<div class="input-group">
+											<input type="text" class="form-control" id="payment_term"
+												formControlName="payment_term" placeholder="Payment Term" numbersOnly
+												[readonly]="disablePaymentTerm">
+											<div class="input-group-append">
+												<span class="input-group-text">Days</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label for="advance">Advance
+											<sup class="text-danger"><strong>*</strong></sup>
+										</label>
+										<div class="input-group">
+											<input
+												*ngIf="company_id != 1 || paymentTermForm.controls.is_forward.value != 1 "
+												type="text" class="form-control" id="advance" formControlName="advance"
+												placeholder="Advance" numbersOnly [readonly]="disableAdvancePayment">
+
+											<ng-select style="width: 174px;"
+												*ngIf="company_id == 1 && paymentTermForm.controls.is_forward.value == 1"
+												id="advance" formControlName="advance" placeholder="Advance"
+												bindLabel="value" bindValue="value" [items]="advanceArray">
+											</ng-select>
+											<div class="input-group-append">
+												<span class="input-group-text">%</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="card-footer">
+						<sup class="text-danger" style="font-size: medium;"><strong>{{errorMessage}}</strong></sup>
+						<br>
+						<button type="submit" class="btn btn-primary mr-1">
+							Submit
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div bsModal #knockOffModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Renew Deal"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+			<form [formGroup]="knockOffForm" novalidate (ngSubmit)="submitKnockOffForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">Knock-Off Deal</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="quantity">
+									<strong>
+										Quantity <sup class="text-danger">*</sup>
+									</strong>
+								</label>
+								<input type="text" id="quantity" class="form-control" formControlName="quantity"
+									placeholder="Quantity" numbersOnly>
+								<label for="remark">
+									<strong>
+										Remark <sup class="text-danger">*</sup>
+									</strong>
+								</label>
+								<input type="text" id="knock_off_remark" class="form-control"
+									formControlName="knock_off_remark" placeholder="Remark">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" [disabled]="knockOffForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div bsModal #viewDealModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="View Deal"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content" *ngIf="selected_deal != null">
+			<div class="modal-header">
+				<h4 class="modal-title">
+					<i class="fa fa-eye"></i> Order Details - #{{ selected_deal.id }}
+				</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-sm-6 mb-2">
+						<strong>Customer: </strong> {{ selected_deal.customer }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Marketing Person: </strong> {{ selected_deal.zone }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Godown: </strong> {{ selected_deal.godown_name }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Grade: </strong> {{ selected_deal.grade_name }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Quantity: </strong> {{ selected_deal.quantity }} {{ selected_deal.unit_type }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Rate: </strong> {{ selected_deal.final_rate | currency:selected_deal.currency }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>N.B.: </strong> {{ selected_deal.nb | currency:selected_deal.currency }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Delivery Term: </strong> {{ selected_deal.delivery_term }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Freight Rate: </strong> {{ selected_deal.freight_rate | currency:selected_deal.currency
+						}}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Payment Term: </strong> {{ selected_deal.payment_term_label }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Booking Date: </strong> {{ selected_deal.booking_date | date: 'dd-MMM-yyyy'}}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Status: </strong> {{ selected_deal.status_name }}
+					</div>
+					<div class="col-sm-12 mb-2">
+						<strong>Renewed Con ID: </strong> {{ selected_deal.renewed_con_id}}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Renewed By: </strong> {{ selected_deal.renewed_by_name }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Renewed Date: </strong> {{ selected_deal.renewed_date | date: 'dd-MMM-yyyy'}}
+					</div>
+					<div class="col-sm-12 mb-2">
+						<strong>Extend Con ID: </strong> {{ selected_deal.extend_con_id }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Extend By: </strong> {{ selected_deal.extend_by_name }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Extend Date: </strong> {{ selected_deal.extend_date | date: 'dd-MMM-yyyy'}}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Remark: </strong> {{ selected_deal.remark }}
+					</div>
+				</div>
+				<hr>
+				<div class="row">
+					<div class="col-sm-12">
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Customer</th>
+									<th>Dispatch Quantity</th>
+									<th>Dispatch Date</th>
+									<th>Invoice No.</th>
+									<th>Invoice Copy</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let item of selected_deal_dispatch; index as i;">
+									<td>{{i + 1}}</td>
+									<td>{{item.sub_org_name}} ({{item.location_vilage}})</td>
+									<td>{{item.quantity}} {{item.unit_type}}</td>
+									<td>{{item.dispatch_date | date:'dd-MMM-yyyy'}}</td>
+									<td>{{item.invoice_no}}</td>
+									<td class="text-center">
+										<a class="btn btn-outline-success btn-sm action-btn mb-2 mr-1"
+											data-toggle="tooltip" data-placement="top" title="Download Invoice"
+											(click)="onAction(item.invoice_copy, 'Download_Invoice')">
+											<i class="fa fa-download"></i>
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #creditAmountModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Credit Amount" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-md" role="document">
+		<div class="modal-content">
+			<form [formGroup]="creditAmountForm" novalidate (ngSubmit)="submitCreditAmountForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h5 class="modal-title"><i class="fa fa-inr text-success"></i> Credit Amount</h5>
+					<button type="button" class="close" (click)="creditAmountModal.hide()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="total_order_amount">{{isAdvance ? 'Total Advance Amount' : 'Total Order
+									Amount'}}</label>
+								<div class="input-group">
+									<div class="input-group-append">
+										<span class="input-group-text">
+											<i class="fa fa-inr"></i>
+										</span>
+									</div>
+									<input type="text" class="form-control" id="total_order_amount"
+										formControlName="total_order_amount" placeholder="Total Order Amount" readonly>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="credit_amount">{{isAdvance ? 'Advance Received' : 'Balance
+									Received'}}</label>
+								<div class="input-group">
+									<div class="input-group-append">
+										<span class="input-group-text">
+											<i class="fa fa-inr"></i>
+										</span>
+									</div>
+									<input type="text" class="form-control" id="credit_amount"
+										formControlName="credit_amount" placeholder="Credit Amount" numbersOnly>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="remaining_amount">{{isAdvance ? 'Remaining Advance Amount' : 'Remaining
+									Balance Amount'}}</label>
+								<div class="input-group">
+									<div class="input-group-append">
+										<span class="input-group-text">
+											<i class="fa fa-inr"></i>
+										</span>
+									</div>
+									<input type="text" class="form-control" id="remaining_amount"
+										formControlName="remaining_amount" placeholder="Remaining Amount" readonly>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="date">Received Date</label>
+								<div class="input-group">
+									<div class="input-group-append">
+										<span class="input-group-text">
+											<i class="fa fa-calendar"></i>
+										</span>
+									</div>
+									<input type="text" class="form-control" id="date" formControlName="received_date"
+										[maxDate]="maxDate" [bsConfig]="datePickerConfig" bsDatepicker>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" [disabled]="creditAmountForm.invalid || loadingBtn">
+						Submit <i class="fa fa-spinner fa-spin" *ngIf="loadingBtn"></i></button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

@@ -1,0 +1,182 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<form [formGroup]="offerForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off"
+				class="needs-validation">
+				<div class="card">
+					<div class="card-header">
+						<div class="row">
+							<div class="col-md-3 card-heading-left">
+								<i class="fa fa-plus"></i> {{ page_title }}
+							</div>
+						</div>
+					</div>
+					<div class="card-body">
+						<div class="form-row">
+							<div class="col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="grade_id">Grade</label> <span
+										style="color: red ; font-size:6px"><i class="fa fa-asterisk "></i></span>
+									<ng-select id="grade_id" formControlName="grade_id" placeholder="Select Grade"
+										(change)="changeDropdown($event)" [searchable]="true" [clearable]="true"
+										bindLabel="grade_name" bindValue="grade_id" [items]="grade_list">
+										<ng-template ng-option-tmp let-item="item">
+											<div title="{{item.grade_name}}">{{item.grade_name}}
+											</div>
+										</ng-template>
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-md-1"></div>
+
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="sub_org_id">Info
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<div class="input-group">
+										<input type="text" class="form-control rate_field" id="info" disabled
+											formControlName="info" placeholder="Info">
+									</div>
+								</div>
+							</div>
+							<div class="col-md-1"></div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="sub_org_id">Sector
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<div class="input-group">
+
+										<input type="text" class="form-control rate_field" id="info" disabled
+											formControlName="sector" placeholder="Sector">
+									</div>
+								</div>
+							</div>
+
+
+						</div>
+						<div class="form-row">
+							<div class="col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="supplier_id">Supplier</label> <span
+										style="color: red ; font-size:6px"><i class="fa fa-asterisk "></i></span>
+									<ng-select id="supplier_id" formControlName="supplier_id" readonly="true"
+										placeholder="Suppilier Name" [searchable]="true" [clearable]="true"
+										bindLabel="org_name" bindValue="org_id" [items]="suppilier_list">
+										<ng-template ng-option-tmp let-item="item">
+											<div title="{{item.sub_org_name}}">{{item.sub_org_name}}
+											</div>
+										</ng-template>
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-md-1"></div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="country_id">Country</label> <span
+										style="color: red ; font-size:6px"><i class="fa fa-asterisk "></i></span>
+									<ng-select id="country_id" formControlName="country_id"
+										placeholder="Country of Origin" [searchable]="true" [clearable]="true"
+										bindLabel="name" bindValue="id" [items]="country_list">
+										<ng-template ng-option-tmp let-item="item">
+											<div title="{{item.name}}">{{item.name}}
+											</div>
+										</ng-template>
+									</ng-select>
+								</div>
+							</div>
+
+
+							<div class="col-md-1"></div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="sub_org_id">Arrival
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<input type="text" class="form-control rate_field" id="arriavl"
+										formControlName="arrival" placeholder="Arrival">
+								</div>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="sub_org_id">Quantity
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<div class="input-group">
+										<input type="text" class="form-control rate_field" id="quantity"
+											placeholder="Quantity" formControlName="quantity">
+									</div>
+								</div>
+							</div>
+							<div class="col-md-1"></div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="port_id">Port</label> <span
+										style="color: red ; font-size:6px"><i class="fa fa-asterisk "></i></span>
+									<ng-select id="port_id" formControlName="port_id" placeholder="Port "
+										[searchable]="true" [clearable]="true" bindLabel="port_name" bindValue="id"
+										[items]="port_list">
+										<ng-template ng-option-tmp let-item="item">
+											<div title="{{item.port_name}}">{{item.port_name}}
+											</div>
+										</ng-template>
+									</ng-select>
+								</div>
+							</div>
+							<div class="col-md-1"></div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="delivery_term_id">Delivery
+										<sup class="text-danger"><strong>*</strong></sup>
+									</label>
+									<ng-select id="delivery_term_id" formControlName="delivery_term_id"
+										placeholder="Delivery" [searchable]="true" [clearable]="true" bindLabel="name"
+										bindValue="id" [items]="deliveryTermsList">
+										<ng-template ng-option-tmp let-item="item">
+											<div title="{{item.name}}">{{item.name}}
+											</div>
+										</ng-template>
+									</ng-select>
+								</div>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="col-md-3">
+								<div class="form-group">
+									<label for="offer_rate">Offer Rate</label>
+									<sup class="text-danger"><strong>*</strong></sup>
+									<div class="input-group">
+										<div class="input-group-append">
+											<span class="input-group-text">
+												<i class="fa fa-inr"></i>
+											</span>
+										</div>
+										<input type="text" class="form-control rate_field" id="Offer_rate"
+											formControlName="offer_rate" placeholder="Offer Rate" numbersOnly>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-1"></div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label class="col-form-label" for="date">Offer End</label> <span
+										style="color: red ; font-size:6px"><i class="fa fa-asterisk "></i></span>
+									<input type="text" class="form-control" id="offerValid" formControlName="offerValid" [bsConfig]="datePickerConfig" #dp="bsDatepicker" bsDatepicker readonly placeholder="Offer End" style="background-color: white;">
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="card-footer">
+						<button type="submit" class="btn btn-primary mr-1" [disabled]="offerForm.invalid">
+							{{editMode ? 'Update' : 'Submit'}}
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

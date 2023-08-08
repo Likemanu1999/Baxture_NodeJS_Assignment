@@ -1,0 +1,386 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+
+                    <h4><i class="fa fa-handshake-o"></i> Discount Master
+                        <button class="btn btn-outline-primary active pull-right" (click)="addNew()"><i
+                                class="fa fa-plus"></i> Add Discount</button>
+                    </h4>
+                </div>
+                <div class="card-body overflow-auto">
+                    <div class="row" *ngIf="isLoading">
+                        <div class="col-md-12">
+                            <div style="text-align :center;">
+                                <app-loading-spinner></app-loading-spinner>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="!isLoading">
+                        <p-table #dt [value]="data" datakey="id" styleClass="ui-table-cons" [rowHover]="true"
+                            [rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]"
+                            [loading]="isLoading" [paginator]="true" [columns]="cols" (onFilter)="onFilter($event, dt)"
+                            currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries"
+                            [filterDelay]="0" [globalFilterFields]="[]">
+
+                            <ng-template pTemplate="caption">
+                                <div class="ui-helper-clearfix" style="text-align: left">
+                                    <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                        (click)="exportExcel()" style="margin-right: 0.5em;"
+                                        class="ui-button-success mb-2"></button>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header" let-columns>
+                                <tr>
+                                    <th pSortableColumn="{{col.field}}" *ngFor="let col of columns"
+                                        style="width: 150px;">
+                                        {{col.header}} <p-sortIcon field="{{col.field}}">
+                                        </p-sortIcon>
+                                    </th>
+                                </tr>
+
+
+                                <tr>
+                                    <th *ngIf=" getColumnPresent('manufacture_name')">
+                                        <div *ngIf="manufacturer_arr.length > 0 ">
+                                            <p-multiSelect [options]="manufacturer_arr" placeholder="All"
+                                                (onChange)="onchange($event,'manufacture_name')"
+                                                styleClass="ui-column-filter" optionLabel='manufacture_name' appendTo="body">
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th *ngIf=" getColumnPresent('product_name')">
+                                        <div *ngIf="product_arr_flt.length > 0 ">
+                                            <p-multiSelect [options]="product_arr_flt" placeholder="All"
+                                                (onChange)="onchange($event,'product_name')"
+                                                styleClass="ui-column-filter" optionLabel='product_name'  appendTo="body">
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th *ngIf=" getColumnPresent('main_grade_name')">
+                                        <div *ngIf="main_grade_arr_flt.length > 0 ">
+                                            <p-multiSelect [options]="main_grade_arr_flt" placeholder="All"
+                                                (onChange)="onchange($event,'main_grade_name')"
+                                                styleClass="ui-column-filter" optionLabel='main_grade_name'  appendTo="body">
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th *ngIf=" getColumnPresent('grade_name')">
+                                        <div *ngIf="grade_master_arr_flt.length > 0">
+                                            <p-multiSelect [options]="grade_master_arr_flt" placeholder="All"
+                                                (onChange)="onchange($event,'grade_name')"
+                                                styleClass="ui-column-filter" optionLabel='grade_name'  appendTo="body">
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th *ngIf=" getColumnPresent('discount_type')">
+                                        <div *ngIf="discount_type_arr_flt.length > 0 ">
+                                            <p-multiSelect [options]="discount_type_arr_flt" placeholder="All"
+                                                (onChange)="onchange($event,'discount_type')"
+                                                styleClass="ui-column-filter" optionLabel='discount_type'  appendTo="body">
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th *ngIf=" getColumnPresent('time_slab')">
+                                        <div *ngIf="time_slab_arr_flt.length > 0 ">
+                                            <p-multiSelect [options]="time_slab_arr_flt" placeholder="All"
+                                                (onChange)="onchange($event,'time_slab')" styleClass="ui-column-filter"
+                                                optionLabel='time_slab'  appendTo="body">
+                                                <ng-template let-op pTemplate="item">
+                                                    <span>&#123;&#123;op.label&#125;&#125;</span>
+                                                </ng-template>
+                                            </p-multiSelect>
+                                        </div>
+                                    </th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item let-columns>
+                                <tr class="ui-selectable-row">
+
+
+                                    <td>
+                                        <span class="ui-column-title">Manufacturer Name</span>
+                                        {{item.sub_org_master.sub_org_name}}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Sector</span>
+                                        {{item.product_master ? item.product_master.name : ''}}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Main Grade</span>
+                                        {{item.main_grade ? item.main_grade.name : ''}}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Grade Name</span>
+                                        {{item.grade_master ? item.grade_master.grade_name : ''}}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Discount TYpe</span>
+                                        {{item.discount_type_master.discount_type}}
+                                        <!-- {{item.date | date: 'MMM' }} - {{item.date | date: 'yyyy' }} -->
+
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Time Slab</span>
+                                        {{(item.time_slab)}}
+                                    </td>
+
+                                    <td>
+                                        <span class="ui-column-title">Percentage Limit</span>
+                                        {{item.slab_percentage_limit_ge}} %
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">Quantity Limit</span>
+                                        {{item.slab_qunatity_limit_ge}} PMT
+                                    </td>
+
+                                    <td>
+                                        <span class="ui-column-title">PMT Discount Rate</span>
+                                        {{item.discount_pmt_rate}}
+                                    </td>
+
+
+
+                                    <td>
+                                        <span class="ui-column-title">From Date</span>
+                                        {{item.from_date | date : "dd/MM/y" }}
+                                    </td>
+                                    <td>
+                                        <span class="ui-column-title">To Date</span>
+                                        {{item.to_date | date : "dd/MM/y"}}
+                                    </td>
+
+                                    <td>
+                                        <button class="btn btn-dark btn-sm mb-2 mx-2" (click)="duplicate(item.id)">
+                                            <i class="fa fa-clone"></i>
+                                        </button>
+
+                                        <button class="btn btn-primary btn-sm mb-2 mx-2" (click)="onEdit(item)">
+                                            <i class="fa fa-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm mb-2 " mwlConfirmationPopover
+                                            [popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+                                            [confirmText]="confirmText" [cancelText]="cancelText"
+                                            [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+                                            confirmButtonType="danger" cancelButtonType="success"
+                                            (confirm)="onDelete(item.id)" (cancel)="cancelClicked = true">
+                                            <i class="fa fa-trash text-white"></i>
+                                        </button>
+                                    </td>
+
+                                </tr>
+                            </ng-template>
+
+                            <!-- <ng-template pTemplate="footer">
+
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{{ tot_mou_quantity | number : '1.0-3'}}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </ng-template> -->
+
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="10" class="text-center">No Data found.</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+
+
+                    </div>
+
+                </div>
+                <div class="card-footer">
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form [formGroup]="addDiscountForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Discount Details</h4>
+                    <button type="button" class="close" (click)=" oncloseModal()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+
+                    <div class="row">
+
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="col-form-label" for="manufacture_id">Manufacture Name</label>
+
+                                <ng-select id="manufacture_id" formControlName="manufacture_id"
+                                    placeholder="Select Manufacture" [searchable]="true" [clearable]="true"
+                                    bindLabel="sub_org_name" bindValue="sub_org_id" [items]="sub_org_arr"
+                                    [(ngModel)]="manufacture_id">
+                                    <ng-template ng-option-tmp let-item="item">
+                                        <div title="{{item.sub_org_name}}">{{item.sub_org_name}}
+                                        </div>
+                                    </ng-template>
+                                </ng-select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-form-label" for="product_id">Sector</label>
+                                <ng-select id="product_id" formControlName="product_id" placeholder="Select Product"
+                                    [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                    [items]="product_arr" [(ngModel)]="product_id">
+                                </ng-select>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-form-label" for="main_grade_id">Main Grade</label>
+                                <ng-select id="main_grade_id" formControlName="main_grade_id" placeholder="Select Main Grade"
+                                    [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                    [items]="main_grade_arr" [(ngModel)]="main_grade_id" >
+                                </ng-select>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-form-label" for="grade_id">Grade Name</label>
+                                <ng-select id="grade_id" formControlName="grade_id" placeholder="Select Grdae"
+                                    [searchable]="true" [clearable]="true" bindLabel="grade_name" bindValue="grade_id"
+                                    [items]="grade_master_arr" [(ngModel)]="grade_id">
+                                </ng-select>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-form-label" for="discount_type_id">Discount Type</label>
+                                <ng-select id="discount_type_id" formControlName="discount_type_id"
+                                    placeholder="Select Product" [searchable]="true" [clearable]="true"
+                                    bindLabel="discount_type" bindValue="id" [items]="discount_type_arr"
+                                    [(ngModel)]="discount_type_id">
+                                </ng-select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="slab_percentage_limit_ge">Percentage Limit</label>
+                                <input type="text" class="form-control" id="slab_percentage_limit_ge"
+                                    formControlName="slab_percentage_limit_ge" placeholder="Enter Percentage Limit "
+                                    [(ngModel)]="slab_percentage_limit_ge">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="slab_qunatity_limit_ge">Quantity Limit</label>
+                                <input type="text" class="form-control" id="slab_qunatity_limit_ge"
+                                    formControlName="slab_qunatity_limit_ge" placeholder="Enter Qunatity Limit "
+                                    [(ngModel)]="slab_qunatity_limit_ge">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="col-form-label" for="discount_pmt_rate">Discount Rate PMT</label>
+                                <input type="text" class="form-control" id="discount_pmt_rate"
+                                    formControlName="discount_pmt_rate" placeholder="Enter Discount Rate "
+                                    [(ngModel)]="discount_pmt_rate">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-form-label" for="time_slab_type">Time Slab</label>
+                                <ng-select id="time_slab_type" formControlName="time_slab_type"
+                                    placeholder="Select Time Slab" [searchable]="true" [clearable]="true"
+                                    bindLabel="name" bindValue="id" [items]="time_slab_arr"
+                                    [(ngModel)]="time_slab_type">
+                                </ng-select>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-form-label" for="from_date">From Date</label>
+                                <input type="text" class="form-control" id="from_date" formControlName="from_date"
+                                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                    #dp="bsDatepicker" bsDatepicker readonly placeholder="Enter From Date "
+                                    [(ngModel)]="from_date" style="background-color: white;">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="col-form-label" for="to_date">To Date</label>
+                                <input type="text" class="form-control" id="to_date" formControlName="to_date"
+                                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                    #dp="bsDatepicker" bsDatepicker readonly placeholder="Enter To Date "
+                                    [(ngModel)]="to_date" style="background-color: white;">
+                            </div>
+                        </div>
+
+                        <input type="hidden" class="form-control" formControlName="discount_id"
+                            [(ngModel)]="discount_id">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary mr-1" type="submit"
+                        [disabled]="addDiscountForm.pristine || addDiscountForm.invalid">
+                        <i class="fa fa-dot-circle-o"></i>Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

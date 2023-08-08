@@ -1,0 +1,243 @@
+<div class="animated fadeIn">
+    <div class="row">
+      <div class="col-md-4" *ngIf="add_opt">
+        <div class="card">
+          <div class="card-header">
+            <i class="icon-list"></i> Commodity Master
+          </div>
+          <div class="card-body"><!-- Angular Form Validation
+            <hr> -->
+            <div class="row">
+              <div class="col-md-8">
+                <form [formGroup]="productMasterForm" novalidate (ngSubmit)="onSubmit()" class="needs-validation">
+                  <div class="form-group">
+                    <label class="col-form-label" for="name">Commodity Name</label>
+                    <input class="form-control"
+                           id="name"
+                           type="text"
+                           formControlName="name"
+                           placeholder="Enter Product"
+                           autocomplete="given-name"
+                           required
+                           autofocus
+                           [ngClass]="{ 'is-invalid': submitted && f.name.errors, 'is-valid': f.name.touched && !f.name.errors }" />
+
+                           <div *ngIf="submitted && f['name'].errors" class="invalid-feedback">
+                      <div *ngIf="f['name'].errors.required">Commodity Name is required</div>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-form-label" for="abbr"> Abbreviation</label>
+                    <input class="form-control"
+                           id="abbr"
+                           type="text"
+                           formControlName="abbr"
+                           placeholder="Enter Abbreviation"
+                           autocomplete="given-name"
+                           required
+                           autofocus/>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-form-label" for="desc_goods"> Description</label>
+                    <input class="form-control"
+                           id="desc_goods"
+                           type="text"
+                           formControlName="desc_goods"
+                           placeholder="Enter Description"
+                           autocomplete="given-name"
+                           required
+                           autofocus/>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-form-label" for="hsn_code">HSN Code</label>
+                    <input class="form-control"
+                           id="hsn_code"
+                           type="text"
+                           formControlName="hsn_code"
+                           placeholder="Enter HSN Code"
+                           autocomplete="given-name"
+                           required
+                           autofocus/>
+                  </div>
+
+                  <div class="form-group">
+                    <button class="btn btn-primary mr-1" type="submit" [disabled]="productMasterForm.pristine || productMasterForm.invalid">Submit</button>
+                    <button class="btn btn-danger" type="reset" [disabled]="productMasterForm.pristine && !submitted" (click)="onReset()">Reset</button>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8" *ngIf="view_opt">
+      <div class="card">
+        <div class="card-header">
+          <i class="icon-list"></i>Commodity List
+        </div>
+
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4 offset-md-8">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fa fa-search"></i></span>
+                </div>
+                <input type="text" class="form-control" [(ngModel)]="filterQuery" placeholder="Search by name"/>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="isLoading" style="text-align: center;">
+            <app-loading-spinner></app-loading-spinner>
+          </div>
+          <table class="table table-striped table-hover table-responsive-lg"
+          [mfData]="data | tableFilter : filterQuery:filterArray"
+          #mf="mfDataTable"
+          [mfRowsOnPage]="5"
+          *ngIf="!error && !isLoading"
+          >
+            <thead>
+              <tr>
+                <th style="width: 8%">
+                  <mfDefaultSorter by="srno">Sr.No.</mfDefaultSorter>
+                </th>
+                <th style="width: 25%">
+                  <mfDefaultSorter by="product">Commodity</mfDefaultSorter>
+                </th>
+                <th style="width: 25%">
+                  <mfDefaultSorter by="abbr">Abbreviation</mfDefaultSorter>
+                </th>
+                <th style="width: 25%">
+                    <mfDefaultSorter by="desc_goods">Description</mfDefaultSorter>
+                </th>
+                <th style="width: 25%">
+                    <mfDefaultSorter by="hsn_code">HSN Code</mfDefaultSorter>
+                </th>
+                <th style="width: 10%" *ngIf="edit_opt">
+                  <mfDefaultSorter by="edit">Edit</mfDefaultSorter>
+                </th>
+                <th style="width: 10%" *ngIf="del_opt">
+                  <mfDefaultSorter by="delete">Delete</mfDefaultSorter>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" [attr.id]="item.id">
+
+                <td>{{i+1}}</td>
+                <td>{{item.name}}</td>
+                <td>{{item.abbr}}</td>
+                <td>{{item.desc_goods}}</td>
+                <td>{{item.hsn_code}}</td>
+                <td *ngIf="edit_opt"><a style="cursor: pointer;" (click)="onEdit(item.id)"><i class="fa fa-pencil"></i></a></td>
+                <td *ngIf="del_opt"><a style="cursor: pointer;"
+                  mwlConfirmationPopover
+                  [popoverTitle]="popoverTitle"
+                  [popoverMessage]="popoverMessage"
+                  [confirmText]="confirmText"
+                  [cancelText]="cancelText"
+                  [placement]="placement"
+                  [closeOnOutsideClick]="closeOnOutsideClick"
+                  confirmButtonType="danger"
+                  cancelButtonType="success"
+                  (confirm)="onDelete(item.id)"
+                  (cancel)="cancelClicked = true"
+                  ><i class="fa fa-trash"></i></a>
+                </td>
+
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="7">
+                  <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        </div>
+      </div>
+    </div>
+    <toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+  </div>
+  <div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form [formGroup]="updateProductMasterForm" novalidate (ngSubmit)="onUpdate()" class="needs-validation">
+        <div class="modal-header">
+          <h4 class="modal-title">Update Commodity</h4>
+          <button type="button" class="close" (click)="myModal.hide()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="col-md-8">
+
+              <div class="form-group">
+                <label class="col-form-label" for="update_product_name">Commodity Name</label>
+                <input class="form-control"
+                id="update_product_name"
+                type="text"
+                formControlName="update_product_name"
+                placeholder="Enter Product"
+                autocomplete="given-name"
+                required
+                autofocus
+                />
+                <div *ngIf="updated && g['update_product_name'].errors" class="invalid-feedback">
+                    <div *ngIf="g['update_product_name'].errors.required">Commodity is required</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-form-label" for="update_abbr">Abbreviation</label>
+                <input class="form-control"
+                id="update_abbr"
+                type="text"
+                formControlName="update_abbr"
+                placeholder="Enter Abbreviation"
+                autocomplete="given-name"
+                required
+                autofocus/>
+              </div>
+
+
+              <div class="form-group">
+                <label class="col-form-label" for="update_desc_goods">Description</label>
+                <input class="form-control"
+                id="update_desc_goods"
+                type="text"
+                formControlName="update_desc_goods"
+                placeholder="Enter Description"
+                autocomplete="given-name"
+                required
+                autofocus/>
+              </div>
+
+              <div class="form-group">
+                <label class="col-form-label" for="update_hsn_code">HSN Code</label>
+                <input class="form-control"
+                id="update_hsn_code"
+                type="text"
+                formControlName="update_hsn_code"
+                placeholder="Enter HSN Code"
+                autocomplete="given-name"
+                required
+                autofocus/>
+              </div>
+
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="myModal.hide()">Close</button>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+      </form>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->

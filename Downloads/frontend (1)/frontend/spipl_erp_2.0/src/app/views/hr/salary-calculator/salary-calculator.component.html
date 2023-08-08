@@ -1,0 +1,375 @@
+<div class="animated fadeIn">
+  <div class="card">
+    <div class="card-header">
+      <i class="fa fa-inr"></i> Salary Manager
+    </div>
+    <div class="card-body">
+
+      <tabset>
+        <tab heading="Monthly Salary">
+          <div class="row">
+            <div class="col-md-4 col-12">
+              <div class="form-group">
+                <div class="input-group margin bottom">
+                  <input type="text" class="form-control"
+                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                    bsDatepicker [(bsValue)]="bsValue" readonly>
+                  &nbsp;
+                  <span class="input-group-append">
+                    <button type="button" class="btn btn-primary active inbox_search_height m-t-10"
+                      (click)="onValueChange(2,0)" tooltip="Display previously calculated Attendance & Salary."
+                      [disabled]='isDisabled'>View</button>
+                    &nbsp;
+                   <button  *ngIf="all_salary_cal" type="button" id="search_btn" class="btn btn-primary inbox_search_height m-t-10"
+                      (click)="onValueChange(1,0)" tooltip="This will calculate all Staff members Attendance & Salary."
+                      placement="right" [disabled]='isDisabled'>Calculate</button> 
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+    
+    
+    
+          <div class="row">
+            <div class="col-md-2 offset-5" *ngIf="isLoading">
+              <app-loading-spinner></app-loading-spinner>
+            </div>
+          </div>
+          <div class="row" *ngIf="salaryResult">
+            <div class="col-md-12">
+              <p-table #dt [value]="salaryResult" dataKey="id" styleClass="ui-table-customers" [rowHover]="true" [rows]="10"
+                [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading" [paginator]="true"
+                [autoLayout]="true"
+                currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+                [filterDelay]="0" [globalFilterFields]="['emp_name','tds','incentive','bonus']">
+                <ng-template pTemplate="caption">
+                  <div class="ui-table-globalfilter-container">
+                    <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')"
+                      placeholder="Global Search" />
+                  </div>
+    
+                  <div class="ui-helper-clearfix" style="text-align: left">
+                    <!--   <button type="button" pButton icon="pi pi-file-o" iconPos="left" label="CSV" (click)="dt.exportCSV()" style="margin-right: 0.5em;"></button> -->
+                    <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                      (click)="exportExcel()" style="margin-right: 0.5em;" class="ui-button-success"></button>
+                    <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF" (click)="exportPdf()"
+                      class="ui-button-warning"></button>
+                    <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="Send" (click)="pdfOPtions(2)"
+                      style="margin-right: 0.5em;" *ngIf="showMailBtn" [disabled]="Activeoperation"></button>
+                    <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="Download"
+                      (click)="pdfOPtions(1)" style="margin-right: 0.5em;" *ngIf="showMailBtn"
+                      [disabled]="Activeoperation"></button>
+                  </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th style="width: 3rem">
+                      <p-tableHeaderCheckbox (click)="onCheckAll(a.checked)" #a></p-tableHeaderCheckbox>
+                    </th>
+                    <th pSortableColumn="{{col.field}}" *ngFor="let col of cols"> {{col.header}} <p-sortIcon
+                        field="{{col.field}}"></p-sortIcon>
+                    </th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-searchResult let-index="rowIndex">
+                  <tr class="ui-selectable-row">
+                    <td>
+                      <input type="checkbox" [value]="searchResult" #inputs #checkboxes
+                        (click)="onCheck(checkboxes.checked,searchResult)">
+                    </td>
+                    <td>
+                      <span class="ui-column-title">Salary Id</span>
+                      {{searchResult.id}}
+                    </td>
+                    <td>
+                      <span class="ui-column-title">Staff No.</span>
+                      {{searchResult.emp_id}}
+                    </td>
+                    <td>
+                      <span class="ui-column-title">Name</span>
+                      <button type="button" id="search_btn" class="btn btn-primary inbox_search_height m-t-10"
+                        (click)="onValueChange(1,searchResult.emp_id)" placement="right"> {{searchResult.emp_name}} </button>
+    
+                    </td>
+                    <td>
+                      <span class="ui-column-title">Net salary</span>
+                      {{searchResult.net_salary}}
+                    </td>
+                    <td>
+                      <span class="ui-column-title">Present Days</span>
+                      {{searchResult.total_month_days}}
+                    </td>
+                    <td>
+                      <span class="ui-column-title">Absent Days</span>
+                      {{searchResult.total_absent}}
+                    </td>
+    
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="text" [(ngModel)]="searchResult.arrear_plus" class="form-control"
+                            (keydown.enter)="update($event,searchResult.emp_id,searchResult.id,'arrear_plus',index)"
+                            (change)="update($event,searchResult.emp_id,searchResult.id,'arrear_plus',index)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">Arrears +</span>
+                          {{searchResult.arrear_plus}}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="text" [(ngModel)]="searchResult.arrear_plus_rmk" class="form-control"
+                            (keydown.enter)="update($event,searchResult.emp_id,searchResult.id,'arrear_plus_rmk',index)"
+                            (change)="update($event,searchResult.emp_id,searchResult.id,'arrear_plus_rmk',index)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">Arrears + Remark</span>
+                          {{searchResult.arrear_plus_rmk}}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="text" [(ngModel)]="searchResult.arrear_deduction" class="form-control"
+                            (keydown.enter)="update($event,searchResult.emp_id,searchResult.id,'arrear_deduction',index)"
+                            (change)="update($event,searchResult.emp_id,searchResult.id,'arrear_deduction',index)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">Arrears -</span>
+                          {{searchResult.arrear_deduction}}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="text" [(ngModel)]="searchResult.arrear_deduction_rmk" class="form-control"
+                            (keydown.enter)="update($event,searchResult.emp_id,searchResult.id,'arrear_deduction_rmk',index)"
+                            (change)="update($event,searchResult.emp_id,searchResult.id,'arrear_deduction_rmk',index)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">Arrears - Remark</span>
+                          {{searchResult.arrear_deduction_rmk}}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="text" [(ngModel)]="searchResult.tds" class="form-control"
+                            (keydown.enter)="update($event,searchResult.emp_id,searchResult.id,'tds',index)"
+                            (change)="update($event,searchResult.emp_id,searchResult.id,'tds',index)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">TDS</span>
+                          {{searchResult.tds}}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="text" [(ngModel)]="searchResult.bonus" class="form-control"
+                            (keydown.enter)="update($event,searchResult.emp_id,searchResult.id,'bonus',index)"
+                            (change)="update($event,searchResult.emp_id,searchResult.id,'bonus',index)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">Bonus</span>
+                          {{searchResult.bonus}}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="text" [(ngModel)]="searchResult.performance_bonus" class="form-control"
+                            (keydown.enter)="update($event,searchResult.emp_id,searchResult.id,'performance_bonus',index)"
+                            (change)="update($event,searchResult.emp_id,searchResult.id,'performance_bonus',index)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">Performance Bonus</span>
+                          {{searchResult.performance_bonus}}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="text" [(ngModel)]="searchResult.incentive" class="form-control"
+                            (keydown.enter)="update($event,searchResult.emp_id,searchResult.id,'incentive',index)"
+                            (change)="update($event,searchResult.emp_id,searchResult.id,'incentive',index)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">Incentive</span>
+                          {{searchResult.incentive}}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+    
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText type="text" [(ngModel)]="searchResult.incentive_tds" class="form-control"
+                            (keydown.enter)="update($event,searchResult.emp_id,searchResult.id,'incentive_tds',index)"
+                            (change)="update($event,searchResult.emp_id,searchResult.id,'incentive_tds',index)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">TDS On Incentive</span>
+                          {{searchResult.incentive_tds}}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="17" style="text-align:left">No Records found.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+          </tab>
+          <tab heading="Yearly CTC">
+            <div class="row">
+              <div class="col-md-4 col-12">
+                <div class="form-group">
+                  <div class="input-group margin bottom">
+                    <input type="text" class="form-control"
+                      [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                      bsDatepicker [(bsValue)]="bsValue2" >
+                    &nbsp;
+                    <span class="input-group-append">
+                      <button type="button" class="btn btn-primary active inbox_search_height m-t-10"
+                        (click)="getYearlyData()"
+                       >View</button>
+                  
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+
+            <div class="row" *ngIf="yearly_data">
+              <div class="col-md-12">
+                <p-table #dt2 [value]="yearly_data" dataKey="id" styleClass="ui-table-customers" [rowHover]="true" [rows]="10"
+                  [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading" [paginator]="true"
+                  [autoLayout]="true"
+                  currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+                  [filterDelay]="0" [globalFilterFields]="['staff_name']">
+                  <ng-template pTemplate="caption">
+                    <div class="ui-table-globalfilter-container">
+                      <input pInputText type="text" (input)="dt2.filterGlobal($event.target.value, 'contains')"
+                        placeholder="Global Search" />
+                    </div>
+      
+                    <div class="ui-helper-clearfix" style="text-align: left">
+                      <!--   <button type="button" pButton icon="pi pi-file-o" iconPos="left" label="CSV" (click)="dt.exportCSV()" style="margin-right: 0.5em;"></button> -->
+                      <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                        (click)="exportExcel2()" style="margin-right: 0.5em;" class="ui-button-success"></button>
+                  
+                    </div>
+                  </ng-template>
+                  <ng-template pTemplate="header">
+                    <tr>
+                     
+                      <th pSortableColumn="{{col.field}}" *ngFor="let col of cols_yearly"> {{col.header}} <p-sortIcon
+                          field="{{col.field}}"></p-sortIcon>
+                      </th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-searchResult let-index="rowIndex">
+                    <tr class="ui-selectable-row">
+                     
+                      <td>
+                        <span class="ui-column-title">Staff Name.</span>
+                        {{searchResult.staff_name}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">financial year</span>
+                        {{searchResult.financial_year}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Yearly CTC.</span>
+                        {{searchResult.yearly_ctc}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Basic.</span>
+                        {{searchResult.basic}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Basic.</span>
+                        {{searchResult.da}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">HRA</span>
+                        {{searchResult.hra}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">LTA</span>
+                        {{searchResult.lta}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Chlid Edu Allowance</span>
+                        {{searchResult.child_edu_allowance}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Incentive</span>
+                        {{searchResult.incentive}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Yearly PF</span>
+                        {{searchResult.yearly_pf}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Yearly PT</span>
+                        {{searchResult.yearly_pt}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Employer PF</span>
+                        {{searchResult.employer_pf}}
+                      </td>
+
+                      <td>
+                        <span class="ui-column-title">Bonus</span>
+                        {{searchResult.bonus}}
+                      </td>
+                
+                   
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="emptymessage">
+                    <tr>
+                      <td colspan="17" style="text-align:left">No Records found.</td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+            </div>
+      
+          </tab>
+        </tabset>
+
+  
+    </div>
+  </div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

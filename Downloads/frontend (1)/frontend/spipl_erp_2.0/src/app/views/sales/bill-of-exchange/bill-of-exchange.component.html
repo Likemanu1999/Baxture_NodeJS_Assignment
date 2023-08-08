@@ -1,0 +1,216 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-6">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="sales_boe_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div>
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getCols()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly style="padding: 19px 5px !important" />
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"
+														style="margin-left: 10px;padding: 19px 5px !important"></app-dropdown-daterange>
+												</div>
+												<div class="form-group mb-1">
+													<p-dropdown [options]="statusList" [(ngModel)]="selected_status"
+														optionLabel="name" (onChange)="onChangeStatus($event)">
+													</p-dropdown>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != 'action'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													<div *ngIf="col.field == 'days_left'">
+														<span class="badge badge-warning round-badge">
+															{{ rowData[col.field] }}
+														</span>
+													</div>
+													<div *ngIf="col.field != 'days_left'">
+														{{ rowData[col.field] }}
+													</div>
+												</div>
+												<div *ngIf="col.type == 'Quantity'">
+													{{ rowData[col.field] }} {{ rowData.unit_type }}
+												</div>
+												<div *ngIf="col.type == 'Amount'">
+													{{ rowData[col.field] | currency:'INR' }}
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'action'">
+												<a *ngIf="rowData.status == 0"
+													class="btn btn-primary text-white custom-action-btn"
+													data-toggle="tooltip" data-placement="left"
+													title="Update Bill of Exchange"
+													(click)="updateBillofExchange(rowData)">
+													<i class="fa fa-edit"></i>
+												</a>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total | number }} MT
+											</strong>
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div bsModal #updateBexModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Update Bill of Exchange" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="bexForm" novalidate (ngSubmit)="submitBexForm()" class="needs-validation"
+				autocomplete="off">
+				<div class="modal-header">
+					<h4 class="modal-title">Update Bill of Exchage</h4>
+					<button type="button" class="close" (click)="updateBexModal.hide()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body overflow-auto">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="discounting_date">Discounting Date</label>
+								<input type="text" id="discounting_date" class="form-control" [minDate]="minDate"
+									formControlName="discounting_date" placeholder="Discounting Date"
+									[bsConfig]="datePickerConfig"  readonly
+									bsDatepicker>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="acceptance_date">Acceptance Date</label>
+								<input type="text" id="acceptance_date" class="form-control" [minDate]="minDate"
+									formControlName="acceptance_date" placeholder="Acceptance Date"
+									[bsConfig]="datePickerConfig" (click)="calculateFinalRate()" readonly bsDatepicker>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="final_rate">Final Rate</label>
+								<input type="text" id="final_rate" class="form-control" formControlName="final_rate"
+									placeholder="Final Rate" readonly>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="bex_amount">Bill of Exchange Amount</label>
+								<input type="text" id="bex_amount" class="form-control" formControlName="bex_amount"
+									placeholder="Bill of Exchange Amount" readonly>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="discounting_amount">Discounting Amount</label>
+								<input type="text" id="discounting_amount" class="form-control"
+									formControlName="discounting_amount" placeholder="Discounting Amount"
+									(change)="onChangeDiscountingAmount($event.target.value)" numbersOnly>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="difference">Difference</label>
+								<input type="text" id="difference" class="form-control" formControlName="difference"
+									placeholder="Difference" readonly>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary"
+						[disabled]="bexForm.pristine || bexForm.invalid">Submit</button>
+					<button type="reset" class="btn btn-danger">Reset</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

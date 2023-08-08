@@ -1,0 +1,299 @@
+<div class="animated fadeIn" *ngIf="payableExit && !generatePiFlag && !lcCreation">
+  <div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fa fa-list"></i> ILC PI List
+
+                  <span class="pull-right" *ngIf="create_lc"><button class="btn btn-primary " [disabled]= "!checkstatus" (click)="createLc()"><i class="fa fa-file "></i> Create LC</button></span>
+
+                </h4>
+            </div>
+            <div class="card-body">
+
+                  <div class="row">
+                    <div class="col-md-4">
+                     <div class="row">
+                      <div class="col-md-3">
+                        <strong > PI Date : </strong>
+                      </div>
+                        <div class="col-md-9">
+                          <div class="input-group">
+                            <div class="input-group-prepend">
+                              <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                            </div>
+                            <input type="text" class="form-control "  bsDaterangepicker [(ngModel)]="bsRangeValue" (ngModelChange)="onDateRangeSelect($event)" placeholder=" Pi Date Range " >
+                          </div>
+                        </div>
+                     </div>
+                    </div>
+
+                    <div class="col-md-4">
+                      <div class="row">
+                        <div class="col-md-5">
+                          <label for=""><Strong>Payment Method :</Strong></label>
+                        </div>
+                        <div class="col-md-7">
+                          <ng-select
+
+                          placeholder="Payment Method "
+                          [searchable]="true"
+                          [clearable]="true"
+                          bindLabel="label"
+                          bindValue="id"
+                          [items]="paymentMethod"
+                          (change) = "filterOnMethod($event)"
+                          >
+                          </ng-select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-3">
+                      <input type="checkbox" #check (change)="filterData($event)"> &nbsp; LC Not Created
+                    </div>
+                  </div>
+
+
+                <div class="row mt-2">
+                  <div class="col-md-12">
+
+                    <p-table #dt [value]="pi_list"
+                    dataKey="id"
+                    styleClass="ui-table-piList"
+                    [rowHover]="true"
+                    [rows]="10"
+                    [showCurrentPageReport]="true"
+                    [rowsPerPageOptions]="[10,25,50]"
+                    [paginator]="true"
+                    [loading] = "isLoading"
+                    currentPageReportTemplate="Total Records: {{pi_list.length}}"
+                    [filterDelay]="0" [globalFilterFields]="['sub_org_name', 'pi_date' , 'pi_invoice_no' ,'place_of_loading' ,'place_of_destination' , 'remark']" >
+
+
+                    <ng-template pTemplate="caption">
+
+                       <div class="row">
+
+
+                          <div class="col-md-5">
+                            <div class="ui-helper-clearfix" style="text-align: left">
+                              <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL" (click)="exportExcel()" style="margin-right: 0.5em;" class="ui-button-success"></button>
+                              <button  type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF" (click)="exportPdf()" class="ui-button-warning"></button>
+                            </div>
+                          </div>
+
+                            <div class="col-md-3">
+                              <input pInputText class= 'form-control' type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+                            </div>
+                       </div>
+
+
+                    </ng-template>
+
+
+
+
+                  <ng-template pTemplate="header">
+
+                    <tr>
+                      <th style="width: 3rem"  >
+                        <p-tableHeaderCheckbox (click)="onCheckAll(a.checked)" #a></p-tableHeaderCheckbox>
+                      </th>
+                      <th [style.width]="col.style" pSortableColumn="{{col.field}}" *ngFor="let col of cols" > {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon></th>
+                      <th  style="width: 100px;" *ngIf="deals">Deals</th>
+                      <th  style="width: 200px;" *ngIf="payment_request">Payment Request</th>
+                      <th  style="width: 90px;" *ngIf="edit_opt">Edit</th>
+                      <th  style="width: 90px;" *ngIf="del_opt">Delete</th>
+                    </tr>
+
+                  </ng-template>
+                  <ng-template pTemplate="body" let-item  let-i = "index">
+                      <tr class="ui-selectable-row">
+                        <td >
+                          <span *ngIf="item.amount_utilized_lc > 0 && !item.ilc_id">
+                            <input type="checkbox" [value]="item" #inputs #checkboxes (click)="onCheck(checkboxes.checked,item)" [pTooltip]="item.amount_utilized_lc | currencyInr" tooltipPosition="top" placeholder="top"
+                            >
+                          </span>
+
+                        </td>
+
+                         <td>
+                          <span class="ui-column-title">Supplier Name</span>
+                          {{item.sub_org_name }}
+                        </td>
+
+                        <td>
+                          <span class="ui-column-title">PI Date</span>
+                          {{item.pi_date |  date: "dd-MM-y E"}}
+                        </td>
+
+                        <td>
+                          <span class="ui-column-title">PI Invoice No.</span>
+                          {{item.pi_invoice_no }}
+                          <span *ngIf="item.pi_copy">
+                            <span *ngFor="let doc of getDocArray(item.pi_copy)"> <a href="{{doc}}" target="_blank"> <i class="fa fa-file"></i> </a></span>
+                          </span>
+
+                          <div *ngIf="item.ilc_id > 0">
+                            <span class="badge badge-danger">ILC Created</span>
+                          </div>
+                        </td>
+
+                        <td>
+                          <span class="ui-column-title">Place of Loading</span>
+                          {{item.place_of_loading }}
+                        </td>
+
+                        <td>
+                          <span class="ui-column-title">Place of Destination</span>
+                          {{item.place_of_destination }}
+                        </td>
+
+                        <td>
+                          <span class="ui-column-title">Remark</span>
+                          {{item.remark }}
+                        </td>
+
+                        <td *ngIf="deals"><button class="btn btn-sm btn-danger" (click)="getDeals(item.LocalPurchaseDealDet)">Deals</button></td>
+
+                        <td *ngIf="payment_request"><button class="btn btn-sm   btn-primary" *ngIf="item.amount_utilized_rtgs > 0"  (click)="ilcPaymentRequest(item)"  [pTooltip]="item.amount_utilized_rtgs | currencyInr" tooltipPosition="top" placeholder="top" >ILC Payment</button></td>
+
+                        <td *ngIf="edit_opt"><button  *ngIf="!item.ilc_id" pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success p-mr-2" (click)="onEdit(item , i)"></button></td>
+                        <td *ngIf="del_opt">      <button  pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-success p-mr-2"
+                          *ngIf="!item.ilc_id"
+                          mwlConfirmationPopover
+                          [popoverTitle]="popoverTitle"
+                          [popoverMessage]="popoverMessage"
+                          [confirmText]="confirmText"
+                          [cancelText]="cancelText"
+                          [placement]="placement"
+                          [closeOnOutsideClick]="closeOnOutsideClick"
+                          confirmButtonType="danger"
+                          cancelButtonType="success"
+                          (confirm)="onDelete(item)"
+                          (cancel)="cancelClicked = true"
+                          ></button></td>
+
+                      </tr>
+                  </ng-template>
+                  <ng-template pTemplate="footer">
+
+                  </ng-template>
+                  <ng-template pTemplate="emptymessage">
+                      <tr>
+                          <td colspan="11" style="text-align:left">Not Found any data</td>
+                      </tr>
+                  </ng-template>
+                  </p-table>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-large " role="document">
+    <div class="modal-content">
+
+
+      <div class="modal-header">
+        <h4 class="modal-title">Deal  Details For <strong>{{deal_list[0]?.sub_org_name}} </strong></h4>
+        <button type="button" class="close" (click)=" myModal.hide()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <table class="table table-striped table-hover table-responsive-lg"
+        [mfData]="deal_list"
+        #mf="mfDataTable"
+        [mfRowsOnPage]="5"
+        >
+          <thead>
+            <tr>
+              <th> Sr.No.</th>
+              <th>Deal Quantity</th>
+              <th>Deal Rate</th>
+              <th>Total Amount</th>
+              <th>Amount Utilized</th>
+              <th>Payment Type</th>
+              <th>Payment Method</th>
+
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" [attr.id]="item.id">
+              <td>{{i+1}}</td>
+              <td>{{item.quantity}}</td>
+              <td>{{item.rate}}</td>
+              <td>{{item.deal_value_gst | currencyInr}}</td>
+              <td>{{item.AmountUtiliseAgainstDeal | currencyInr}}</td>
+              <td>{{item.PayTypeAgainstDealName}}</td>
+              <td>{{getPaymentMode(item.PayMethodAgainstDeal)}}</td>
+
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td><strong>Total</strong></td>
+              <td>{{ tot_quantity}}</td>
+              <td></td>
+              <td><span *ngIf="tot_amount">{{tot_amount | currencyInr}}</span></td>
+              <td><span *ngIf="tot_amountUtilized">{{tot_amountUtilized | currencyInr}}</span></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="7">
+                <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+              </td>
+            </tr>
+
+          </tfoot>
+        </table>
+
+      </div>
+
+
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div bsModal #createLcModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-large " role="document">
+    <div class="modal-content">
+
+
+      <div class="modal-header">
+        <h4 class="modal-title"><i class="fa fa-file"></i>  Create Lc</h4>
+        <button type="button" class="close" (click)=" createLcModal.hide()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+
+      </div>
+
+
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<app-payable-request [initialPara]="payablePara" *ngIf="!payableExit" (payableBack) ="payableRequestBack($event)"></app-payable-request>
+
+
+<app-generate-pi *ngIf="generatePiFlag" [deal_arr] = "dealArrayForPI" [mode] ="mode"  (emitFunctionOfPi) = "BackFromPi($event)"></app-generate-pi>
+
+
+
+<app-ilc-creation *ngIf="lcCreation" [pi_arr] = "lcCreationArray" [mode] ="modeLc"  (ilc_loc_back) = "BackFromLc($event)"></app-ilc-creation>

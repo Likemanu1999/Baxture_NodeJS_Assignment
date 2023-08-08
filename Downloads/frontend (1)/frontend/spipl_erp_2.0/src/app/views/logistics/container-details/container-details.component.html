@@ -1,0 +1,212 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+         <h4><i class="fa fa-truck"></i>Container List  of (Bl Number): {{BlNo}} ,  (Bl Quantity): {{BlQty}}  ,  (Bl Date): {{BlDate | date:'dd-MM-yyyy'}}<span class="pull-right"><button class="btn btn-primary" (click)="onBack()"><i class="fa fa-arrow-left "></i> Back</button></span></h4>
+        </div>
+
+
+        <div class="card-body">
+
+          <div class="row mb-3">
+            <div class="col-md-3">
+              <input type="text" class="form-control" placeholder="Search " [(ngModel)]="filterQuery">
+            </div>
+          </div>
+          <form [formGroup]="containerForm" novalidate (ngSubmit) = "onSubmit()" autocomplete="off">
+          <div formArrayName="containerDetails" class="row" *ngFor="let item of containers  |  tableFilter : filterQuery:filterArray; let i = index">
+            <ng-container [formGroupName]="i">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header">
+                  <i class="fa fa-adjust"></i> <strong>{{item.container_number}}</strong> &nbsp;&nbsp; <strong>Qunatity/container : {{item.qty_per_contr}}</strong>
+                  &nbsp;&nbsp;
+
+
+
+                  <button type="button" class="btn btn-sm btn-light pull-right"(click)="item.collapseVal = !item.collapseVal">
+                    <i *ngIf="item.collapseVal" class="fa fa-chevron-down"></i>
+                    <i *ngIf="!item.collapseVal" class="fa fa-chevron-up"></i>
+                  </button>
+                </div>
+                <div class="card-body"
+                (collapsed)="collapsed($event)"
+                (expanded)="expanded($event)"
+                [collapse]="item.collapseVal">
+
+                <div class="row">
+                  <div class="form-group col-md-2">
+                    <label for="">Container No</label>
+                    <input class="form-control" type="text" formControlName="container_number">
+                  </div>
+
+                  <div class="form-group col-md-2">
+                    <label for="">Seal No</label>
+                    <input class="form-control" type="text" formControlName="seal_no">
+                  </div>
+
+                  <div class="form-group col-md-2">
+                    <label for="">Type Of Container</label>
+
+                    <ng-select
+                    formControlName ="type_cont"
+                    placeholder="Select "
+                    [searchable]="true"
+                    [clearable]="true"
+                    bindLabel="value"
+                    bindValue="id"
+                    [items]="container_type"
+                    >
+                  </ng-select>
+
+                  </div>
+
+
+                  <div class="form-group col-md-2">
+                    <label for="">Bags Per Container</label>
+                    <input class="form-control" type="text" formControlName="bags_per_cont">
+                  </div>
+
+
+                  <div class="form-group col-md-2">
+                    <label for="">Net Weight</label>
+                    <input class="form-control" type="text" formControlName="net_wt">
+                  </div>
+
+                  <div class="form-group col-md-2">
+                    <label for="">Godown</label>
+                    <ng-select
+                    formControlName ="godown_id"
+                    placeholder="Select Godown "
+                    [searchable]="true"
+                    [clearable]="true"
+                    bindLabel="godown_name"
+                    bindValue="id"
+                    [items]="godown"
+                    (change) = "onGodownChange($event, i, item)"
+                    >
+                  </ng-select>
+                  </div>
+
+                  <div class="form-group col-md-2">
+                    <label for="">Select Uloading/crossing</label>
+
+                    <ng-select
+                    placeholder="Select "
+                    [searchable]="true"
+                    [clearable]="true"
+                    bindLabel="value"
+                    bindValue="id"
+                    [items]="unload_cross"
+                    (change)="onChangeUnCr($event, i, item)"
+                    >
+                  </ng-select>
+
+                  </div>
+
+                  <div class="form-group col-md-2" *ngIf="item.unload">
+                    <label for="">Unloading</label>
+                    <input class="form-control" type="text" formControlName="unloading_qty" (change)="calculateCharge($event,item,i)">
+                  </div>
+
+
+                  <div class="form-group col-md-2" *ngIf="item.cross">
+                    <label for="">Crossing</label>
+                    <input class="form-control" type="text" formControlName="crossing_qty" (change)="calculateCharge($event,item,i)">
+                  </div>
+
+
+                  <div class="form-group col-md-2">
+                    <label for="">Charges</label>
+                    <input class="form-control" type="text" formControlName="charges" readonly>
+                  </div>
+
+
+                  <div class="form-group col-md-2">
+                    <label for="">Short Qty</label>
+                    <input class="form-control" type="text" formControlName="short_material_qty">
+                  </div>
+
+
+                  <div class="form-group col-md-2">
+                    <label for="">Short Description</label>
+                    <input class="form-control" type="text" formControlName="short_remark">
+                  </div>
+
+
+                  <div class="form-group col-md-2">
+                    <label for="">Damage Qty</label>
+                    <input class="form-control" type="text" formControlName="damage_material_qty">
+                  </div>
+
+
+                  <div class="form-group col-md-2">
+                    <label for="">Damage Description</label>
+                    <input class="form-control" type="text" formControlName="damage_remark">
+                  </div>
+
+
+                  <div class="form-group col-md-2">
+                    <label for="">Container Received Date</label>
+                    <input type="text"
+                        class="form-control"
+                        [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                        #dp="bsDatepicker" formControlName = "cont_received_date"
+                        bsDatepicker
+                        placeholder="Container Received Date "  style="background-color: white;">
+
+                  </div>
+                  <div class="form-group col-md-2">
+                    <label for="">No of Pallets</label>
+                    <input class="form-control" type="text" formControlName="no_of_pallets"  >
+                  </div>
+
+                  <div class="form-group col-md-3">
+                    <label for="">Upload Short/Damage Images</label>
+                    <input class="form-control" type="file"  (change) ="addShortDamageDocs($event,i)" multiple = true>
+                    <input type="hidden" formControlName="short_damage_doc">
+
+                  </div>
+
+                  <div class="col-md-1 mt-4">
+                    <button type = "button"  class="btn btn-success btn-sm" (click) ="uploadDoc(i)"> <em class="fa fa-upload"></em></button>
+                  </div>
+
+                  <div class="progress col-md-3 mt-4" *ngIf="item.progress_bar">
+                    <div class="progress-bar" [style.width]="progress + '%'">{{progress}}%</div>
+                  </div>
+
+                  <div class="col-md-3" *ngIf="item.short_damage_doc">
+                    <span> short damage docs :
+                      <span *ngFor="let doc of getArray(item.short_damage_doc)">
+                        <a href="{{doc}}"><em class="fa fa-file"></em></a>
+                      </span>
+                    </span>
+                  </div>
+
+
+                  <input type="hidden" formControlName="id">
+                </div>
+
+
+                </div>
+              </div>
+             </div>
+             </ng-container>
+           </div>
+           <div class="row">
+             <div class="col-md-12">
+               <button type="submit" class="btn btn-success ">Update</button>
+             </div>
+           </div>
+           </form>
+         </div>
+       </div>
+    </div>
+  </div>
+</div>
+
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

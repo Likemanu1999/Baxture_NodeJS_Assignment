@@ -1,0 +1,597 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0" *ngIf="view_opt">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-12">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="logistic_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div>
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="getCols()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly style="padding: 19px 5px !important" />
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"
+														style="margin-left: 10px;padding: 19px 5px !important"></app-dropdown-daterange>
+												</div>
+												<div>
+													<p-dropdown [options]="statusList" [(ngModel)]="selected_status"
+														optionLabel="name" defaultLabel="Pending"
+														(onChange)="onChangeStatus($event)">
+													</p-dropdown>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != 'action'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													<div *ngIf="col.field == 'days_left'">
+														<span class="badge badge-warning round-badge">
+															{{ rowData[col.field] }}
+														</span>
+													</div>
+													<div *ngIf="col.field != 'days_left'">
+														{{ rowData[col.field] }}
+													</div>
+												</div>
+												<div *ngIf="col.type == 'Quantity'">
+													{{ rowData[col.field] }} {{ rowData.unit_type }}
+												</div>
+												<div *ngIf="col.type == 'Amount'">
+													{{ rowData[col.field] | currency:'INR' }}
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'action'">
+												<a class="btn btn-outline-dark btn-sm action-btn mb-1 mr-1"
+													data-toggle="tooltip" data-placement="top" title="View Order"
+													(click)="onAction(rowData, 'View')">
+													<i class="fa fa-eye"></i>
+												</a>
+												<a *ngIf="add_opt && rowData.d_status != 4 && rowData.balance_quantity > 0"
+													class="btn btn-outline-success btn-sm action-btn mb-1 mr-1"
+													data-toggle="tooltip" data-placement="top" title="Add Dispatch"
+													(click)="onAction(rowData, 'Add')">
+													<i class="fa fa-plus"></i>
+												</a>
+												<a *ngIf="edit_opt && (rowData.d_status == 0 || rowData.d_status == 1 || rowData.d_status == 2 || rowData.d_status == 3)"
+													class="btn btn-outline-info btn-sm action-btn mb-1 mr-1"
+													data-toggle="tooltip" data-placement="top" title="Edit Dispatch"
+													(click)="onAction(rowData, 'Edit')">
+													<i class="fa fa-pencil"></i>
+												</a>
+												<a *ngIf="delete_opt && (rowData.d_status == 0 || rowData.d_status == 1 || rowData.d_status == 2)"
+													class="btn btn-outline-danger btn-sm action-btn mb-1 mr-1"
+													data-toggle="tooltip" data-placement="top" title="Delete Dispatch"
+													mwlConfirmationPopover [popoverTitle]="popoverTitle"
+													[popoverMessage]="popoverMessage1" [confirmText]="confirmText"
+													[cancelText]="cancelText" [placement]="placement"
+													closeOnOutsideClick="true" confirmButtonType="success"
+													cancelButtonType="danger" (confirm)="onAction(rowData, 'Delete')"
+													(cancel)="cancelClicked = true">
+													<i class="fa fa-trash"></i>
+												</a>
+												<a *ngIf="grade_request && rowData.f_status == 0 && rowData.grade_request_status == 0"
+													class="btn btn-outline-dark btn-sm request-btn mb-1"
+													data-toggle="tooltip" data-placement="top" mwlConfirmationPopover
+													[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage2"
+													[confirmText]="confirmText" [cancelText]="cancelText"
+													[placement]="placement" closeOnOutsideClick="true"
+													confirmButtonType="success" cancelButtonType="danger"
+													title="Send Grade Change Request"
+													(confirm)="onAction(rowData, 'Grade_Request')"
+													(cancel)="cancelClicked = true">
+													<strong>Grade Change Request</strong>
+												</a>
+												<a *ngIf="grade_request && rowData.f_status == 0 && rowData.grade_request_status == 1"
+													class="btn btn-warning btn-sm request-btn mb-1"
+													data-toggle="tooltip" data-placement="top" mwlConfirmationPopover
+													[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage3"
+													[confirmText]="confirmText" [cancelText]="cancelText"
+													[placement]="placement" closeOnOutsideClick="true"
+													confirmButtonType="success" cancelButtonType="danger"
+													title="Cancel Grade Change Request"
+													(confirm)="onAction(rowData, 'Grade_Request')"
+													(cancel)="cancelClicked = true">
+													<strong>Cancel Grade Request</strong>
+												</a>
+												<button *ngIf="grade_request && rowData.grade_request_status == 2"
+													class="btn btn-primary btn-sm custom-badge-new">
+													Grade Request Accepted
+												</button>
+												<a *ngIf="loaded_button && rowData.d_status == 0"
+													class="btn btn-sm action-btn mb-1 mr-1" data-toggle="tooltip"
+													data-placement="top" title="Material Loaded" mwlConfirmationPopover
+													[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage6"
+													[confirmText]="confirmText" [cancelText]="cancelText"
+													[placement]="placement" closeOnOutsideClick="true"
+													confirmButtonType="success" cancelButtonType="danger"
+													(confirm)="onAction(rowData, 'Loaded')"
+													(cancel)="cancelClicked = true">
+													<img src="../assets/img/logistic/loaded.png" class="img-responsive">
+												</a>
+												<a *ngIf="approve_for_billing && rowData.d_status == 1"
+													class="btn btn-sm action-btn mb-1 mr-1" data-toggle="tooltip"
+													data-placement="top" title="Approve For Billing"
+													mwlConfirmationPopover [popoverTitle]="popoverTitle"
+													[popoverMessage]="popoverMessage7" [confirmText]="confirmText"
+													[cancelText]="cancelText" [placement]="placement"
+													closeOnOutsideClick="true" confirmButtonType="success"
+													cancelButtonType="danger" (confirm)="onAction(rowData, 'Approve')"
+													(cancel)="cancelClicked = true">
+													<img src="../assets/img/logistic/approve.png"
+														class="img-responsive">
+												</a>
+												<a *ngIf="short_damage && rowData.d_status == 4"
+													class="btn btn-outline-dark btn-sm action-btn mb-1 mr-1"
+													data-toggle="tooltip" data-placement="top" title="Short & Damage"
+													(click)="onAction(rowData, 'Damage')">
+													<i class="fa fa-recycle"></i>
+												</a>
+												<a *ngIf="sales_return && rowData.d_status == 4"
+													class="btn btn-outline-dark btn-sm action-btn mb-1 mr-1"
+													data-toggle="tooltip" data-placement="top" title="Sales Return"
+													(click)="onAction(rowData, 'Return')">
+													<i class="fa fa-file-text-o"></i>
+												</a>
+												<br>
+												<button *ngIf="rowData.d_status == 1"
+													class="btn btn-primary btn-sm custom-badge-new">
+													Loading Done
+												</button>
+												<button *ngIf="rowData.d_status == 2"
+													class="btn btn-success btn-sm custom-badge-new">
+													Approved For Billing
+												</button>
+												<button *ngIf="rowData.d_status == 3 || rowData.d_status == 4"
+													class="btn btn-success btn-sm custom-badge-new">
+													Billing Done
+												</button>
+												<button class="btn btn-secondary btn-sm custome-expand-btn expand-btn"
+													[pRowToggler]="rowData">
+													<i
+														[ngClass]="expanded ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+												</button>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<!--  -->
+								<ng-template pTemplate="rowexpansion" let-rowData let-columns="columns">
+									<td [attr.colspan]="columns.length + 1" class="expanded_row">
+										<div class="ui-g ui-fluid mt-2">
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>ID: </strong>
+														{{ rowData.id }}
+													</div>
+													<div class="col-md-5">
+														<strong>Customer: </strong>
+														{{ rowData.customer }}
+													</div>
+													<div class="col-md-4">
+														<strong>Zone: </strong>
+														{{ rowData.zone }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Godown: </strong>
+														{{ rowData.godown_name }}
+													</div>
+													<div class="col-md-5">
+														<strong>Grade Name: </strong>
+														{{ rowData.grade_name }}
+													</div>
+													<div class="col-md-4">
+														<strong>Main Grade: </strong>
+														{{ rowData.main_grade }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Quantity: </strong>
+														{{ rowData.quantity }} {{ rowData.unit_type }}
+													</div>
+													<div class="col-md-5">
+														<strong>Deal Rate: </strong>
+														{{ rowData.final_rate | currency:rowData.currency }}
+													</div>
+													<div class="col-md-4">
+														<strong>Delivery Term: </strong>
+														{{ rowData.delivery_term }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>N.B.: </strong>
+														{{ rowData.nb | currency:rowData.currency }}
+													</div>
+													<div class="col-md-5">
+														<strong>Freight Rate: </strong>
+														{{ rowData.freight_rate | currency:rowData.currency }}
+													</div>
+													<div class="col-md-4">
+														<strong>Booking Date: </strong>
+														{{ rowData.booking_date | date:'dd-MMM-yyyy' }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Added On: </strong>
+														{{ rowData.added_date | date:'dd-MMM-yyyy' }}
+													</div>
+													<div class="col-md-5">
+														<strong>Payment Term: </strong>
+														{{ rowData.payment_term_label }}
+													</div>
+													<div class="col-md-4">
+														<strong>LR No.: </strong>
+														{{ rowData.lr_no }}
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-3">
+														<strong>Added By: </strong>
+														{{ rowData.added_by_name }}
+													</div>
+													<div class="col-md-5">
+														<strong>Remark: </strong>
+														{{ rowData.remark }}
+													</div>
+													<div class="col-md-4">
+														<a *ngIf="category_request && rowData.f_status == 0 && rowData.category_request_status == 0"
+															class="btn btn-danger btn-sm request-btn mb-1"
+															data-toggle="tooltip" data-placement="top"
+															mwlConfirmationPopover [popoverTitle]="popoverTitle"
+															[popoverMessage]="popoverMessage4"
+															[confirmText]="confirmText" [cancelText]="cancelText"
+															[placement]="placement" closeOnOutsideClick="true"
+															confirmButtonType="success" cancelButtonType="danger"
+															title="Send Category Change Request"
+															(confirm)="onAction(rowData, 'Category_Request')"
+															(cancel)="cancelClicked = true">
+															<strong class="text-white">Category Change Request</strong>
+														</a>
+														<a *ngIf="category_request && rowData.f_status == 0 && rowData.category_request_status == 1"
+															class="btn btn-warning btn-sm request-btn mb-1"
+															data-toggle="tooltip" data-placement="top"
+															mwlConfirmationPopover [popoverTitle]="popoverTitle"
+															[popoverMessage]="popoverMessage5"
+															[confirmText]="confirmText" [cancelText]="cancelText"
+															[placement]="placement" closeOnOutsideClick="true"
+															confirmButtonType="success" cancelButtonType="danger"
+															title="Cancel Category Change Request"
+															(confirm)="onAction(rowData, 'Request')"
+															(cancel)="cancelClicked = true">
+															<strong>Cancel Category Request</strong>
+														</a>
+														<button
+															*ngIf="category_request && rowData.category_request_status == 2"
+															class="btn btn-success btn-sm custom-badge-new">
+															Category Request Accepted
+														</button>
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12 mb-2">
+												<div class="ui-g">
+													<div class="col-md-5">
+														<strong>SO Remark: </strong>
+														{{ rowData.soremark }}
+													</div>
+													
+												</div>
+											</div>
+										</div>
+									</td>
+								</ng-template>
+								<!--  -->
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total | number }} MT
+											</strong>
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div bsModal #shortDamageModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Short & Damage" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="shortDamageForm" novalidate (ngSubmit)="submitShortDamageForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">Short & Damage Details</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="short_quantity">
+									<strong>Short Quantity</strong>
+								</label>
+								<div class="input-group">
+									<input type="text" class="form-control" id="short_quantity"
+										formControlName="short_quantity" placeholder="Short Quantity" numbersOnly>
+									<div class="input-group-append">
+										<span class="input-group-text">MT</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="damage_quantity">
+									<strong>Damage Quantity</strong>
+								</label>
+								<div class="input-group">
+									<input type="text" class="form-control" id="damage_quantity"
+										formControlName="damage_quantity" placeholder="Damage Quantity" numbersOnly>
+									<div class="input-group-append">
+										<span class="input-group-text">MT</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="wet_quantity">
+									<strong>Wet Quantity</strong>
+								</label>
+								<div class="input-group">
+									<input type="text" class="form-control" id="wet_quantity"
+										formControlName="wet_quantity" placeholder="Wet Quantity" numbersOnly>
+									<div class="input-group-append">
+										<span class="input-group-text">MT</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="remark">
+									<strong>Remark</strong>
+								</label>
+								<textarea id="remark" class="form-control" formControlName="remark"
+									placeholder="Remark"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" [disabled]="shortDamageForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div bsModal #salesReturnModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Sales Return"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="salesReturnForm" novalidate (ngSubmit)="submitSalesReturnForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">Sales Return Details</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="quantity">
+									<strong>Quantity</strong>
+								</label>
+								<div class="input-group">
+									<input type="text" class="form-control" id="quantity" formControlName="quantity"
+										placeholder="Quantity" numbersOnly>
+									<div class="input-group-append">
+										<span class="input-group-text">KG</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="transport_charges">
+									<strong>Transport Charges</strong>
+								</label>
+								<input type="text" class="form-control" id="transport_charges"
+									formControlName="transport_charges" placeholder="Transport Charges" numbersOnly>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="date">
+									<strong>Date</strong>
+								</label>
+								<input type="text" class="form-control" id="date" formControlName="date"
+									placeholder="Date" [bsConfig]="datePickerConfig" [maxDate]="max_date" bsDatepicker
+									readonly>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="remark">
+									<strong>Remark</strong>
+								</label>
+								<textarea id="remark" class="form-control" formControlName="remark"
+									placeholder="Remark"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" [disabled]="salesReturnForm.invalid">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div bsModal #viewDealModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="View Deal"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content" *ngIf="selectedDispatch != null">
+			<div class="modal-header">
+				<h4 class="modal-title">
+					<i class="fa fa-eye"></i> Order Details - #{{ selectedDispatch.id }}
+				</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-sm-6 mb-2">
+						<strong>Customer: </strong> {{ selectedDispatch.customer }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Marketing Person: </strong> {{ selectedDispatch.zone }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Godown: </strong> {{ selectedDispatch.godown_name }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Grade: </strong> {{ selectedDispatch.grade_name }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Quantity: </strong> {{ selectedDispatch.dispatch_quantity }} {{
+						selectedDispatch.unit_type }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Rate: </strong> {{ selectedDispatch.final_rate | currency:selectedDispatch.currency }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>N.B.: </strong> {{ selectedDispatch.nb | currency:selectedDispatch.currency }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Delivery Term: </strong> {{ selectedDispatch.delivery_term }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Freight Rate: </strong> {{ selectedDispatch.freight_rate |
+						currency:selectedDispatch.currency
+						}}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Payment Term: </strong> {{ selectedDispatch.payment_term_label }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Booking Date: </strong> {{ selectedDispatch.booking_date | date: 'dd-MMM-yyyy'}}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Status: </strong> {{ selectedDispatch.status_name }}
+					</div>
+					<!-- <div class="col-sm-6 mb-2">
+						<strong>Total Amount (Inc. Tax): </strong> {{ selectedDispatch.total_amount |
+						currency:selectedDispatch.currency }}
+					</div> -->
+					<div class="col-sm-12 mb-2">
+						<strong>Remark: </strong> {{ selectedDispatch.remark }}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

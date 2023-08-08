@@ -1,0 +1,193 @@
+<div class="animated fadeIn">
+  <div class="card">
+    <div class="card-header">
+      <i class="fa fa-search"></i>
+      Organization Zone List
+    </div>
+    <div class="card-body">
+      <mat-tab-group #tabGroup [selectedIndex]="selectedTabIndex" (selectedTabChange)="onChangtab($event)">
+        <mat-tab label="PVC" *ngIf="company_id == 1 || show_both_company">
+          <div class="row mt-4 ">
+            <div class="col-12 col-md-4">
+              <div class="form-group">
+                <!-- <label class="col-form-label" for="sales_acc_holder">Sales Account Holder</label> -->
+                <ng-select id="sales_acc_holder" placeholder="Select Zone " [searchable]="true" [clearable]="true"
+                  [multiple]=true (clear)="onClear()" bindLabel="first_name" bindValue="id" [items]="staff"
+                  [(ngModel)]="zone">
+                  >
+                </ng-select>
+              </div>
+            </div>
+
+            <div class="col-md-1"><button type="button" class="btn btn-primary" (click)="getParty()"> Search</button>
+            </div>
+
+
+            <div class="col-md-12">
+              <p-table #dt [value]="searchResult" dataKey="id" styleClass="ui-table" [rowHover]="true" [rows]="10"
+                [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading"
+                [paginator]="true" [autoLayout]="true" [resizableColumns]="true" [filterDelay]="0"
+                [globalFilterFields]="['sub_org_name','zone_name']">
+                <ng-template pTemplate="caption">
+                  <div class="row">
+                    <div class="col-md-2">
+                      <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                        (click)="exportExcel()" style="margin-right: 0.5em;" class="ui-button-success"></button>
+                    </div>
+                    <div class="col-md-4 ">
+                      <input type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" class="form-control"
+                        placeholder="Global Search" />
+                    </div>
+                  </div>
+
+
+                </ng-template>
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th pResizableColumn pSortableColumn="{{col.field}}" *ngFor="let col of cols"> {{col.header}}
+                      <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                    </th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-searchResult>
+                  <tr class="ui-selectable-row">
+                    <td class="ui-resizable-column">
+                      <span class="ui-column-title">Buyer </span>
+                      {{searchResult.sub_org_name}}
+                    </td>
+
+                    <td class="ui-resizable-column">
+                      <span class="ui-column-title">Address </span>
+                      {{searchResult.org_address}}
+                    </td>
+
+
+                    <td>
+                      <div *ngIf="edit_opt">
+                        <select (change)="updateOrganization($event,searchResult.sub_org_id)" class="form-control"
+                        [(ngModel)]="searchResult.sales_acc_holder">
+                        <option value="0">Select</option>
+                        <option *ngFor="let item of staff" [value]="item.id">{{item.first_name}}</option>
+                      </select>
+                      </div>
+                      <div *ngIf="!edit_opt">
+                        {{searchResult.zone_name}
+                        </div>
+                    
+
+                    </td>
+
+
+
+
+
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="8" style="text-align:left">No Records found.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+
+
+          </div>
+        </mat-tab>
+        <mat-tab label="PE & PP" *ngIf="company_id == 2 || show_both_company">
+
+          <div class="row mt-4 ">
+            <div class="col-12 col-md-4">
+              <div class="form-group">
+                <!-- <label class="col-form-label" for="sales_acc_holder">Sales Account Holder</label> -->
+                <ng-select id="sales_acc_holder" placeholder="Select Zone " [searchable]="true" [clearable]="true"
+                  [multiple]=true (clear)="onClear()" bindLabel="first_name" bindValue="id" [items]="staff"
+                  [(ngModel)]="zone">
+                  >
+                </ng-select>
+              </div>
+            </div>
+
+            <div class="col-md-1"><button type="button" class="btn btn-primary" (click)="getParty()"> Search</button>
+            </div>
+
+
+            <div class="col-md-12">
+              <p-table #dt2 [value]="searchResult" dataKey="id" styleClass="ui-table" [rowHover]="true" [rows]="10"
+                [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading"
+                [paginator]="true" [autoLayout]="true" [resizableColumns]="true" [filterDelay]="0"
+                [globalFilterFields]="['sub_org_name','zone_name']">
+                <ng-template pTemplate="caption">
+                  <div class="row">
+                    <div class="col-md-2">
+                      <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                        (click)="exportExcel()" style="margin-right: 0.5em;" class="ui-button-success"></button>
+                    </div>
+                    <div class="col-md-4 ">
+                      <input type="text" (input)="dt2.filterGlobal($event.target.value, 'contains')"
+                        class="form-control" placeholder="Global Search" />
+                    </div>
+                  </div>
+
+
+                </ng-template>
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th pResizableColumn pSortableColumn="{{col.field}}" *ngFor="let col of cols"> {{col.header}}
+                      <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                    </th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-searchResult>
+                  <tr class="ui-selectable-row">
+                    <td class="ui-resizable-column">
+                      <span class="ui-column-title">Buyer </span>
+                      {{searchResult.sub_org_name}}
+                    </td>
+
+                    <td class="ui-resizable-column">
+                      <span class="ui-column-title">Address </span>
+                      {{searchResult.org_address}}
+                    </td>
+
+
+                   
+                    <td>
+                      <div *ngIf="edit_opt">
+                        <select (change)="updateOrganization($event,searchResult.sub_org_id)" class="form-control"
+                        [(ngModel)]="searchResult.sales_acc_holder">
+                        <option value="0">Select</option>
+                        <option *ngFor="let item of staff" [value]="item.id">{{item.first_name}}</option>
+                      </select>
+                      </div>
+                      <div *ngIf="!edit_opt">
+                        {{searchResult.zone_name}
+                        </div>
+                    
+
+                    </td>
+
+
+
+
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="8" style="text-align:left">No Records found.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+
+
+          </div>
+
+        </mat-tab>
+      </mat-tab-group>
+
+    </div>
+  </div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

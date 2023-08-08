@@ -1,0 +1,249 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4> <i class="fa fa-file"></i> Journey Of Inland Lc</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="">Buyers Bank: </label>
+                                        <ng-select placeholder="Select Bank" [searchable]="true" [clearable]="true"
+                                            bindLabel="bank_name" bindValue="id" [items]="spipl_bank"
+                                            (change)="onSubmit($event,'bank','id',0)">
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="">ILC Created Date: </label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" bsDaterangepicker
+                                            [(ngModel)]="bsRangeValue" placeholder="Lc Created Date"
+                                            (ngModelChange)="onSubmit($event,'','',1)">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="">ILC Opening Date: </label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" bsDaterangepicker
+                                            placeholder="Openinng Date" (ngModelChange)="onSubmit($event,'','',2)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div *ngIf="isLoading" style="text-align: center;">
+                                    <app-loading-spinner></app-loading-spinner>
+                                  </div>
+
+                            <div class="col-md-12"  *ngIf="!isLoading">
+                                <p-table #dt [value]="ilc_list" dataKey="id" styleClass="ui-table-purchase"
+                                [rowHover]="true" [rows]="10" [showCurrentPageReport]="true" [scrollable]="true"
+                                [virtualRowHeight]="500" scrollHeight="400px" [virtualScroll]="true"
+                                [rowsPerPageOptions]="[10,25,50]" [paginator]="false" [columns]="cols" (onFilter)="onFilter($event, dt)"
+                               
+                                currentPageReportTemplate="Total Records : {{ilc_list.length}}"
+                                [globalFilterFields]="['Supplier_Name','ilc_bank_no','ilc_opening_date']">
+
+
+                                <ng-template pTemplate="caption">
+
+                                    <div class="row">
+
+<!-- 
+                                        <div class="col-md-4">
+
+                                             <div class="ui-helper-clearfix" style="text-align: left">
+                                                <button type="button"  pButton
+                                                    icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                                    (click)="exportExcel()" style="margin-right: 0.5em;"
+                                                    class="ui-button-success"></button>
+
+                                            </div> 
+
+
+
+                                        </div> -->
+
+
+
+                                        <div class="col-md-3">
+
+                                            <input pInputText class='form-control' type="text"
+                                                (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                placeholder="Global Search" />
+
+                                        </div>
+
+
+                                    </div>
+
+
+
+                                </ng-template>
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+                                        <th [style.width]="col.style" pSortableColumn="{{col.field}}"
+                                            *ngFor="let col of columns" [ngClass]="col.field == 'Supplier_Name' || col.field == 'ilc_bank_no' || col.field == 'ilc_opening_date' ? 'sticky-col '+ col.class : ''">
+                                            {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template pTemplate="body" let-item let-columns>
+
+                                    <tr class="ui-selectable-row">
+                                     <td  style="width:  100px;" class="sticky-col first">
+                                       {{item.Supplier_Name}}
+                                      </td> 
+                                      <td  style="width:  100px;" class="sticky-col second">
+                                        {{item.ilc_bank_no}}
+                                       </td> 
+                                       <td  style="width:  100px;" class="sticky-col third">
+                                        {{item.ilc_opening_date}}
+                                       </td>
+                                       <td  style="width:  150px;">
+                                        {{item.lcQuantity}}
+                                       </td> 
+
+                                       <td  style="width:  200px;">
+                                        {{item.lcAmount}}
+                                       </td> 
+
+                                       <td  style="width:  1000px;">
+                                        <span  *ngIf="item.pi_details.length > 0">
+                                                <table
+                                                    class="table table-bordered table-striped table-hover table-responsive-lg "
+                                                    [mfData]="item.pi_details" #mf="mfDataTable" [mfRowsOnPage]="5">
+                                                    <thead>
+                                                        <tr>
+                                                           
+                                                            <th>PI Invoice No.</th>
+                                                            <th>Quantity</th>
+                                                            <th>Amount</th>
+                                                            <th>Place Of Destination</th>
+                                                            <th>Place of Loading</th>
+        
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+        
+                                                            <tr *ngFor="let val of mf.data; let i = index"
+                                                                [attr.data-index]="i">
+                                                               
+                                                                <td>{{val.proformarefno}}</td>
+                                                                <td>{{val.pi_quantity}}</td>
+                                                                <td>{{val.pi_amount | currency: 'INR'}}</td>
+                                                                <td>{{val.placeofdestination }}</td>
+                                                                <td>{{val.placeofloading }}</td>
+                                                            </tr>
+                                                      
+                                                    </tbody>
+                                                 
+                                                </table>
+                                                </span>
+                                         
+                                       
+                                       </td> 
+
+                                       <td  style="width:  1000px;">
+                                       
+                                            <span  *ngIf="item.bex_details.length > 0">
+                                                <table
+                                                    class="table table-bordered table-striped table-hover table-responsive-lg"
+                                                    [mfData]="item.bex_details" #mf="mfDataTable" [mfRowsOnPage]="5">
+                                                    <thead>
+                                                        <tr>
+                                                           
+                                                            <th>Bank Reference No.</th>
+                                                            <th>Bill of Exchage No.</th>
+                                                            <th>Bill of Exchange Date</th>
+                                                            <th>Bill of Exchange Due Date</th>
+                                                            <th>Amount</th>
+                                                            <th>Issue Date</th>
+                                                            <th>Discounting Date </th>
+                                                            <th>Discounting Rate</th>
+                                                            <th>Margin Money</th>
+                                                            <th>Amount Credited Supplier</th>
+                                                            <th>Remark</th>
+                                                            
+                                                            
+                                                            
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                     
+                                                            <tr *ngFor="let val of mf.data; let i = index"
+                                                                [attr.data-index]="i">
+                                                               
+                                                                <td>{{val.bank_ref_no}}</td>
+                                                                <td>{{val.be_no}}</td>
+                                                                <td>{{val.be_date | date : 'dd-MM-y'}}</td>
+                                                                <td>{{val.dut_dt | date : 'dd-MM-y'}}</td>
+                                                                <td>{{val.bex_amount | currency: 'INR'}}</td>
+                                                                <td>{{val.conf_issue_dt | date : 'dd-MM-y'}}</td>
+                                                                <td>{{val.discount_date | date : 'dd-MM-y'}}</td>
+                                                                <td>{{val.discount_rate }}</td>
+                                                                <td>{{val.margin_money | currency: 'INR'}}</td>
+                                                                <td>{{val.amt_credited | currency: 'INR'}}</td>
+                                                                <td>{{val.remark }}</td>
+                                                               
+                                                               
+                                                            </tr>
+                                                       
+                                                    </tbody>
+                                                    
+                                                </table>
+                                            </span>
+                                        
+                                      
+                                       </td> 
+              
+              
+                                    </tr>
+                                  </ng-template>
+              
+                                  <ng-template pTemplate="footer">
+                                      <tr>
+                                          <td style="width: 100px;"></td>
+                                          <td style="width: 100px;"></td>
+                                          <td style="width: 100px;"></td>
+                                          <td style="width: 150px;">{{total_qty}}</td>
+                                          <td style="width: 200px;">{{total_amt | currency: 'INR'}}</td>
+                                          <td style="width: 1000px;"></td>
+                                          <td style="width: 1000px;"></td>
+                                      </tr>
+                                   
+                                    <tr>
+                                      <td colspan="8" style="text-align:left">Total Records: {{filteredValuess?.length}}</td>
+                                    </tr> 
+                                  </ng-template>
+                                  <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                      <td colspan="8" style="text-align:left">No Data found.</td>
+                                    </tr>
+                                  </ng-template>
+
+
+
+
+                            </p-table>
+                            </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

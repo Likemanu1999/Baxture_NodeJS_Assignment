@@ -1,0 +1,469 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+
+					<h4> <i class="fa fa-rupee"></i> Payment Details List
+						<span class="pull-right"><button class="btn btn-primary" (click)="getPaymentList()"><i
+									class="fa fa-refresh"></i></button></span>
+					</h4>
+				</div>
+
+
+				<div class="card-body">
+
+
+					<!-- <div class="row">
+						<div class="col-md-2 offset-5" *ngIf="isLoading">
+							<app-loading-spinner></app-loading-spinner>
+						</div>
+					</div> -->
+					<div class="row">
+
+
+						<div class="col-md-12">
+
+							<p-table #dt [value]="payment_list" dataKey="id" styleClass="ui-table-payment"
+								[rowHover]="true" [rows]="10" [loading]="isLoading" [showCurrentPageReport]="true"
+								[rowsPerPageOptions]="[10,25,50,100]" [paginator]="true" 
+								(onFilter)="onFilter($event, dt)" [scrollable]="true" 
+								[globalFilterFields]="['SupplierName', 'BankName', 'InvoiceNo', 'Amount','PaymentDueDate','StatusPayment','SupplierCharges','ConfirmationCharges','CurrencyName','payment_status_flag']"
+								currentPageReportTemplate="Total Records: {{payment_list.length}}">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-10">
+											<div class="form-inline">													  
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportExcel('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportPdf('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												
+
+												<div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="clearDropdown(); getPaymentList()" [bsConfig]="datePickerConfig"
+														#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly />
+														<app-dropdown-daterange (dateEvent)="receiveDate($event)" [uploadSuccess] = "uploadSuccess" ></app-dropdown-daterange> 
+												</div>										
+
+												</div>
+											</div>						
+
+										
+										
+
+										<div class="col-md-2">
+											<div class="ui-table-globalfilter-container" style="text-align: right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+
+								<ng-template pTemplate="header">
+
+									<tr>
+										<th style="width: 200px;" pSortableColumn="{{col.field}}"
+											*ngFor="let col of cols"> {{col.header}} <p-sortIcon field="{{col.field}}">
+											</p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th style="width: 200px;">
+											<input type="text" class="form-control" [(ngModel)]="PaymentDueDate"
+												(ngModelChange)="onDateSelect($event,'PaymentDueDate')"
+												[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+												#dp="bsDatepicker" bsDatepicker 
+												placeholder="Search by Date">
+										</th>
+										<th>
+											<div *ngIf="tag_arr.length > 0">
+												<p-multiSelect [options]="tag_arr" placeholder="All"
+													(onChange)="onchange($event,'tag')" styleClass="ui-column-filter"
+													optionLabel='tag' appendTo="body">
+													<ng-template let-op pTemplate="item">
+
+														<span>{{op.label}}</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+										<th style="width: 200px;">
+											<div *ngIf="supplier_list.length > 0">
+												<p-multiSelect [options]="supplier_list" placeholder="All"
+													(onChange)="onchange($event,'SupplierName')"
+													styleClass="ui-column-filter" optionLabel='SupplierName'
+													appendTo="body">
+													<ng-template let-op pTemplate="item">
+
+														<span>{{op.label}}</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+
+										</th>
+
+										<th style="width: 200px;">
+											<div *ngIf="bank_list.length > 0">
+												<p-multiSelect [options]="bank_list" placeholder="All"
+													(onChange)="onchange($event,'BankName')"
+													styleClass="ui-column-filter" optionLabel='BankName'
+													appendTo="body">
+													<ng-template let-op pTemplate="item">
+
+														<span>{{op.label}}</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+
+										</th>
+										<th style="width: 200px;"> </th>
+										<th style="width: 200px;"> </th>
+										<th style="width: 200px;"> </th>
+										<th style="width: 200px;">
+											<div *ngIf="currency.length > 0">
+												<p-multiSelect [options]="currency" placeholder="All"
+													(onChange)="onchange($event,'CurrencyName')"
+													styleClass="ui-column-filter" optionLabel='CurrencyName'
+													appendTo="body">
+													<ng-template let-op pTemplate="item">
+
+														<span>{{op.label}}</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+										<th style="width: 200px;"> </th>
+										<th style="width: 200px;"> </th>
+										<th style="width: 200px;">
+											<div *ngIf="funding_bank_list.length > 0">
+												<p-multiSelect [options]="funding_bank_list" placeholder="All"
+													(onChange)="onchange($event,'fundingBank')"
+													styleClass="ui-column-filter" optionLabel='fundingBank'
+													appendTo="body">
+													<ng-template let-op pTemplate="item">
+
+														<span>{{op.label}}</span>
+
+													</ng-template>
+												</p-multiSelect>
+											</div>
+										</th>
+										<th style="width: 200px;"> </th>
+										<th style="width: 200px;"> </th>
+										<th style="width: 200px;"> </th>
+										<th style="width: 200px;"> </th>
+										<th style="width: 200px;"> </th>
+
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-item>
+									<tr class="ui-selectable-row">
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Edit</span>
+											<span *ngIf="!item.notEdit">
+												<a style="cursor: pointer;"
+													(click)="onEditPaymentDate(item.PaymentDueDate,item.StatusPayment,item.nid,item.pi_id,item.payment_term_id)"><i
+														class="fa fa-pencil"></i></a>
+											</span>
+
+											<span class="ui-column-title">Payment Due Date</span>
+											{{item.PaymentDueDate | date: "dd-MM-y E"}}
+
+											<span *ngIf="item.actual_payment_due_date  && (item.PaymentDueDate < item.actual_payment_due_date) " class="badge badge-primary" [pTooltip]="item.actual_payment_due_date | date: 'dd-MM-y E'">Pre-Payment</span>
+
+
+											<span class="nav-link" (click)="onClick(item)"
+												style="margin-right: 0.5em;cursor: pointer;"
+												class="badge badge-primary" *ngIf="item.fd_amount > 0"   [pTooltip]="item.fd_amount">FD</span>
+
+
+
+
+
+										</td>
+
+										<td style="width: 200px;">
+											<span *ngIf="item.tag == 'LC'" class="badge badge-primary">{{(item.tag)
+												}}</span>
+											<span *ngIf="item.tag == 'NON-LC'" class="badge badge-warning">{{(item.tag)
+												}}</span>
+												<span *ngIf="item.tag == 'NON-LC-Credit'" class="badge badge-warning">{{(item.tag)
+												}}</span>
+											<span *ngIf="item.tag == 'ILC'" class="badge badge-success">{{(item.tag)
+												}}</span>
+											:
+											<span
+												[class]="'customer-badge status-'+item.StatusPayment">{{getStatus(item.StatusPayment)
+												}}</span>
+										</td>
+
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Supplier</span>
+											{{item.SupplierName}}
+										</td>
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Buyer Bank</span>
+											{{item.BankName}}
+										</td>
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Docuemnt Ref. No.</span>
+											{{item.doc_ref_no}}
+										</td>
+										<td style="width: 200px;">
+											<span class="ui-column-title">Invoice Number</span>
+											{{item.InvoiceNo}}
+											<span class="nav-link" *ngIf="item.hedegAmount>0"
+												style="margin-right: 0.5em;cursor: pointer;"
+												class="badge badge-primary">Hedged</span>
+										</td>
+
+
+
+
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Amount</span>
+											<span *ngIf="item.Amount"> {{item.Amount | currencyInr }}</span>
+
+										</td>
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Currency</span>
+											{{item.CurrencyName}}
+										</td>
+
+
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Supplier Charges</span>
+											<span *ngIf="item.SupplierCharges">{{item.SupplierCharges |currencyInr
+												}}</span>
+
+										</td>
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Confirmation Charges</span>
+											<span *ngIf="item.ConfirmationCharges">{{item.ConfirmationCharges
+												|currencyInr}}</span>
+										</td>
+
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Funding Bank</span>
+											<span *ngIf="item.fundingBank">{{item.fundingBank}}</span>
+
+										</td>
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Total</span>
+											<!-- {{item.Total |currencyInr}} -->
+											{{(item.Amount + item.SupplierCharges + item.ConfirmationCharges)
+											|currencyInr}}
+										</td>
+
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Hedge Amount</span>
+											{{item.hedegAmount |currencyInr}}
+										</td>
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">UnHedge Amount</span>
+											{{((item.Amount + item.SupplierCharges + item.ConfirmationCharges) -
+											item.hedegAmount) |currencyInr}}
+										</td>
+
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Hedge Details</span>
+											<span *ngFor="let hedge_det of item.hedged_array">
+												FID :{{hedge_det.fid}} , Amount: {{hedge_det.hedge_amount_invd}}
+												<br>
+											</span>
+										</td>
+
+										<td style="width: 200px;">
+											<span class="ui-column-title">Payment Status</span>
+											<span
+												[class]="'customer-badge status-'+item.StatusPayment">{{getStatus(item.StatusPayment)
+												}}</span>
+										</td>
+
+
+
+
+
+
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer">
+
+									<tr>
+										<td style="width: 200px;">Total</td>
+										<td style="width: 200px;"></td>
+										<td style="width: 200px;"></td>
+										<td style="width: 200px;"></td>
+
+										<td style="width: 200px;"></td>
+										<td style="width: 200px;"></td>
+										<!-- *ngIf="amount" -->
+										<td style="width: 200px;"><span>USD : {{amount |currencyInr}} <br> INR :
+												{{ilc_amount
+												|currencyInr}}</span></td>
+										<td style="width: 200px;"></td>
+										<td style="width: 200px;"><span *ngIf="supp_charge">{{supp_charge |currencyInr
+												}}</span></td>
+										<td style="width: 200px;"><span *ngIf="conf_charge">{{conf_charge
+												|currencyInr}}</span> </td>
+										<td style="width: 200px;"></td>
+										<td style="width: 200px;"><span *ngIf="total_amount">{{(amount + supp_charge + conf_charge)
+												|currencyInr}}</span></td>
+										<td style="width: 200px;">{{hedegAmount | currencyInr}}</td>
+										<td style="width: 200px;">{{ tot_balanceAfterHedge | currencyInr}}</td>
+
+										<td style="width: 200px;"> </td>
+										<td style="width: 200px;"> </td>
+
+									</tr>
+
+									<!-- <tr>
+										<td colspan="15" style="text-align:left">Total Records:
+											{{filteredValuess?.length}}</td>
+									</tr> -->
+
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td colspan="8" style="text-align:left">Not Found any data</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<div bsModal #paymentDueDateUpdate="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="myModalLabel" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<form [formGroup]="paymentDateUpdate" novalidate (ngSubmit)="onPaymentDateUpdate()"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">Update Payment Date</h4>
+					<button type="button" class="close" (click)="paymentDueDateUpdate.hide()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="col-md-8">
+
+						<div class="form-group">
+							<label class="col-form-label" for="payment_due_date">Payment Date</label>
+
+							<input type="text" class="form-control" formControlName="payment_due_date"
+								id="payment_due_date"
+								[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+								#dp="bsDatepicker" bsDatepicker [(ngModel)]='editPaymentDate' placeholder="Enter Date "
+								readonly style="background-color: white;">
+
+
+						</div>
+
+
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="paymentDueDateUpdate.hide()">Close</button>
+					<button type="submit" class="btn btn-primary">Update</button>
+				</div>
+			</form>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+
+
+<div bsModal #myModalPending="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+
+			<div class="modal-header">
+				<h4 class="modal-title">FD Linking Details</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<b>Invoice Amount : {{invoice_amount}}</b> &nbsp;
+						<b>Balance : {{invoice_amount}}</b> &nbsp;
+					</div>
+				</div>
+				<div *ngIf="isLoading" style="text-align: center;">
+					<app-loading-spinner></app-loading-spinner>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<table class="table">
+							<tr>
+								<th>FD No</th>
+								<th>FD Amount</th>
+								<th>FD Date</th>
+								<th>FD Maturity Date</th>
+							</tr>
+							<tr *ngFor="let fdVal of fdlinkList">
+								<td>{{fdVal.fd_no}}</td>
+								<td>{{fdVal.currency_type_amount}}</td>
+								<td>{{fdVal.fd_make_date | date: "dd-MM-y E" }}</td>
+								<td>{{fdVal.fd_maturity_date | date: "dd-MM-y E"}}</td>
+							</tr>
+
+							<tr>
+								<th></th>
+								<th>{{fdlinkList | totalsum : 'currency_type_amount'}}</th>
+								<th></th>
+								<th></th>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

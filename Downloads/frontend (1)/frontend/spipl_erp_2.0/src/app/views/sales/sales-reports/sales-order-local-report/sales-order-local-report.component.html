@@ -1,0 +1,148 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fa fa-rupee"></i> Sales Order Local</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="form-group col-md-7">
+                                    <div class="row">
+                                        <div class="col-md-3" style="margin-right: -50px;"> <label for=""><b>Booking
+                                                    Date</b></label></div>
+                                        <div class="col-md-8">
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                                </div>
+                                                <input type="text" class="form-control " [bsConfig]="datePickerConfig"
+                                                    #dp="bsDaterangepicker" bsDaterangepicker [maxDate]="maxDate"
+                                                    [(ngModel)]="selected_date_range"
+                                                    (ngModelChange)="clearDropdown (); onSelect($event,1)"
+                                                    placeholder="From Date - To Date" readonly>
+                                                <app-dropdown-daterange class="ml-4" (dateEvent)="receiveDate($event)"
+                                                    [uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-2 offset-5" *ngIf="isLoading">
+                                    <app-loading-spinner></app-loading-spinner>
+                                </div>
+                            </div>
+
+                            <div class="row" *ngIf="!isLoading">
+                                <div class="col-md-12">
+                                    <p-table #dt [value]="data" dataKey="id" styleClass="ui-table" [rowHover]="true"
+                                        [rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100]"
+                                        [paginator]="true" [columns]="cols" (onFilter)="onFilter($event, dt)"
+                                        currentPageReportTemplate=" Total Records :{{data.length}}" [filterDelay]="0"
+                                        [globalFilterFields]="['id','grade_name','godown_name','quantity','total_amount','booking_date','customer','zone']">
+
+                                        <ng-template pTemplate="caption">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="ui-helper-clearfix" style="text-align: left">
+                                                        <button type="button" pButton icon="pi pi-file-excel"
+                                                            iconPos="left" label="EXCEL" (click)="exportData('Excel')"
+                                                            style="margin-right: 0.5em;"
+                                                            class="ui-button-success"></button>
+                                                        <button type="button" pButton icon="pi pi-file-pdf"
+                                                            iconPos="left" label="PDF" (click)="exportData('PDF')"
+                                                            class="ui-button-warning"></button>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input pInputText class='form-control' type="text"
+                                                        (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                        placeholder="Global Search" />
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="header" let-columns>
+                                            <tr>
+                                                <th [style.width]="col.style" pSortableColumn="{{col.field}}"
+                                                    *ngFor="let col of columns">
+                                                    {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                                                </th>
+                                            </tr>
+
+                                            <tr>
+                                                <th *ngFor="let col of columns">
+                                                    <p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+                                                        defaultLabel="All"
+                                                        (onChange)="customFilter($event.value, col.field, 'in')">
+                                                    </p-multiSelect>
+                                                </th>
+                                            </tr>
+
+
+                                        </ng-template>
+
+
+                                        <ng-template pTemplate="body" let-item let-columns>
+                                            <tr class="ui-selectable-row">
+
+
+                                                <td *ngFor="let col of cols">
+                                                    <span class="ui-column-title">{{col.header}} </span>
+
+
+
+                                                    <span
+                                                        *ngIf="col.field == 'type' ||  col.field == 'amount' || col.field == 'date'; else ElseBlock">
+                                                        <span *ngIf="item[col.field] == 'Credit'"
+                                                            class="badge badge-success">{{item[col.field]}}</span>
+                                                        <span *ngIf="item[col.field] == 'Debit'"
+                                                            class="badge badge-primary">{{item[col.field]}}</span>
+                                                        <span *ngIf="col.field == 'amount'"><em
+                                                                class="fa fa-rupee"></em>{{item[col.field]|
+                                                            currencyInr}}</span>
+                                                        <span *ngIf="col.field == 'date'">{{item[col.field]|
+                                                            date:'dd/MM/yyyy hh:mm:ss'}}</span>
+                                                    </span>
+
+                                                    <ng-template #ElseBlock> {{item[col.field]}}</ng-template>
+
+                                                </td>
+                                            </tr>
+
+                                        </ng-template>
+
+                                        <ng-template pTemplate="footer">
+                                            <tr>
+                                                <td *ngFor="let col of cols">
+                                                    <strong *ngIf="col.type == 'Quantity' && col.oprations=='Sum'">
+                                                        Total: {{getSumOf(data,'quantity') | number : '1.2-2'}} MT
+                                                    </strong>
+                                                    <strong *ngIf="col.type == 'Amount' && col.oprations=='Sum'">
+                                                        Total: {{ getSumOf(data,'total_amount') | currency:'INR' }}
+                                                    </strong>
+                                                    <strong *ngIf="col.type == 'Amount' && col.oprations=='Avg'">
+                                                        Total: {{ getAVGOf(data,'final_rate') | currency:'INR' }}
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="emptymessage">
+                                            <tr>
+                                                <td colspan="4" style="text-align:left">No Data found.</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

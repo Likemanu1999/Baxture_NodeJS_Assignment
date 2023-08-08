@@ -1,0 +1,244 @@
+<div class="animated fadeIn">
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h4><i class="fa fa-handshake-o"></i>Godown-Grade Wise Purchase Report
+             
+            </h4>
+  
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-12">
+  
+  
+                <div class="row">
+                  <div class="col-md-12 mb-4">
+                    <div class="row ">
+                      <div class="col-md-4">
+                        <div class="row">
+                          <div class="col-md-3">
+                            <label for=""><b> Date Range:</b></label>
+                          </div>
+  
+                          <div class="col-md-9">
+                            <div class="input-group">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                              </div>
+                              <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                                (ngModelChange)="onSelect($event)" placeholder=" Booking Date Range "
+                                style="background-color: white;">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+  
+                    </div>
+                  </div>
+  
+                  <div class="row text-center" *ngIf="isLoading">
+                    <div class="col-md-2 offset-5">
+                      <app-loading-spinner></app-loading-spinner>
+                    </div>
+                  </div>
+
+  
+  
+                  <div class="col-md-12" *ngIf="!isLoading">
+  
+  
+  
+                    <p-table #dt [value]="deal_list" dataKey="id" styleClass="ui-table-purchase" [rowHover]="true"
+                      [rows]="10" [showCurrentPageReport]="true" [scrollable]="true" [virtualRowHeight]="500"
+                      scrollHeight="350px" [virtualScroll]="true" [rowsPerPageOptions]="[10,25,50]" 
+                      [paginator]="false" [columns]="cols" (onFilter)="onFilter($event, dt)"
+                      currentPageReportTemplate="Total Records : {{deal_list.length}}"
+                      [globalFilterFields]="['grade_name','name','godown_name']">
+  
+  
+                      <ng-template pTemplate="caption">
+  
+                        <div class="row">
+  
+  
+                          <div class="col-md-4">
+  
+                            <div class="ui-helper-clearfix" style="text-align: left">
+                               <button type="button"  pButton icon="pi pi-file-excel" iconPos="left"
+                                label="EXCEL" (click)="exportExcel()" style="margin-right: 0.5em;"
+                                class="ui-button-success"></button>
+                              <button  type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+                                label="PDF" (click)="exportPdf()" class="ui-button-warning"></button> 
+                            
+                            </div>
+  
+  
+  
+                          </div>
+
+                          <div class="col-md-2">
+
+                            <ng-select placeholder="Company " [searchable]="true"
+                              [clearable]="true"  bindLabel="label"
+                              bindValue="id" [items]="company" [(ngModel)]="company_id"
+                              style="font-size: 10px;" (change)="getDealList()">
+                            </ng-select>
+                          </div>
+
+                          <div class="col-md-2">
+
+                            <ng-select placeholder="Deal Type " [searchable]="true"
+                              [clearable]="true"  bindLabel="label"
+                              bindValue="id" [items]="dealType" [(ngModel)]="deal"
+                              style="font-size: 10px;" (change)="getDealList()">
+                            </ng-select>
+                          </div>
+  
+                          <div class="col-md-3">
+  
+                            <input pInputText class='form-control' type="text"
+                              (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+  
+                          </div>
+  
+  
+                        </div>
+  
+  
+  
+                      </ng-template>
+  
+                      <ng-template pTemplate="header" let-columns>
+  
+  
+                        <tr>
+                         
+  
+                          <th [style.width]="col.style" pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+                            {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                          </th>
+                         
+                        </tr>
+
+                        <tr>
+                          
+                        <th>
+                          <div *ngIf="godown.length > 0 ">
+                            <p-multiSelect [options]="godown" placeholder="All" appendTo="body"
+                              (onChange)="onchange($event,'godown_name')" optionLabel="godown_name">
+                              <ng-template let-option pTemplate="item">
+                              
+                                  <span>&#123;&#123;option.label&#125;&#125;</span>
+                              
+                              </ng-template>
+                            </p-multiSelect>
+                          </div>
+                        </th>
+
+                        <th>
+                          <div *ngIf="main.length > 0 ">
+                            <p-multiSelect [options]="main" placeholder="All" appendTo="body"
+                              (onChange)="onchange($event,'name')" optionLabel="name">
+                              <ng-template let-option pTemplate="item">
+                              
+                                  <span>&#123;&#123;option.label&#125;&#125;</span>
+                              
+                              </ng-template>
+                            </p-multiSelect>
+                          </div>
+                        </th>
+
+                        <th>
+                          <div *ngIf="grade_type.length > 0 ">
+                            <p-multiSelect [options]="grade_type" placeholder="All" appendTo="body"
+                              (onChange)="onchange($event,'grade_name')" optionLabel="grade_name">
+                              <ng-template let-option pTemplate="item">
+                              
+                                  <span>&#123;&#123;option.label&#125;&#125;</span>
+                              
+                              </ng-template>
+                            </p-multiSelect>
+                          </div>
+                        </th>
+                        <th></th>
+                        <th></th>
+                        </tr>
+  
+                      
+                      </ng-template>
+                      <ng-template pTemplate="body" let-item let-columns>
+  
+                        <tr class="ui-selectable-row" >
+                          <td style="width:  200px;">
+                            <span class="ui-column-title">Godown</span>
+                            {{item.godown_name}}
+                          
+                          </td>
+                          <td style="width:  200px;">
+                            <span class="ui-column-title">Main Grade</span>
+                            {{item.name}}
+                          
+                          </td>
+                           
+                        <td style="width:  200px;">
+                            <span class="ui-column-title">Garde</span>
+                            {{item.grade_name}}
+                            <span *ngIf="item.prime_non_prime == 1">(Prime)</span>
+                            <span *ngIf="item.prime_non_prime == 2">(Non-Prime)</span>
+                          
+                          </td>
+                         
+                          <td style="width:  200px;">
+                            <span class="ui-column-title">Quantity</span>
+                            {{item.qty}}
+                          
+                          </td>
+                          <td style="width:  200px;">
+                            <span class="ui-column-title">Average Rate</span>
+                            {{item.average_rate| number :
+                              '1.2-2'}}
+                          
+                          </td>
+  
+                        </tr>
+                      </ng-template>
+  
+                      <ng-template pTemplate="footer">
+
+                       
+                          <tr>
+        
+                            
+                            <td style="width: 200px;"></td>
+                            <td style="width: 200px;"></td>
+                            <td  style="width: 200px;"></td>
+                            <td style="width: 200px;">Total Qty: {{total_qty}}</td>
+                            <td style="width: 200px;">Avg Rate: {{getAverageOf(filteredValuess,'average_rate') | number :
+                              '1.2-2' }}</td>
+                          
+        
+                          </tr>
+                       
+                        <tr>
+                           <td colspan="4" style="text-align:left">Total Records: {{filteredValuess?.length}}</td> 
+                        </tr>
+                      </ng-template>
+                      <ng-template pTemplate="emptymessage">
+                        <tr>
+                          <td colspan="4" style="text-align:left">No Data found.</td>
+                        </tr>
+                      </ng-template>
+                    </p-table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    

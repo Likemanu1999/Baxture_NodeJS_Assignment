@@ -1,0 +1,500 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Import Forex Report</h4>
+
+                </div>
+                <div class="card-body">
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-inline">
+                                <div class="form-group">
+                                    <label for="dateRange" class="font-weight-bold">Purchase Date: </label>
+                                    <div class="input-group mx-sm-4">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><em class="fa fa-calendar"></em></span>
+                                        </div>
+                                        <input type="text" id="dateRange" class="form-control" bsDaterangepicker
+                                            [(ngModel)]="bsRangeValue" placeholder="Date Range"
+                                            [bsConfig]="datePickerConfig">
+                                        <div class="input-group-prepend " style="cursor: pointer;"
+                                            (click)="clearDate()">
+                                            <span class="input-group-text"><em class="fa fa-times-circle"></em></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                
+                                <button type="button" class="btn btn-primary" (click)="getDetails()">Get
+                                    Data</button> &nbsp;&nbsp;
+
+                                    <button type="button" class="btn btn-primary" (click)="download()">Get Label</button>
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" *ngIf="!getLabel">
+                        <div *ngIf="isLoading" style="text-align: center;">
+                            <app-loading-spinner></app-loading-spinner>
+                        </div>
+
+                        <div class="col-md-12" *ngIf="!isLoading">
+                            <p-table #dt [value]="data" dataKey="id" styleClass="ui-table-purchase" [rowHover]="true"
+                                [rows]="10" [showCurrentPageReport]="true" [scrollable]="true" [virtualRowHeight]="500"
+                                scrollHeight="400px" [virtualScroll]="true" [rowsPerPageOptions]="[10,25,50]"
+                                [paginator]="false" [columns]="cols" (onFilter)="onFilter($event, dt)"
+                                currentPageReportTemplate="Total Records : {{data.length}}"
+                                [globalFilterFields]="['file_no','purchase_date','sub_org_name','product_name','grade_name','country','port','invoice_no','invoice_date','tot_non_qty','bank_name','payment_due_date','bl_number','be_number','lc_number' , 'pi_number']">
+
+
+                                <ng-template pTemplate="caption">
+
+                                    <div class="row">
+
+                                        <!-- 
+                                <div class="col-md-4">
+
+                                     <div class="ui-helper-clearfix" style="text-align: left">
+                                        <button type="button"  pButton
+                                            icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                            (click)="exportExcel()" style="margin-right: 0.5em;"
+                                            class="ui-button-success"></button>
+
+                                    </div> 
+
+
+
+                                </div> -->
+
+
+
+                                        <div class="col-md-3">
+
+                                            <input pInputText class='form-control' type="text"
+                                                (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                placeholder="Global Search" />
+
+                                        </div>
+
+
+                                    </div>
+
+
+
+                                </ng-template>
+                                <ng-template pTemplate="header" let-columns>
+                                    <tr>
+                                        <th [style.width]="col.style" pSortableColumn="{{col.field}}"
+                                            *ngFor="let col of columns"
+                                            [ngClass]="col.field == 'file_no' || col.field == 'purchase_date' || col.field == 'sub_org_name' ? 'sticky-col '+ col.class : ''">
+                                            {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                                        </th>
+                                    </tr>
+
+                                    <tr>
+                                        <th>   <p-tableHeaderCheckbox (click)="onCheckAll(a.checked)" #a>
+                                        </p-tableHeaderCheckbox></th>
+                                        <th colspan="2">
+                                            <div *ngIf="port.length > 0 ">
+                                                <p-multiSelect [options]="port" placeholder="All" appendTo="body"
+                                                    (onChange)="onchange($event,'port')" styleClass="ui-column-filter"
+                                                    optionLabel="port">
+                                                    <ng-template let-option pTemplate="item">
+
+                                                        <span>&#123;&#123;option.label&#125;&#125;</span>
+
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+
+                                        <th colspan="3">
+                                            <div *ngIf="supplier_list.length > 0 ">
+                                                <p-multiSelect [options]="supplier_list" placeholder="All"
+                                                    appendTo="body" (onChange)="onchange($event,'sub_org_name')"
+                                                    styleClass="ui-column-filter" optionLabel="sub_org_name">
+                                                    <ng-template let-option pTemplate="item">
+
+                                                        <span>&#123;&#123;option.label&#125;&#125;</span>
+
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+
+
+                                        <th colspan="2">
+                                            <div *ngIf="bankList.length > 0 ">
+                                                <p-multiSelect [options]="bankList" placeholder="All" appendTo="body"
+                                                    (onChange)="onchange($event,'bank_name')"
+                                                    styleClass="ui-column-filter" optionLabel="bank_name">
+                                                    <ng-template let-option pTemplate="item">
+
+                                                        <span>&#123;&#123;option.label&#125;&#125;</span>
+
+                                                    </ng-template>
+                                                </p-multiSelect>
+                                            </div>
+                                        </th>
+                                        <th colspan="19"></th>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template pTemplate="body" let-item let-columns>
+                                    <tr class="ui-selectable-row">
+                                        <td class="sticky-col first" style="width:  100px;">
+
+                                            <input type="checkbox" [value]="item" #inputs #checkboxes
+                                            (click)="onCheck(checkboxes.checked,item,inputs)">
+                                            
+                                            {{item.file_no}}
+                                        </td>
+                                        <td class="sticky-col second" style="width:  100px;">
+                                            {{item.purchase_date | date: 'dd/MM/yyyy'}}
+                                        </td>
+                                        <td class="sticky-col third" style="width:  100px;">
+                                            {{item.sub_org_name}}
+                                            <div *ngIf="item.endorse_invoice_copy != null">
+                                                <a *ngFor="let doc of getDocsArr(item.endorse_invoice_copy)"
+                                                    href="{{doc}}" target="_blank"><i class="fa fa-file"
+                                                        style="font-size: 10px;">Endorse Invoice Copy</i></a>
+                                            </div>
+
+                                        </td>
+
+
+                                        <td style="width:  150px;">
+                                            {{item.product_name}}
+                                        </td>
+
+                                        <td style="width:  150px;">
+                                            {{item.grade_name}}
+                                        </td>
+                                        <td style="width:  150px;">
+                                            {{item.country}}
+                                        </td>
+                                        <td style="width:  150px;">
+                                            {{item.port}}
+                                        </td>
+                                        <td style="width:  150px;">
+                                            {{item.invoice_no}}
+                                            <div *ngIf="item.non_copy.length"><a href="{{doc}}"
+                                                    *ngFor="let doc of item.non_copy" target="_blank"
+                                                    style="font-size: 10px;"><i class="fa fa-file"></i> NON Copy<br></a>
+                                            </div>
+                                            <div *ngIf="item.non_revised_copy.length"><a href="{{doc}}"
+                                                    *ngFor="let doc of item.non_revised_copy" target="_blank"
+                                                    style="font-size: 10px;"><i class="fa fa-file"></i> Revised NON
+                                                    Copy<br></a></div>
+                                        </td>
+                                        <td style="width:  150px;">
+                                            {{item.invoice_date}}
+                                        </td>
+                                        <td style="width:  150px;">
+                                            {{item.tot_non_qty}}
+                                        </td>
+                                        <td style="width:  150px;">
+                                            {{item.rate}}
+                                        </td>
+
+                                        <td style="width:  150px;">
+                                            {{item.totalAmountUsd}}
+                                        </td>
+
+                                        <td style="width:  150px;">
+                                            {{item.rbi_rate}}
+                                        </td>
+
+                                        <td style="width:  150px;">
+                                            {{item.premium}}
+                                        </td>
+
+                                        <td style="width:  150px;">
+                                            {{item.rbiRate_premium}}
+                                        </td>
+
+                                        <td style="width:  150px;">
+                                            {{item.amountINR.toFixed(2)}}
+                                        </td>
+
+                                        <td style="width:  600px;">
+                                            <span *ngIf="item.piArr">
+                                                <table
+                                                    class="table table-bordered table-striped table-hover table-responsive-lg "
+                                                    [mfData]="item.piArr" #mf="mfDataTable" [mfRowsOnPage]="5">
+                                                    <thead>
+                                                        <tr>
+
+                                                            <th>PI Invoice No.</th>
+                                                            <th>PI Date</th>
+                                                            <th>LC Number</th>
+                                                            <th>LC Date</th>
+                                                            <th>Payment Amount(Advance)</th>
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+
+                                                        <tr *ngFor="let val of mf.data; let i = index"
+                                                            [attr.data-index]="i">
+
+                                                            <td>{{val.proform_invoice_no}}
+
+                                                                <span *ngIf="val.pi_copy != null"> <a href={{doc}}
+                                                                        *ngFor="let doc of getDocsArr(val.pi_copy)"
+                                                                        target="_blank"><i
+                                                                            class="fa fa-file"></i></a></span>
+                                                            </td>
+                                                            <td>{{val.proform_invoice_date}}</td>
+                                                            <td><span
+                                                                    *ngIf="val.letter_of_credit">{{val.letter_of_credit.bank_lc_no}}</span>
+                                                            </td>
+                                                            <td><span
+                                                                    *ngIf="val.letter_of_credit">{{val.letter_of_credit.lc_date}}</span>
+                                                            </td>
+                                                            <td><span *ngIf="val.paymentArr">
+                                                                    <div *ngFor="let pay of val.paymentArr">
+                                                                        {{pay.paymentAmt}} <br><i
+                                                                            style="font-size: 11px;">({{pay.paymentTerm}})</i>
+                                                                    </div>
+                                                                </span></td>
+
+                                                        </tr>
+
+                                                    </tbody>
+
+                                                </table>
+                                            </span>
+
+
+                                        </td>
+
+                                        <td style="width:  2500px;">
+                                            <span *ngIf="item.blBeArr">
+                                                <table
+                                                    class="table table-bordered table-striped table-hover table-responsive-lg ">
+                                                    <thead>
+                                                        <tr>
+
+                                                            <th>BL No</th>
+                                                            <th>BL Date</th>
+                                                            <th>BE Number</th>
+                                                            <th>BE Date</th>
+                                                            <th>Qty</th>
+                                                            <th>Rate</th>
+                                                            <th>Amount(USD)</th>
+                                                            <th>Exchange amount</th>
+                                                            <th>Total (CIF) RS</th>
+                                                            <th>Freight/Insurance</th>
+                                                            <th>Accessible val</th>
+
+                                                            <th>BCD Percent</th>
+                                                            <th>BCD Lic Val</th>
+                                                            <th>BCD Cash Val</th>
+                                                            <th>sws val</th>
+                                                            <th>Anti dumping rate</th>
+                                                            <th>Anti dumping value</th>
+                                                            <!-- <th>Anti dumping<th>  -->
+                                                            <th>Taxable Value(for GST)</th>
+                                                            <th>IGST amt</th>
+
+                                                            <th>Custom duty amt</th>
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+
+                                                        <tr *ngFor="let bl of item.blBeArr">
+
+                                                            <td>{{bl.bl_no}}</td>
+                                                            <td>{{bl.bl_date}}</td>
+                                                            <td>{{bl.be_no}}
+                                                                <div *ngIf="bl.be_copy != null"><a href="{{doc}}"
+                                                                        *ngFor="let doc of getDocsArr( bl.be_copy)"
+                                                                        target="_blank" style="font-size: 10px;"><i
+                                                                            class="fa fa-file"></i> BE Copy</a></div>
+                                                                <div *ngIf="bl.tr6_copy != null">
+                                                                    <span *ngFor="let doc of getDocsArr( bl.tr6_copy)">
+                                                                        <a href="{{doc}}" target="_blank"
+                                                                            style="font-size: 10px;" *ngIf="doc">
+
+                                                                            <i class="fa fa-file"></i> TR6 Copy</a>
+                                                                    </span>
+
+                                                                </div>
+                                                            </td>
+                                                            <td>{{bl.be_date}}</td>
+                                                            <td>{{bl.qty}}</td>
+                                                            <td>{{bl.rate}}</td>
+                                                            <td>{{bl.amountUsd}}</td>
+                                                            <td>{{bl.exchange_amount}}</td>
+                                                            <td>{{(bl.amountUsd * bl.exchange_amount).toFixed(2)}}</td>
+                                                            <td>{{bl.freight_inc_highseas}}</td>
+                                                            <td>{{bl.accessable_val.toFixed(2)}}</td>
+                                                            <td>{{bl.bcd_percent}}</td>
+                                                            <td>{{bl.bcd_lic_val.toFixed(2)}}</td>
+                                                            <td>{{bl.bcd_cash_val.toFixed(2)}}</td>
+                                                            <td>{{bl.sws_val.toFixed(2)}}</td>
+                                                            <td>{{bl.anti_dumping_rate}}</td>
+                                                            <td>{{bl.anti_dumping_val.toFixed(2)}}</td>
+                                                            <!-- <td>{{bl.anti_dumping_val.toFixed(2)}}<td> -->
+                                                            <td>{{bl.taxable_value.toFixed(2)}}</td>
+                                                            <td>{{bl.igst_amt.toFixed(2)}}</td>
+                                                            <td>{{bl.custom_duty_amt.toFixed(2)}}</td>
+
+                                                        </tr>
+
+                                                    </tbody>
+
+                                                </table>
+                                            </span>
+
+
+                                        </td>
+
+                                        <td style="width: 150px">
+                                            <span *ngIf="item.total_clearing_charges">
+                                                {{item.total_clearing_charges.toFixed(2)}}</span>
+
+                                        </td>
+
+                                        <td style="width:  100px;">
+                                            {{item.payment_due_date | date: 'dd/MM/yyyy'}}
+                                        </td>
+
+                                        <td style="width:  100px;">
+                                            {{item.bank_name}}
+                                        </td>
+
+                                        <td style="width: 150px">
+                                            <span *ngIf="item.paymentAmountLc"> {{item.paymentAmountLc.toFixed(2)}}
+                                            </span>
+
+                                        </td>
+
+                                        <td style="width: 150px">
+                                            <span *ngIf="item.paymentAmountNon_Lc">
+                                                {{item.paymentAmountNon_Lc.toFixed(2)}} </span>
+
+                                        </td>
+
+
+
+                                        <td style="width: 150px">
+                                            <span *ngIf="item.TotalPayment"> {{item.TotalPayment.toFixed(2)}} </span>
+
+                                        </td>
+
+                                        <td style="width: 150px">
+                                            <span *ngIf="item.differnce"> {{item.differnce.toFixed(2)}} </span>
+
+                                        </td>
+
+
+
+
+
+                                    </tr>
+
+
+                                </ng-template>
+
+                                <ng-template pTemplate="footer">
+                                    <tr>
+
+                                        <td style="width: 100px;"></td>
+                                        <td style="width: 100px;"></td>
+                                        <td style="width: 100px;"></td>
+                                        <td style="width:150px;"></td>
+                                        <td style="width: 150px;"></td>
+                                        <td style="width: 150px;"></td>
+                                        <td style="width: 150px;"></td>
+                                        <td style="width: 150px;"></td>
+                                        <td style="width: 150px;"></td>
+                                        <td style="width: 150px;">{{tot_non_qty ? tot_non_qty.toFixed(2): ''}} MT</td>
+                                        <td style="width: 150px;"></td>
+                                        <td style="width: 150px;">{{totalAmountUsd ? totalAmountUsd.toFixed(2): ''}}
+                                        </td>
+                                        <td style="width: 150px;"></td>
+                                        <td style="width: 150px;"></td>
+                                        <td style="width: 150px;"></td>
+                                        <td style="width: 150px;">{{amountINR ? amountINR.toFixed(2): ''}}</td>
+                                        <td style="width: 600px;"></td>
+                                        <td style="width: 2500px;">
+                                            <table class="table table table-bordered">
+                                                <tr>
+                                                    <th> Accessible Value</th>
+                                                    <th>BCD Cash Value</th>
+                                                    <th>BCD Lic Value</th>
+                                                    <th>SWS</th>
+                                                    <th>Anti Dumping Value</th>
+                                                    <th>Taxable Value for(GST)</th>
+                                                    <th>IGST Amount</th>
+
+                                                </tr>
+                                                <tr>
+                                                    <td>{{tot_accessable ? tot_accessable.toFixed(2): ''}}</td>
+                                                    <td>{{tot_bcd_lic ? tot_bcd_lic.toFixed(2): ''}}</td>
+                                                    <td>{{tot_bcd_cash ? tot_bcd_cash.toFixed(2): ''}}</td>
+                                                    <td>{{tot_sws ? tot_sws.toFixed(2): ''}}</td>
+                                                    <td>{{tot_anti_dumping ? tot_anti_dumping.toFixed(2): ''}}</td>
+                                                    <td>{{tot_taxable ? tot_taxable.toFixed(2): ''}}</td>
+                                                    <td>{{tot_igst ? tot_igst.toFixed(2): ''}}</td>
+                                                </tr>
+                                            </table>
+
+
+                                        </td>
+                                        <td style="width: 150px;">{{total_clearing_charges ?
+                                            total_clearing_charges.toFixed(2): ''}}</td>
+                                        <td style="width: 100px;"></td>
+                                        <td style="width: 100px;"></td>
+                                        <td style="width: 150px;">{{paymentAmountLc ? paymentAmountLc.toFixed(2): ''}}
+                                        </td>
+                                        <td style="width: 150px;">{{paymentAmountNon_Lc ?
+                                            paymentAmountNon_Lc.toFixed(2): ''}}</td>
+                                        <td style="width: 150px;">{{TotalPayment ? TotalPayment.toFixed(2): ''}}</td>
+                                        <td style="width: 150px;">{{difference ? difference.toFixed(2): ''}}</td>
+
+                                    </tr>
+
+
+                                    <tr>
+                                        <td colspan="8" style="text-align:left">Total Records: {{data?.length}}</td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td colspan="8" style="text-align:left">No Data found.</td>
+                                    </tr>
+                                </ng-template>
+
+
+
+
+                            </p-table>
+                        </div>
+
+                    </div>
+
+                    <div class="row" *ngIf="getLabel">
+                        <div class="col-md-12">
+                            <button type="button" class="btn btn-primary btn-sm" (click)="backFromEditor()">Back</button>
+                            <div *ngIf="myContent">
+                                <ck-editor name="editor" #myEditor [(ngModel)]="myContent" [fullPage]="true" [config]="ckeConfig"></ck-editor>
+                              </div>
+                        </div>
+                    </div>
+
+                
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

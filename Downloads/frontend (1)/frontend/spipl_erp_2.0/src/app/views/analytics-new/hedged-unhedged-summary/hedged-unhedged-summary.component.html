@@ -1,0 +1,115 @@
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="form-group col-6 col-md-3">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><em class="fa fa-calendar"></em></span>
+                            </div>
+                            <input pInputText [(ngModel)]="selected_date_range" (ngModelChange)="getData()"
+                                [bsConfig]="datePickerConfig" #dp="bsDaterangepicker" bsDaterangepicker
+                                placeholder="Choose Date Range" class="form-control page-filter" readonly />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Wise Report -->
+        <div class="row">
+            <div class="col-md-12">
+                <p-table #dt [value]="bankWiseData" styleClass="ui-table-pilist " [rowHover]="true" [rows]="50"
+                    [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100]" [paginator]="false"
+                    [filterDelay]="0" [scrollable]="true" scrollHeight="300px" [virtualRowHeight]="300"
+                    [virtualScroll]="false" [globalFilterFields]="['bank_name']" (onFilter)="onBankFilter($event, dt)">
+
+                    <ng-template pTemplate="caption">
+
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="ui-helper-clearfix" style="text-align: left">
+
+                                    <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                        (click)="exportBankExcel()" style="margin-right: 0.5em;"
+                                        class="ui-button-success"></button>
+                                    <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF"
+                                        (click)="exportBankPdf()" class="ui-button-warning"></button>
+
+                                    <!-- <button (click)="exportBankExcel()">Excel</button>
+                                        <button (click)="exportBankPdf()">PDF</button> -->
+                                    <span> Bank Wise</span>
+                                </div>
+
+                            </div>
+                            <div class="col-md-3">
+                                <div style="text-align: right">
+                                    <input pInputText type="text" class="form-control"
+                                        (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                        placeholder="Global Search" />
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </ng-template>
+
+                    <ng-template pTemplate="header">
+                        <tr class="over-flow-wrap-break-word">
+                            <th>S No.</th>
+                            <th pSortableColumn="bank_name">Bank Name <p-sortIcon field="bank_name">
+                                </p-sortIcon>
+                            </th>
+                            <th>Booked Amount</th>
+                            <th>Hedged Amount</th>
+                            <th>Remaining Amount</th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                        <tr class="over-flow-wrap-break-word">
+                            <ng-container>
+                                <td>
+                                    <span class="ui-column-title">S No.</span>
+                                    {{ rowIndex+1 }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Bank Name</span>
+                                    {{ item.bank_name }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Booked Amount</span>
+                                    {{ item.total_booked_amount | number : '1.0-3' }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Hedged Amount</span>
+                                    {{ item.total_hedged_amount | number : '1.0-3' }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Remaining Amount</span>
+                                    {{ item.total_booked_amount - item.total_hedged_amount | number : '1.0-3' }}
+                                </td>
+                            </ng-container>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="footer">
+                        <tr>
+                            <td colspan="2">Total Records : {{ checkBankData ? checkBankData.length : 0 }}</td>
+                            <td>{{totalBookedAmount | number : '1.0-3' }}</td>
+                            <td>{{totalHedgedAmount | number : '1.0-3' }}</td>
+                            <td>{{totalRemaining | number : '1.0-3' }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="7" style="text-align:left">No Data Found.</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

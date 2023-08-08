@@ -1,0 +1,294 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0" *ngIf="view_opt">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-12">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="freight_inward_report_table" [value]="data"
+								[rows]="10" [showCurrentPageReport]="true" [rowHover]="true"
+								[rowsPerPageOptions]="[10,25,50,100]" [loading]="isLoading" [autoLayout]="true"
+								[paginator]="true" [columns]="cols" [globalFilterFields]="filter"
+								(onFilter)="onFilter($event, dt)" (onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<!--[scrollable]="false"  scrollHeight="1700px"  [tableStyle]="{'min-width': '250rem'}" -->
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="clearDropdown();  getData()"
+														[bsConfig]="datePickerConfig" #dp="bsDaterangepicker"
+														[maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly />
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != 'action'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													{{ rowData[col.field] }}
+												</div>
+												<div *ngIf="col.type == 'Edited_2' && rowData.remark_account!=null ">
+													<span
+														[ngClass]="(rowData.bill_status == 0 && rowData.remark_account!=null)? 'badge badge-danger':'badge badge-success' ">
+														<span *ngIf="rowData.badge_show">
+															<strong><span style="cursor: pointer;">
+																	{{ rowData[col.field] }}
+																</span></strong>
+														</span></span>
+												</div>
+
+												<div *ngIf="col.type == 'Edited_1' && rowData.remark_account!=null ">
+													<span
+														[ngClass]="(rowData.lr_pending == 0 && rowData.remark_account!=null )? 'badge badge-danger':'badge badge-success' ">
+														<span *ngIf="rowData.badge_show">
+															<strong><span style="cursor: pointer;">
+																	{{ rowData[col.field] }}
+																</span></strong>
+														</span>
+													</span>
+												</div>
+
+												<div *ngIf="col.type == 'REMARK'">
+													<span *ngIf="rowData[col.field]!= null">
+														{{ rowData[col.field] }}
+														<button *ngIf="rowData[col.field]!= null"
+															class="btn btn-sm btn-warning"
+															(click)="onAction(rowData,'Edit_Remark')">Edit</button>
+
+													</span>
+													<button *ngIf="rowData[col.field] == null" class="btn btn-success"
+														(click)="onAction(rowData,'REMARK')">Add</button>
+
+												</div>
+												<div *ngIf="col.type == 'created_at'" class="text-success">
+													{{ rowData[col.field] | date:'short' }}
+												</div>
+												<div *ngIf="col.type == 'Avg'">
+													{{ rowData[col.field] }}
+												</div>
+												<!-- <div *ngIf="col.type == 'Quantity'">
+													{{ rowData[col.field] }} MT
+												</div> -->
+												<div *ngIf="col.type == 'Amount'">
+													{{ rowData[col.field] | currency:'INR' }}
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+												</div>
+												<div *ngIf="col.type == 'Date_Time'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy hh:mm a' }}
+												</div>
+
+											</div>
+											<div *ngIf="col.field == 'purchase_invoice_no'">
+												<div *ngIf="rowData.invoice_arr != null">
+													<a *ngFor="let item of rowData.invoice_arr"
+														class="btn btn-outline-success btn-sm action-btn mb-2 mr-1"
+														href="{{item}}" data-placement="top" title="Download Invoice"
+														target="_blank">
+														<i class="fa fa-download"></i>
+													</a>
+												</div>
+											</div>
+
+											<div *ngIf="col.field == 'action'">
+												<button *ngIf="update_bill_status"
+													class="btn btn-primary btn-sm mb-2 mx-2" (click)="onEdit(rowData)">
+													<i class="fa fa-pencil"></i>
+												</button>
+
+												<!-- <a class="btn btn-outline-dark btn-sm action-btn mr-1 mb-1"
+													data-toggle="tooltip" data-placement="top" title="View Order"
+													(click)="onAction(rowData, 'View')">
+													<i class="fa fa-eye"></i>
+												</a> -->
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Quantity'">
+												Total: {{ col.total }} MT
+											</strong>
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+											<strong *ngIf="col.type == 'Avg'">
+												Avg.Rate: {{ col.total | currency:'INR' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Freight Inward Inward Register Modal -->
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="freightInwardForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+				<div class="modal-header">
+					<h4 class="modal-title">Freight Inward Register</h4>
+					<button type="button" class="close" (click)=" oncloseModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<h4 style="color:#f37ba3">{{supplier}}</h4>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="trans_invoice_no">Tansporter Invoice No.</label>
+								<input type="text" class="form-control" id="trans_invoice_no"
+									formControlName="trans_invoice_no" placeholder="Enter Tansporter Invoice No.">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="lr_pending">LR Pending</label>
+								<ng-select id="lr_pending" formControlName="lr_pending" placeholder="Select LR Pending"
+									[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+									[items]="optionArr">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="bill_status">Bill Status</label>
+								<ng-select id="bill_status" formControlName="bill_status"
+									placeholder="Select Bill Status" [searchable]="true" [clearable]="true"
+									bindLabel="name" bindValue="id" [items]="optionArr">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="remark_account">Remark Account</label>
+								<textarea class="form-control" id="remark_account" formControlName="remark_account"
+									placeholder="Remark Account"></textarea>
+							</div>
+						</div>
+						<input type="hidden" class="form-control" formControlName="local_purchase_lifting_dt_id">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary mr-1" type="submit"
+						[disabled]="freightInwardForm.pristine || freightInwardForm.invalid">
+						<i class="fa fa-dot-circle-o"></i>Submit
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<!--  -->
+
+<!-- REMARK ADDED -->
+<div bsModal #remarkModel="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form [formGroup]="remarkForm" novalidate (ngSubmit)="onSubmitRemark()" autocomplete="off">
+				<div class="modal-header">
+					<h4 class="modal-title">Remark Add</h4>
+					<button type="button" class="close" (click)=" oncloseModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-form-label" for="remark">Remark</label>
+								<input type="text" class="form-control" id="remark" formControlName="remark"
+									placeholder="Enter Remark"><br>
+								<br>
+								<!-- <input type="text" class="form-control" formControlName="freightInward_id">
+								<input type="text" class="form-control" formControlName="mis_id"> -->
+							</div>
+						</div>
+						<input type="hidden" class="form-control" formControlName="freightInward_id">
+						<input type="hidden" class="form-control" formControlName="mis_id">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary mr-1" type="submit"
+						[disabled]="remarkForm.pristine || remarkForm.invalid">
+						<i class="fa fa-dot-circle-o"></i>Submit
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

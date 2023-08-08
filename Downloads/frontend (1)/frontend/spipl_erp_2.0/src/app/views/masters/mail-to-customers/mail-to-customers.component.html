@@ -1,0 +1,149 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <i class="fa fa-file"></i>  Send  Mail
+
+        </div>
+        <div class="card-body">
+            
+        <div class="row">
+
+          <div *ngIf="isLoading" style="text-align: center;">
+              <app-loading-spinner></app-loading-spinner>
+            </div>
+
+          <div class="col-md-12">
+            <form [formGroup]="addForm" novalidate  class="needs-validation">
+              <div class="row">
+
+                  <div class="col-md-4">
+                      <div class="form-group">
+                          <label class="col-form-label" for="zone">Zone</label> <span
+                              style="color: red ; font-size:6px"><i class="fa fa-asterisk "></i></span>
+                          <ng-select id="zone" formControlName="zone"
+                              placeholder="Select Zone Name" [searchable]="true" [clearable]="true"
+                              bindLabel="first_name" bindValue="id" [items]="zone" (change) = "onZoneChange($event)"
+                              >
+                          </ng-select>
+                      </div>
+                  </div>
+
+            
+
+
+                  <div class="form-group col-6 col-md-4">
+                    <label for="email" class="col-form-label">From Mail</label>
+                      <input type="text"
+                      id="from"
+                      placeholder="From Mail"
+                      formControlName="from_mail"
+                      class="form-control"
+                      >
+
+                      <input type="hidden"
+                      id="from"
+                      formControlName="app_pass_mail"
+                      class="form-control"
+                      >
+                    </div>
+
+                    <div class="form-group col-6 col-md-4">
+                      <label for="subject" class="col-form-label">Subject</label>
+                        <input type="text"
+                        id="subject"
+                        placeholder="Subject"
+                        formControlName="subject"
+                        class="form-control"
+                        >
+                      </div>
+
+                      <div class="col-md-6 mb-2">
+                        <label>Upload Copy</label>
+                        <input type="file" class="form-control" id="attachment"  formControlName="attachment"
+                          (change)="addDocs($event)" [multiple]=true>
+                          <div class="progress col-md-3 mt-4" *ngIf="progress_bar">
+                            <div class="progress-bar" [style.width]="progress + '%'">{{progress}}%</div>
+                          </div>
+                      </div> 
+      
+                      
+                    <div class="form-group col-12 col-md-12">
+                      <p-inputSwitch id="" 
+                      (onChange)="onChangeToggle($event)" onLabel="Yes" offLabel="No">
+                          </p-inputSwitch>
+                      <label for="email" class="col-form-label">To Mail List</label>
+                        
+                        <div class="col" *ngIf="show_mail_list">
+                          <button class="btn btn-sm btn-primary" (click)="clearEmail()"><i class="fa fa-close"></i>Clear All</button>
+                          <p-chips formControlName="to_mail" separator=",">
+                          </p-chips>
+                        </div>
+                      </div> 
+
+                      <div class="col-md-12">
+                        <div class="form-group has-feedback">
+                          <div >
+                            <ck-editor name="editor" #myEditor formControlName="my_content" [fullPage]="true" [config]="ckeConfig"></ck-editor>
+                          </div>
+            
+            
+                        </div>
+                      </div>
+                     
+
+
+                    <div class="form-group col-2 col-md-2 mt-4">
+                
+                      <button class="btn btn-warning mr-1" type="button" (click)="send()"
+                      [disabled]="addForm.invalid">
+                      <i class="fa fa-envelope"></i> Send</button>
+    
+                    
+                  </div>
+
+              
+
+              </div>
+
+             
+             
+            </form>
+          </div>
+        </div>
+
+        <div class="row" >
+         
+        </div>
+
+       
+
+        </div>
+        </div>
+
+      </div>
+  </div>
+</div>
+
+
+ <toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+  <p-toast position="center" key="c"  [modal]="true" [baseZIndex]="5000"(onClose)="onReject()">
+            <ng-template let-message pTemplate="message">
+                <div style="text-align: center">
+                    <i class="pi pi-exclamation-triangle" style="font-size: 3em"></i>
+                    <h3>{{message.summary}}</h3>
+                    <p>{{message.detail}}</p>
+                </div>
+                <div class="ui-g ui-fluid">
+                    <div class="ui-g-6">
+                        <button type="button" pButton (click)="onConfirm()" label="Yes" class="ui-button-success"></button>
+                    </div>
+                    <div class="ui-g-6">
+                        <button type="button" pButton (click)="onReject()" label="No" class="ui-button-secondary"></button>
+                    </div>
+                </div>
+            </ng-template>
+        </p-toast>
+ 

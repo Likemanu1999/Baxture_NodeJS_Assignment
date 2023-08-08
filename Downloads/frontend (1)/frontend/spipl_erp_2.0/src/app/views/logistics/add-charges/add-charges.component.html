@@ -1,0 +1,1294 @@
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><em class=" fa fa-rupee "></em> Add charges
+
+
+                        <span class="pull-right">
+                            <!-- <ng-select placeholder="Select GST " [searchable]="true" [clearable]="true" bindLabel="type"
+                                bindValue="id" [items]="gsttype" (change)="setTaxValue()" [(ngModel)]="taxtype">
+                            </ng-select> -->
+                            <input type="checkbox" #e (click)="onSubmitFlag(e.checked)"
+                                [checked]="charges_submited_flag"> All Charges Submited
+                        </span>
+
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h4>BL No : {{bl_no}} , Port : {{port_name}} , No of Container : {{containers}}
+                                        ,container Type:
+                                        {{container_size}}, Bl Quantity : {{bl_quantity}} MT </h4>
+                                </div>
+                                <div class="col-md-12">
+                                    <h4 class="badge badge-warning">Unloading/Crossing Charges:
+                                        {{load_cross_charges|nullReplace | currencyInr}}</h4>
+                                </div>
+                            </div>
+
+
+                            <div class="row" *ngIf="cha_name">
+                                <div class="col-md-12">
+
+
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>CHA Charges For {{cha_name}}<button type="button"
+                                                    class="btn btn-primary" (click)="addRowCha()"><em
+                                                        class="fa fa-plus"></em></button>
+                                                <span class="pull-right">
+                                                    <ng-select placeholder="Select GST " [searchable]="true"
+                                                        [clearable]="true" bindLabel="type" bindValue="id"
+                                                        [items]="gsttype" (change)="setTaxValue($event['id'] ,'cha')"
+                                                        [(ngModel)]="taxtypecha">
+                                                    </ng-select>
+                                                </span>
+
+                                            </h5>
+                                        </div>
+
+                                        <div class="card-body">
+
+
+
+
+                                            <form [formGroup]="chaForm" autocomplete="off" (ngSubmit)="onSubmitCha()">
+                                                <div style="overflow: scroll">
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th style="width:200px">CHA Charges</th>
+                                                                <th style="width:200px">General Stamp</th>
+                                                                <th style="width:200px">EDI</th>
+                                                                <th style="width:200px">Other Charges</th>
+                                                                <th style="width:200px">CGST ({{cgst_percent_cha}}%)
+                                                                </th>
+                                                                <th style="width:200px">SGST ({{sgst_percent_cha}}%)
+                                                                </th>
+                                                                <th style="width:300px">Remark</th>
+                                                                <th style="width:20px">Total</th>
+
+                                                            </tr>
+                                                        </thead>
+
+                                                        <tbody>
+                                                            <tr formArrayName="chaArr"
+                                                                *ngFor="let item of chaForm.get('chaArr')['controls'] ; let i = index">
+                                                                <ng-container [formGroupName]=i>
+
+                                                                    <td style="width:200px">
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="cha_charges"
+                                                                            (change)="calculateChaGst(i)" numbersOnly>
+                                                                    </td>
+
+                                                                    <td style="width:200px">
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="general_stamp"
+                                                                            (change)="calculateChaGst(i)" numbersOnly>
+
+                                                                    </td>
+
+                                                                    <td style="width:200px">
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="edi"
+                                                                            (change)="calculateChaGst(i)" numbersOnly>
+
+                                                                    </td>
+
+                                                                    <td style="width:200px">
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="cha_other_charges"
+                                                                            (change)="calculateChaGst(i)" numbersOnly>
+
+                                                                    </td>
+                                                                    <td style="width:200px">
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="cha_cgst" numbersOnly>
+                                                                    </td>
+
+                                                                    <td style="width:200px">
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="cha_sgst" numbersOnly>
+                                                                    </td>
+
+                                                                    <td style="width:300px">
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="remark_cha">
+                                                                    </td>
+
+                                                                    <td style="width:200px">
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="cha_total" numbersOnly>
+
+                                                                    </td>
+
+
+                                                                    <td style="width:20px">
+                                                                        <button class="btn btn-danger" type="button"
+                                                                            (click)="deleteCha(i)"><em
+                                                                                class="fa fa-trash"></em></button>
+                                                                    </td>
+                                                                </ng-container>
+
+
+
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    <div class="row">
+                                                        <div class="col-md-3">
+                                                            <input type="file" class="form-control"
+                                                                placeholder="Document" [multiple]=true
+                                                                (change)="documentUpload($event , 'cha_charges_doc','cha_doc' ,'chaFile')">
+                                                        </div>
+
+
+                                                        <div class="col-md-12" *ngFor="let doc of chaFile">
+                                                            <a href="{{doc}}" target="_blank">{{doc | fileName}}</a>
+                                                            <span><i style="cursor: pointer;" class="fa fa-trash"
+                                                                    (click)="deleteInvoice(chaFile,doc,'cha_doc')"></i></span>
+                                                        </div>
+
+
+                                                    </div>
+
+
+
+
+
+
+                                                    <div class="row mt-5" *ngIf="add_charges">
+                                                        <div class="col text-center">
+                                                            <button class="btn btn-primary mr-1" type="submit"
+                                                                [disabled]="bondForm.invalid">
+                                                                <em class="fa fa-dot-circle-o"></em>Submit</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row" *ngIf="bond_id">
+                                <div class="col-md-12">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Bond Charges For {{godown_name}}<button type="button"
+                                                    class="btn btn-primary" (click)="addRow()"><em
+                                                        class="fa fa-plus"></em></button>
+                                                <span class="pull-right">
+                                                    <ng-select placeholder="Select GST " [searchable]="true"
+                                                        [clearable]="true" bindLabel="type" bindValue="id"
+                                                        [items]="gsttype" (change)="setTaxValue($event['id'] ,'bond')"
+                                                        [(ngModel)]="taxtypebond">
+                                                    </ng-select>
+                                                </span>
+
+                                            </h5>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <form [formGroup]="bondForm" autocomplete="off"
+                                                        (ngSubmit)="submitBondCharges()">
+                                                        <div style="overflow: scroll">
+                                                            <table class="table table-bordered">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th style="width:200px">From Date</th>
+                                                                        <th style="width:200px">To Date</th>
+                                                                        <th style="width:200px">Weeks</th>
+                                                                        <th style="width:300px">BE No</th>
+                                                                        <th style="width:200px">Noc</th>
+                                                                        <th style="width:200px">Bond Total Charges</th>
+                                                                        <th style="width:200px">Cgst
+                                                                            ({{cgst_percent_bond}}%)
+                                                                        </th>
+                                                                        <th style="width:200px">Sgst
+                                                                            ({{sgst_percent_bond}}%)
+                                                                        </th>
+                                                                        <th style="width:200px">Total</th>
+                                                                        <th style="width:20px">Delete</th>
+                                                                    </tr>
+                                                                </thead>
+
+                                                                <tbody>
+                                                                    <tr formArrayName="bondArr"
+                                                                        *ngFor="let item of bondForm.get('bondArr')['controls'] ; let i = index">
+                                                                        <ng-container [formGroupName]=i>
+
+                                                                            <td style="width:200px">
+                                                                                <input type="text"
+                                                                                    formControlName="from_date"
+                                                                                    class="form-control"
+                                                                                    [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                                                                                    #dp="bsDatepicker" bsDatepicker
+                                                                                    placement="up"
+                                                                                    placeholder="From Date"
+                                                                                    (bsValueChange)="getFromDate($event, i)">
+                                                                            </td>
+
+                                                                            <td style="width:200px">
+                                                                                <input type="text"
+                                                                                    formControlName="to_date"
+                                                                                    class="form-control"
+                                                                                    [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                                                                                    #dp="bsDatepicker" bsDatepicker
+                                                                                    placement="up" placeholder="To Date"
+                                                                                    (bsValueChange)="getToDate($event, i)">
+
+                                                                            </td>
+                                                                            <td style="width:200px">
+                                                                                <input class="form-control"
+                                                                                    formControlName="weeks" type="text"
+                                                                                    numbersOnly>
+                                                                            </td>
+
+                                                                            <td style="width:300px">
+                                                                                <ng-select formControlName="be_id"
+                                                                                    placeholder="Select "
+                                                                                    [searchable]="true"
+                                                                                    [clearable]="true" bindLabel="be_no"
+                                                                                    bindValue="id" [items]="be_list">
+                                                                                </ng-select>
+                                                                            </td>
+
+                                                                            <td style="width:200px">
+                                                                                <input class="form-control"
+                                                                                    formControlName="noc"
+                                                                                    (change)="bondChargesCalculation() "
+                                                                                    type="text" numbersOnly>
+                                                                            </td>
+
+                                                                            <td style="width:200px">
+                                                                                <input class="form-control"
+                                                                                    formControlName="charge_rate"
+                                                                                    type="text" numbersOnly
+                                                                                    (change)="bondChargesCalculation() ">
+
+                                                                            </td>
+                                                                            <td style="width:200px">
+                                                                                <input class="form-control"
+                                                                                    formControlName="cgst" numbersOnly
+                                                                                    type="text"
+                                                                                    (change)="bondChargesCalculationGst()">
+                                                                            </td>
+                                                                            <td style="width:200px">
+                                                                                <input class="form-control"
+                                                                                    formControlName="sgst" numbersOnly
+                                                                                    type="text"
+                                                                                    (change)="bondChargesCalculationGst()">
+
+                                                                            </td>
+
+                                                                            <td style="width:200px">
+                                                                                <input class="form-control"
+                                                                                    formControlName="total" type="text"
+                                                                                    numbersOnly>
+
+                                                                            </td>
+
+                                                                            <td style="width:20px">
+                                                                                <button class="btn btn-danger"
+                                                                                    (click)="delete(i)"><em
+                                                                                        class="fa fa-trash"></em></button>
+                                                                            </td>
+                                                                        </ng-container>
+
+
+
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+
+
+                                                            <div class="row">
+                                                                <div class="col-md-3">
+                                                                    <input type="file" class="form-control"
+                                                                        placeholder="Document" [multiple]=true
+                                                                        (change)="documentUpload($event , 'bond_charges_doc','bond_doc','bondFile')">
+                                                                </div>
+
+
+                                                                <div class="col-md-12" *ngFor="let doc of bondFile">
+                                                                    <a href="{{doc}}" target="_blank">{{doc |
+                                                                        fileName}}</a> <span><i style="cursor: pointer;"
+                                                                            class="fa fa-trash"
+                                                                            (click)="deleteInvoice(bondFile,doc,'bond_doc')"></i></span>
+                                                                </div>
+
+
+                                                            </div>
+
+
+
+
+
+
+                                                            <div class="row mt-5" *ngIf="add_charges">
+                                                                <div class="col text-center">
+                                                                    <button class="btn btn-primary mr-1" type="submit"
+                                                                        [disabled]="bondForm.invalid">
+                                                                        <em
+                                                                            class="fa fa-dot-circle-o"></em>Submit</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="card-footer">
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row" *ngIf="cfs">
+                                <div class="col-md-12">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>CFS Charges For {{cfs}}
+                                                <span class="pull-right">
+                                                    <ng-select placeholder="Select GST " [searchable]="true"
+                                                        [clearable]="true" bindLabel="type" bindValue="id"
+                                                        [items]="gsttype" (change)="setTaxValue($event['id'] ,'cfs')"
+                                                        [(ngModel)]="taxtypecfs">
+                                                    </ng-select></span>
+                                            </h5>
+                                        </div>
+
+                                        <form [formGroup]="addForm" novalidate (ngSubmit)="onSubmitCfs()"
+                                            autocomplete="off">
+
+                                            <div class="card-body">
+
+                                                <div class="row">
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">CFS Charges. </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="cfs_charges"
+                                                            (change)="calculateGST(2) ; setZero($event,'cfs_charges')"
+                                                            numbersOnly>
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Scanning Charges</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="scanning_charges"
+                                                            (change)="calculateGST(2) ; setZero($event,'scanning_charges')"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Examination Charges</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="examination_charges"
+                                                            (change)="calculateGST(2) ; setZero($event,'examination_charges')"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Grount Rent</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="cfs_grount_rent"
+                                                            (change)="calculateGST(2) ; setZero($event,'cfs_grount_rent')"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">CGST ({{cgst_percent_cfs}} %)</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="cfs_cgst" numbersOnly
+                                                            (change)="totalCharges() ; setZero($event,'cfs_cgst')">
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">SGST ({{sgst_percent_cfs}}%)</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="cfs_sgst" numbersOnly
+                                                            (change)="totalCharges() ; setZero($event,'cfs_sgst')">
+                                                    </div>
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">Remark</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="remark_cfs">
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Total </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="cfs_total" numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Doc Upload</label>
+                                                        <input type="file" formControlName="cfs_doc"
+                                                            class="form-control" placeholder="Document" [multiple]=true
+                                                            (change)="cfsDoc($event)">
+
+                                                    </div>
+
+
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-12" *ngFor="let doc of cfsFile">
+                                                        <a href="{{doc}}" target="_blank">{{doc | fileName}}</a>
+                                                        <span><i style="cursor: pointer;" class="fa fa-trash"
+                                                                (click)="deleteInvoice(cfsFile,doc,'cfs_doc')"></i></span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="card-footer" *ngIf="add_charges">
+                                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row" *ngIf="shippinLine">
+                                <div class="col-md-12">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Shipping Charges For {{shippinLine}}
+
+                                                <span class="pull-right">
+
+                                                    <ng-select placeholder="Select GST " [searchable]="true"
+                                                        [clearable]="true" bindLabel="type" bindValue="id"
+                                                        [items]="gsttype"
+                                                        (change)="setTaxValue($event['id'] ,'shipping')"
+                                                        [(ngModel)]="taxtypeshipping">
+                                                    </ng-select>
+                                                </span>
+                                            </h5>
+                                            <span><input type="checkbox" #chk
+                                                    (click)="taxApplied(chk.checked , 'shipping' , 'cgst')"
+                                                    [checked]="shipping_cgst"> CGST</span>
+                                            <span><input type="checkbox" #chk2
+                                                    (click)="taxApplied(chk2.checked , 'shipping' , 'sgst')"
+                                                    [checked]="shipping_sgst"> SGST</span>
+                                            <span><input type="checkbox" #chk3
+                                                    (click)="taxApplied(chk3.checked, 'shipping' , 'igst')"
+                                                    [checked]="shipping_igst"> IGST</span>
+                                        </div>
+
+                                        <form [formGroup]="addForm" novalidate (ngSubmit)="onSubmitShipping()"
+                                            autocomplete="off">
+
+                                            <div class="card-body">
+
+                                                <div class="row">
+
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">Shipping Charges </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="shipping_charges"
+                                                            (change)="calculateGST(3) ; setZero($event ,'shipping_charges') "
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">Other Charges </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="shipping_other_charges"
+                                                            (change)="calculateGST(3) ; setZero($event ,'shipping_other_charges') "
+                                                            numbersOnly>
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">Grount Rent </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="shipping_grount_rent"
+                                                            (change)="calculateGST(3) ; setZero($event ,'shipping_grount_rent') "
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">CGST ({{cgst_percent_shipping}} %)</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="shipping_cgst" numbersOnly
+                                                            (change)="totalCharges(); setZero($event,'shipping_cgst')">
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">SGST ({{sgst_percent_shipping}}%)</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="shipping_sgst" numbersOnly
+                                                            (change)="totalCharges() ; setZero($event,'shipping_sgst')">
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">IGST ({{igst_percent_shipping}}%)</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="shipping_igst" numbersOnly
+                                                            (change)="totalCharges() ; setZero($event,'shipping_igst')">
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Remark</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="remark_shipping">
+                                                    </div>
+
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Total </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="shipping_total" numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Doc Upload</label>
+                                                        <input type="file" formControlName="shipping_doc"
+                                                            class="form-control" placeholder="Document" [multiple]=true
+                                                            (change)="shippingDoc($event)">
+
+                                                    </div>
+
+
+                                                </div>
+
+
+                                                <div class="row">
+                                                    <div class="col-md-12" *ngFor="let doc of shippingFile">
+                                                        <a href="{{doc}}" target="_blank">{{doc | fileName}}</a>
+                                                        <span><i style="cursor: pointer;" class="fa fa-trash"
+                                                                (click)="deleteInvoice(shippingFile,doc,'shipping_doc')"></i></span>
+                                                    </div>
+                                                </div>
+
+
+
+                                            </div>
+                                            <div class="card-footer" *ngIf="add_charges">
+                                                <div class="card-footer">
+                                                    <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row" *ngIf="terminal_name">
+                                <div class="col-md-12">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Terminal Charges For {{terminal_name}}
+
+
+                                                <span class="pull-right">
+                                                    <ng-select placeholder="Select GST " [searchable]="true"
+                                                        [clearable]="true" bindLabel="type" bindValue="id"
+                                                        [items]="gsttype"
+                                                        (change)="setTaxValue($event['id'] ,'terminal')"
+                                                        [(ngModel)]="taxtypeterminal">
+                                                    </ng-select>
+                                                </span>
+                                            </h5>
+                                            <span><input type="checkbox" #chk4
+                                                    (click)="taxApplied(chk4.checked , 'terminal' , 'cgst')"
+                                                    [checked]="terminal_cgst"> CGST</span>
+                                            <span><input type="checkbox" #chk5
+                                                    (click)="taxApplied(chk5.checked , 'terminal' , 'sgst')"
+                                                    [checked]="terminal_sgst"> SGST</span>
+                                            <span><input type="checkbox" #chk6
+                                                    (click)="taxApplied(chk6.checked, 'terminal' , 'igst')"
+                                                    [checked]="terminal_igst"> IGST</span>
+                                        </div>
+                                        <form [formGroup]="addForm" novalidate (ngSubmit)="onSubmitTerminal()"
+                                            autocomplete="off">
+                                            <div class="card-body">
+
+
+                                                <div class="row">
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">First Shifting Terminal Charges. </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="first_shifting_terminal"
+                                                            (change)="calculateGST(4); setZero($event,'first_shifting_terminal')"
+                                                            numbersOnly>
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">Second Shifting Terminal Charges. </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="second_shifting_terminal"
+                                                            (change)="calculateGST(4) ; setZero($event,'second_shifting_terminal')"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Grount Rent. </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="terminal_grount_rent"
+                                                            (change)="calculateGST(4) ; setZero($event,'terminal_grount_rent')"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Toll Charges </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="toll_charges"
+                                                            (change)="calculateGST(4) ; setZero($event,'toll_charges')"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">CGST ({{cgst_percent}} %)</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="terminal_cgst" numbersOnly
+                                                            (change)="totalCharges(); setZero($event,'terminal_cgst')">
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">SGST ({{sgst_percent_terminal}}%)</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="terminal_sgst" numbersOnly
+                                                            (change)="totalCharges(); setZero($event,'terminal_sgst')">
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">IGST ({{igst_percent_terminal}}%)</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="terminal_igst" numbersOnly
+                                                            (change)="totalCharges(); setZero($event,'terminal_igst')">
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">Remark</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="remark_terminal">
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Total </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="terminal_total">
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Doc Upload</label>
+                                                        <input type="file" formControlName="terminal_doc"
+                                                            class="form-control" placeholder="Document" [multiple]=true
+                                                            (change)="terminalDoc($event)">
+
+                                                    </div>
+
+
+
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12" *ngFor="let doc of terminalFile">
+                                                        <a href="{{doc}}" target="_blank">{{doc | fileName}}</a>
+                                                        <span><i style="cursor: pointer;" class="fa fa-trash"
+                                                                (click)="deleteInvoice(terminalFile,doc,'terminal_doc')"></i></span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="card-footer" *ngIf="add_charges">
+                                                <div class="card-footer">
+                                                    <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row" *ngIf="trasporter.length">
+
+                                <div class="col-md-12">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Transporter Charges</h5>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <form [formGroup]="transporterForm" autocomplete="off"
+                                                (ngSubmit)="submitTransporterCharges()">
+                                                <div style="overflow: scroll">
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Transporter</th>
+                                                                <th>NOC</th>
+                                                                <th>Charge</th>
+                                                                <th>Detention</th>
+                                                                <th>Empty Lift Off</th>
+                                                                <th>Remark</th>
+                                                                <th>Cgst </th>
+                                                                <th>Sgst </th>
+                                                                <th>Total</th>
+
+                                                            </tr>
+                                                        </thead>
+
+                                                        <tbody>
+                                                            <tr formArrayName="transporterArr"
+                                                                *ngFor="let item of transporterForm.get('transporterArr')['controls'] ; let i = index">
+                                                                <ng-container [formGroupName]=i>
+
+                                                                    <td>
+                                                                        <input class="form-control"
+                                                                            formControlName="transporter_name"
+                                                                            type="hidden" numbersOnly #name>
+                                                                        <input class="form-control"
+                                                                            formControlName="transporter_id"
+                                                                            type="hidden" numbersOnly>
+                                                                        {{name.value}}
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input class="form-control"
+                                                                            formControlName="original_rate"
+                                                                            type="hidden" numbersOnly>
+
+                                                                        <input class="form-control"
+                                                                            formControlName="cgst_percent" type="hidden"
+                                                                            numbersOnly #cgst>
+
+                                                                        <input class="form-control"
+                                                                            formControlName="sgst_percent" type="hidden"
+                                                                            numbersOnly #sgst>
+
+                                                                        <input class="form-control"
+                                                                            formControlName="noc"
+                                                                            (change)="calculateTransporterCharge(i)"
+                                                                            type="text" numbersOnly>
+                                                                    </td>
+                                                                    <td>
+                                                                        <input class="form-control"
+                                                                            formControlName="rate"
+                                                                            (change)="calculateTransporter2(i)"
+                                                                            type="text" numbersOnly>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input class="form-control"
+                                                                            formControlName="detention"
+                                                                            (change)="calculateTransporter2(i)"
+                                                                            type="text" numbersOnly>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input class="form-control"
+                                                                            formControlName="empty_lift_off"
+                                                                            (change)="calculateTransporter2(i)"
+                                                                            type="text" numbersOnly>
+
+                                                                    </td>
+                                                                    <td>
+
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="remark_transporter">
+
+                                                                    </td>
+                                                                    <td>
+                                                                        <input class="form-control"
+                                                                            formControlName="cgst"
+                                                                            (change)="calculateTransporterGstTotal(i)"
+                                                                            numbersOnly type="text" numbersOnly>
+                                                                        {{cgst.value}} %
+                                                                    </td>
+                                                                    <td>
+                                                                        <input class="form-control"
+                                                                            (change)="calculateTransporterGstTotal(i)"
+                                                                            formControlName="sgst" numbersOnly
+                                                                            type="text" numbersOnly> {{sgst.value}} %
+
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input class="form-control"
+                                                                            formControlName="total" numbersOnly
+                                                                            type="text">
+
+                                                                    </td>
+
+
+                                                                </ng-container>
+
+
+
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+
+                                                    <div class="row">
+                                                        <div class="col-md-3">
+                                                            <input type="file" class="form-control"
+                                                                placeholder="Document" [multiple]=true
+                                                                (change)="documentUpload($event , 'transporter_charges_doc','transporter_doc' , 'transporterFile')">
+                                                        </div>
+
+
+                                                        <div class="col-md-12" *ngFor="let doc of transporterFile">
+                                                            <a href="{{doc}}" target="_blank">{{doc | fileName}}</a>
+                                                            <span><i style="cursor: pointer;" class="fa fa-trash"
+                                                                    (click)="deleteInvoice(transporterFile,doc,'transporter_doc')"></i></span>
+                                                        </div>
+
+
+                                                    </div>
+
+
+
+
+
+
+                                                    <div class="row mt-5" *ngIf="add_charges">
+                                                        <div class="col text-center">
+                                                            <button class="btn btn-primary mr-1" type="submit"
+                                                                [disabled]="transporterForm.invalid">
+                                                                <em class="fa fa-dot-circle-o"></em>Submit</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+
+                                        </div>
+                                        <div class="card-footer">
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>Storage Charges &nbsp;<button type="button" class="btn btn-primary"
+                                                    (click)="addRowStorage()"><em class="fa fa-plus"></em></button>
+                                                <span class="pull-right">
+                                                    <ng-select placeholder="Select GST " [searchable]="true"
+                                                        [clearable]="true" bindLabel="type" bindValue="id"
+                                                        [items]="gsttype"
+                                                        (change)="setTaxValue($event['id'] ,'storage')"
+                                                        [(ngModel)]="taxtypestorage">
+                                                    </ng-select>
+                                                </span>
+                                            </h5>
+                                        </div>
+                                        <form [formGroup]="storageForm" novalidate (ngSubmit)="onSubmitStorage()"
+                                            autocomplete="off">
+                                            <div class="card-body">
+
+
+                                                <div style="overflow: scroll">
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Godown</th>
+                                                                <th>Storage Quantity</th>
+                                                                <th>Storage Charges</th>
+                                                                <th>CGST ({{cgst_percent_storage}} %)</th>
+                                                                <th>SGST ({{sgst_percent_storage}}%)</th>
+                                                                <th>Remark</th>
+                                                                <th>Total </th>
+                                                                <th>Del </th>
+
+
+                                                            </tr>
+                                                        </thead>
+
+                                                        <tbody>
+                                                            <tr formArrayName="storageArr"
+                                                                *ngFor="let item of storageForm.get('storageArr')['controls'] ; let i = index">
+                                                                <ng-container [formGroupName]=i>
+
+                                                                    <td>
+                                                                        <ng-select placeholder="Select Godown "
+                                                                            [searchable]="true" [clearable]="true"
+                                                                            bindLabel="godown_name" bindValue="id"
+                                                                            formControlName="storage_godown"
+                                                                            [items]="godown">
+                                                                        </ng-select>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="storage_qty"
+                                                                            (change)="calculateGST(5) ; setZero($event,'storage_charges')"
+                                                                            numbersOnly>
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="storage_charges"
+                                                                            (change)="calculateStorage(i)" numbersOnly>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input type="text" class="form-control"
+                                                                            (change)="calculateStorageGST(i)"
+                                                                            formControlName="storage_cgst" numbersOnly>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input type="text" class="form-control"
+                                                                            (change)="calculateStorageGST(i)"
+                                                                            formControlName="storage_sgst" numbersOnly>
+
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="storage_remark">
+
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" class="form-control"
+                                                                            formControlName="storage_total">
+                                                                    </td>
+                                                                    <td style="width:20px">
+                                                                        <button class="btn btn-danger" type="button"
+                                                                            (click)="deleteStorage(i)"><em
+                                                                                class="fa fa-trash"></em></button>
+                                                                    </td>
+
+
+
+
+                                                                </ng-container>
+
+
+
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+
+                                                    <div class="row">
+                                                        <div class="col-md-3"
+                                                            *ngIf="storageForm.get('storageArr')['controls'].length">
+                                                            <input type="file" class="form-control"
+                                                                placeholder="Document" [multiple]=true
+                                                                (change)="documentUpload($event , 'storage_charges_doc','storage_doc' , 'storageFile')">
+                                                        </div>
+
+
+                                                        <div class="row">
+                                                            <div class="col-md-12" *ngFor="let doc of storageFile">
+                                                                <a href="{{doc}}" target="_blank">{{doc | fileName}}</a>
+                                                                <span><i style="cursor: pointer;" class="fa fa-trash"
+                                                                        (click)="deleteInvoice(storageFile,doc,'storage_doc')"></i></span>
+                                                            </div>
+                                                        </div>
+
+
+                                                    </div>
+
+
+                                                    <div class="row mt-5" *ngIf="add_charges">
+                                                        <div class="col text-center">
+                                                            <button class="btn btn-primary mr-1" type="submit"
+                                                                [disabled]="storageForm.invalid">
+                                                                <em class="fa fa-dot-circle-o"></em>Submit</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- <div class="row">
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">Godown </label>
+                                                        <ng-select placeholder="Select Godown " [searchable]="true"
+                                                            [clearable]="true" bindLabel="godown_name" bindValue="id"
+                                                            formControlName="storage_godown" [items]="godown">
+                                                        </ng-select>
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">Storage Quantity </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="storage_qty"  (change)="calculateGST(5) ; setZero($event,'storage_charges')" numbersOnly>
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">Storage Charges </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="storage_charges"
+                                                            (change)="calculateGST(5) ; setZero($event,'storage_charges')"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">CGST ({{cgst_percent_storage}} %)</label>
+                                                        <input type="text" class="form-control"
+                                                            (change)="totalCharges()" formControlName="storage_cgst"
+                                                            numbersOnly>
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">SGST ({{sgst_percent_storage}}%)</label>
+                                                        <input type="text" class="form-control"
+                                                            (change)="totalCharges()" formControlName="storage_sgst"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Remark</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="storage_remark">
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Total </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="storage_total">
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Doc Upload</label>
+                                                        <input type="file" formControlName="storage_doc"
+                                                            class="form-control" placeholder="Document" [multiple]=true
+                                                            (change)="storageDoc($event)">
+
+                                                    </div>
+
+
+                                                </div> -->
+
+                                                <!-- <div class="row">
+                                                    <div class="col-md-12" *ngFor="let doc of storageFile">
+                                                        <a href="{{doc}}" target="_blank">{{doc | fileName}}</a>
+                                                        <span><i style="cursor: pointer;" class="fa fa-trash"
+                                                                (click)="deleteInvoice(storageFile,doc,'storage_doc')"></i></span>
+                                                    </div>
+                                                </div> -->
+
+
+
+                                            </div>
+                                            <!-- <div class="card-footer" *ngIf="add_charges">
+                                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+
+                                            </div> -->
+                                        </form>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                            <div class="row" *ngIf="fob_name">
+                                <div class="col-md-12">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>FOB Charges For {{fob_name}}
+                                                <span class="pull-right">
+                                                    <ng-select placeholder="Select GST " [searchable]="true"
+                                                        [clearable]="true" bindLabel="type" bindValue="id"
+                                                        [items]="gsttype" (change)="setTaxValue($event['id'] ,'fob')"
+                                                        [(ngModel)]="taxtypefob">
+                                                    </ng-select>
+                                                </span>
+                                            </h5>
+                                        </div>
+                                        <form [formGroup]="addForm" novalidate (ngSubmit)="onSubmitFob()"
+                                            autocomplete="off">
+                                            <div class="card-body">
+                                                <div class="row">
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">FOB Charges </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="fob_charges"
+                                                            (change)="calculateGST(6) ; setZero($event,'fob_charges')"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">CGST ({{cgst_percent_fob}} %)</label>
+                                                        <input type="text" class="form-control"
+                                                            (change)="totalCharges()" formControlName="fob_cgst"
+                                                            numbersOnly>
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">SGST ({{sgst_percent_fob}}%)</label>
+                                                        <input type="text" class="form-control"
+                                                            (change)="totalCharges()" formControlName="fob_sgst"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Remark</label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="fob_remark">
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Total </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="fob_total">
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Doc Upload</label>
+                                                        <input type="file" formControlName="fob_doc"
+                                                            class="form-control" placeholder="Document" [multiple]=true
+                                                            (change)="fobDoc($event)">
+
+                                                    </div>
+                                                </div>
+
+
+
+
+
+                                                <div class="row">
+                                                    <div class="col-md-12" *ngFor="let doc of fobFile">
+                                                        <a href="{{doc}}" target="_blank">{{doc | fileName}}</a>
+                                                        <span><i style="cursor: pointer;" class="fa fa-trash"
+                                                                (click)="deleteInvoice(fobFile,doc,'fob_doc')"></i></span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+
+
+
+                                            <div class="card-footer">
+                                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+
+                                            </div>
+                                        </form>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+
+
+                            <div class="row" *ngIf="port_id == 2">
+                                <div class="col-md-12">
+                                    <form [formGroup]="addForm" novalidate (ngSubmit)="onSubmitCitpl()"
+                                        autocomplete="off">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5>CITPL Charges</h5>
+                                            </div>
+
+                                            <div class="card-body">
+
+                                                <div class="row">
+
+
+
+
+                                                    <div class="form-group col-md-3">
+                                                        <label for="">CITPL Charges </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="citpl_charges"
+                                                            (change)="calculateGST(7) ; setZero($event,'citpl_charges')"
+                                                            numbersOnly>
+                                                    </div>
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">CGST ({{cgst_percent}} %)</label>
+                                                        <input type="text" class="form-control"
+                                                            (change)="totalCharges()  ; setZero($event,'citpl_cgst')"
+                                                            formControlName="citpl_cgst" numbersOnly>
+                                                    </div>
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">SGST ({{sgst_percent}}%)</label>
+                                                        <input type="text" class="form-control"
+                                                            (change)="totalCharges()  ; setZero($event,'citpl_sgst')"
+                                                            formControlName="citpl_sgst" numbersOnly>
+                                                    </div>
+
+
+
+                                                    <div class="form-group col-md-2">
+                                                        <label for="">Total </label>
+                                                        <input type="text" class="form-control"
+                                                            formControlName="citpl_total">
+                                                    </div>
+
+
+
+                                                </div>
+
+
+
+                                            </div>
+                                            <div class="card-footer">
+                                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

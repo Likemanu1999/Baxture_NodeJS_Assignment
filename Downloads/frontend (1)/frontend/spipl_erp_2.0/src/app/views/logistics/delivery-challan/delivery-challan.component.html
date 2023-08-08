@@ -1,0 +1,318 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4><i class="fa fa-truck"></i> Delivery Challan For {{non_invoice}} (<span> BL Number : {{bl_invoice}}</span>
+            , <span> BE Number : {{be_invoice}} , Port : {{port_name}}</span>)
+            <span class="pull-right"><button class="btn btn-primary" (click)="getNonDetail()"><i
+                  class="fa fa-refresh"></i></button>&nbsp;<button class="btn btn-primary" (click)="onBack()"><i
+                  class="fa fa-arrow-left "></i> Back</button></span>
+          </h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-12 text-right mb-3">
+              <button *ngIf="generate_delivery_challan" class="btn btn-warning" (click)="generateChallan()">Generate
+                Delivery Challan</button>
+
+              <button *ngIf="challan_mail" class="btn btn-info" (click)="sendMail()">Send Mail</button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-2 offset-5" *ngIf="isLoading">
+              <app-loading-spinner></app-loading-spinner>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <p-table #dt [value]="containerDetails" dataKey="id" styleClass="ui-table-non " [rowHover]="true"
+                [rows]="50" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100]" [paginator]="true"
+                [columns]="cols" currentPageReportTemplate="Total Records: {{containerDetails.length}} "
+                [filterDelay]="0" [globalFilterFields]="['container_number','ewaybill_no']">
+                <ng-template pTemplate="caption">
+
+                  <div class="row">
+                      <div class="col-md-3">
+
+                          <div class="ui-helper-clearfix" style="text-align: left">
+                              <button type="button" pButton icon="pi pi-file-excel" iconPos="left"
+                                  label="EXCEL" (click)="exportExcel()" style="margin-right: 0.5em;"
+                                  class="ui-button-success"></button>
+                              <button type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+                                  label="PDF" (click)="exportPdf()"
+                                  class="ui-button-warning"></button>
+                          </div>
+
+                      </div>
+
+
+
+                      <div class="col-md-3">
+                          <input pInputText class='form-control' type="text"
+                              (input)="dt.filterGlobal($event.target.value, 'contains')"
+                              placeholder="Global Search" />
+                      </div>
+                  </div>
+
+              </ng-template>
+
+
+
+                <ng-template pTemplate="header" let-columns>
+                  <tr>
+                    <th style="width: 3rem">Sr No</th>
+                    <th style="width: 3rem">
+                      <p-tableHeaderCheckbox (click)="onCheckAll(a.checked)" #a>
+                      </p-tableHeaderCheckbox>
+                    </th>
+                    <th pSortableColumn="{{col.field}}" *ngFor="let col of columns" [style.width.px]='col.style'>
+                      {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                    </th>
+
+                  </tr>
+
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-columns let-i="rowIndex">
+                  <tr class="ui-selectable-row">
+                    <td>
+                      {{i+1}}
+                    </td>
+                    <td>
+                      <input type="checkbox" [value]="item" #inputs #checkboxes
+                        (click)="onChange(checkboxes.checked,item)" *ngIf="item.godown && item.be_number">
+                    </td>
+                    <td pEditableColumn>
+
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input pInputText class="form-control" type="text" [(ngModel)]="item.ewaybill_no"
+                            (change)="updateContainer($event, item.id , 1)" (keydown.enter)="updateContainer($event, item.id , 1)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          <span class="ui-column-title">E-Way Bill Number</span>
+                          {{item.ewaybill_no}}
+                        </ng-template>
+                      </p-cellEditor>
+
+
+                    </td>
+
+
+                    <td>
+                      <span class="ui-column-title">Container Number</span>
+                      {{item.container_number}}
+
+                    </td>
+
+                    <td>
+                      <span class="ui-column-title">Delivery Challan Pdf</span>
+
+                      <span *ngIf="item.delivery_challen_no">
+                        <span style="cursor: pointer;">{{item.delivery_challen_no}} <button
+                            class=" btn btn-sm btn-danger" (click)="downloadPdf(item)"><i
+                              class="fa fa-file"></i></button></span>
+                      </span>
+
+                      <div *ngIf="item.deliver_challan_mail_date" class="badge badge-success"
+                        [pTooltip]="item.deliver_challan_mail_date | date: 'dd-MM-y hh:mm:ss a'" tooltipPosition="top"
+                        placeholder="top">Mail Sent</div>
+                    </td>
+
+                    <td pEditableColumn>
+
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input type="text" class="form-control"
+                            [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                            #dp="bsDatepicker" bsDatepicker style="background-color: white;"
+                            [(ngModel)]="item.delivery_challen_dt"
+                            (ngModelChange)="updateContainer($event, item.id , 2)">
+                        </ng-template>
+                        <ng-template pTemplate="output">
+
+                          <span class="ui-column-title">Delivery Challan Date</span>
+                          {{item.delivery_challen_dt | date: 'dd/MM/yyyy'}}
+                        </ng-template>
+                      </p-cellEditor>
+
+
+                    </td>
+
+
+                    <td pEditableColumn>
+
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <div class="row">
+                            <div class="col-md-10">
+                              <input type="file" [multiple]="true" (change)="addEwayCopy($event)" class="form-control">
+                            </div>
+                            <div class="col-md-1">
+                              <button type="button" class="btn btn-success btn-sm" (click)="uploadDocs(item.id)"><i
+                                  class="fa fa-upload"></i></button>
+                            </div>
+                          </div>
+
+
+                        </ng-template>
+                        <ng-template pTemplate="output">
+
+                          <span class="ui-column-title">Upload E-way Bill</span>
+                          <span *ngIf="item.ewaybill_path">
+                            <div *ngFor="let doc of getDocArray(item.ewaybill_path)">
+                              <a href="{{doc}}" target="_blank"><i class="fa fa-file"></i></a>
+                            </div>
+                          </span>
+
+
+                        </ng-template>
+                      </p-cellEditor>
+
+                    </td>
+                  </tr>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="5" style="text-align:left">No Data found.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+<app-delivery-challan-pdf *ngIf="generate_pdf" [checkArr]="challanPdf" (emitFunctionPdf)="emitPdf($event)">
+</app-delivery-challan-pdf>
+
+
+<div bsModal #myModalCoaMail="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h4 class="modal-title">Send Mail </h4>
+        <button type="button" class="close" (click)=" oncloseCoaMail()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-2 offset-5" *ngIf="isLoadingMail">
+            <app-loading-spinner></app-loading-spinner>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <p style="color: red;">Plese Keep Emails (;) Seperated</p>
+            <div class="row">
+              <div class="col-md-6">
+                <span class="ng-star-inserted" style="word-break: break-all;">
+                <label for="">To : <span *ngFor="let mail of email"><input type="checkbox"
+                      (click)="mailto(a.checked,mail)" #a> {{mail}}<br> </span></label>
+                <textarea class="form-control" [(ngModel)]="ccText" (change)='tomailvalue($event)'></textarea>
+              </span>
+              </div>
+              <div class="col-md-6">
+                <span class="ng-star-inserted" style="word-break: break-all;">
+                <label for="">CC : <span *ngFor="let cc of email"><input type="checkbox" (click)="ccmail(e.checked,cc)"
+                      #e> {{cc}} <br></span></label>
+                <textarea class="form-control" [(ngModel)]="bccText" (change)='ccmailvalue($event)'></textarea>
+              </span>
+              </div>
+
+            </div>
+            <p>Dear Sir/Madam</p>
+            <p>Good Day.</p>
+            <p>Kindly find below the details of the E-Way Bill Nos. for the delivery of the containers planned. Request
+              you to kindly fill up the details in Part-B and generate the E-Way bills accordingly.</p>
+            <div class="col-md-12">
+              <table class="table table-bordered">
+                <thead>
+                  <tr style="background-color: #4DB6AC; color: white;">
+                    <th>Sr No.</th>
+                    <th>Bill of Lading No.</th>
+                    <th>container Number</th>
+                    <th>Bill of Entry No and Dt</th>
+                    <th>E-Way Bill Number</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of mailArr ; let i = index">
+                    <td>{{i+1}}</td>
+                    <td>{{item.bl_no}}</td>
+                    <td>{{item.container_number}}</td>
+                    <td>{{item.be_no}} {{item.be_dt}}</td>
+                    <td>{{item.eway_bill_no}}</td>
+                  </tr>
+                </tbody>
+
+              </table>
+            </div>
+            <p>Also we have enclosed herewith the delivery challans for all the containers separately.</p>
+            <p>We request you to kindly handover the E-Way bill copy and Delivery Challan copy to all the respective
+              truck drivers and also ask them to handover both the copies to our godown incharge at the time of delivery
+              of containers.</p>
+            <p>Also note that we are not liable for any kind of penalty imposed by any of the government officials or
+              departments,if there is no E-way bill and delivery challan copy during the transit or movement of the
+              containers.</p>
+            <p>Kindly note that we will not unload the container or material if the truck driver does not handover the
+              E-Way bill and delivery challan copies.</p>
+            <p>We request you to kindly note the above at your end.</p>
+            <p>Thank you for your kind cooperation.</p>
+            <p>Regards,</p>
+            <p>SParmar .</p>
+
+            <!-- 
+              <span *ngIf="coa_copy">
+                <span *ngFor="let doc of getDocArray(coa_copy)">
+                 <a href="{{doc}}" target="_blank"><i class="fa fa-file"></i></a> coa copy
+                </span>
+              </span> -->
+            <div *ngFor="let docArr of mailArr">
+              <span *ngIf="docArr.eway_doc">
+                <span *ngFor="let doc of getDocArray(docArr.eway_doc)">
+                  <a href="{{doc}}" target="_blank"><em class="fa fa-file"> E-way Bill</em></a>&nbsp;
+                </span>
+              </span>
+
+              <span *ngIf="docArr.delivery_challen_no">
+                <span style="cursor: pointer;">{{docArr.delivery_challen_no}} <button class=" btn btn-sm btn-danger"
+                    (click)="getpdf(docArr.item)"><i class="fa fa-file"></i></button></span>
+              </span>
+
+            </div>
+
+            <div>
+              <button class="btn btn-primary btn-sm" (click)="sendMailEway()">Send</button>
+            </div>
+
+
+          </div>
+        </div>
+
+
+      </div>
+
+
+
+      <div class="modal-footer">
+
+      </div>
+
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

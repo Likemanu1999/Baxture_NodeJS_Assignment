@@ -1,0 +1,281 @@
+<div class="animated fadeIn">
+	<div class="row">
+		<div class="col-md-12">
+
+			<div class="card">
+				<div class="card-header">
+					<h3> <i class="cui-layers icons"></i> Contract Lists for {{sub_org_name}}</h3> <span
+						style="font-size: 14px;">{{sub_org_address}}</span>
+				</div>
+				<div class="card-body">
+
+
+
+					<div class="row mb-3">
+
+						<div class="col-xs-12 col-12 col-md-3">
+
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa fa-calendar"></i></span>
+								</div>
+								<input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+									(ngModelChange)="onchange(  filterMonth, filterYear)"
+									placeholder="From Deal Date - To Deal Date">
+							</div>
+						</div>
+
+						<div class=" col-xs-12 col-6 col-md-2">
+							<div class="form-group">
+								<ng-select placeholder=" Month " [searchable]="true" [clearable]="true" bindLabel="name"
+									bindValue="id" [items]="month" [(ngModel)]="filterMonth"
+									(ngModelChange)="onchange( filterMonth, filterYear)">
+								</ng-select>
+							</div>
+						</div>
+						<div class=" col-xs-12 col-6 col-md-2" *ngIf="year_list.length > 0">
+							<div class="form-group">
+								<ng-select placeholder=" Year " [searchable]="true" [clearable]="true" bindLabel="name"
+									bindValue="name" [items]="year_list" [(ngModel)]="filterYear"
+									(ngModelChange)="onchange( filterMonth, filterYear)">
+								</ng-select>
+							</div>
+						</div>
+
+						<!-- <div class="col-xs-12 col-12 col-md-1">
+                      <button class="btn btn-success" (click)="dateReset()" >Reset</button>
+                    </div> -->
+
+
+					</div>
+
+
+					<div class="row">
+						<div class="col-md-12">
+							<div *ngIf="isLoading" style="text-align: center;">
+								<app-loading-spinner></app-loading-spinner>
+							</div>
+
+
+
+							<p-table #dt
+								[value]="data |datefilter:fromdate:todate:value|columnFilter:'shipment_month':filterMonth|columnFilter:'shipment_year':filterYear"
+								dataKey="id" styleClass="ui-table-customers" [rowHover]="true" [rows]="10"
+								[showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading"
+								[paginator]="true" (onFilter)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+								[filterDelay]="0"
+								[globalFilterFields]="['deal_dt', 'month.name', 'deal_quantity','unitName', 'deal_rate','currency','indent_quantity','indent_pi_received','lc_pi_received','non_lc_pi_received','lc_opened','nonlc_opend','added_date','remark']"
+								[resizableColumns]="true">
+
+
+								<ng-template pTemplate="caption">
+
+
+									<div class="row">
+										<div class="col-md-9">
+											<div class="ui-helper-clearfix" style="text-align: left">
+
+												<button type="button" pButton icon="pi pi-file-excel" iconPos="left"
+													label="EXCEL" (click)="exportExcel()" style="margin-right: 0.5em;"
+													class="ui-button-success"></button>
+												<button type="button" pButton icon="pi pi-file-pdf" iconPos="left"
+													label="PDF" (click)="exportPdf()"
+													class="ui-button-warning"></button>
+
+											</div>
+										</div>
+										<div class="col-md-3">
+
+											<div class="ui-table-globalfilter-container" style="text-align: right">
+												<input pInputText type="text" class='form-control'
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+
+
+								</ng-template>
+
+
+
+
+								<ng-template pTemplate="header">
+									<tr>
+
+										<th style="width:150px;" pSortableColumn="{{col.field}}"
+											*ngFor="let col of cols" pResizableColumn>
+											{{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+										</th>
+
+										<th style="width:90px;" *ngIf="edit_fs_deal">
+											Edit
+										</th>
+										<th style="width:90px;" *ngIf="delete_fs_deal">
+											Delete
+										</th>
+									</tr>
+									<tr>
+
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-item>
+									<tr class="ui-selectable-row">
+
+
+
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Deal Date</span>
+											{{item.deal_dt | date: "dd-MM-y "}}
+
+											<span class="badge badge-pill badge-danger">FSD{{item.id}}</span>
+
+										</td>
+
+										<td class="ui-resizable-column"> <span class="ui-column-title">Month/Year</span>
+											{{getMonth(item.shipment_month)}} - {{item.shipment_year}}</td>
+										<td class="ui-resizable-column">
+											<span class="ui-column-title">Deal Quantity</span>
+											{{item.deal_quantity}} ( {{item.unitName}} )
+
+										</td>
+
+
+										<td class="ui-resizable-column"> <span class="ui-column-title">Deal Rate</span>
+											{{item.deal_rate}}</td>
+
+										<td class="ui-resizable-column"> <span class="ui-column-title">Currency</span>
+											{{item.CurrencyName}}</td>
+
+
+
+										<td><span class="ui-column-title">Indent Quantity</span>
+											{{item.indent_quantity}}</td>
+										<td><span class="ui-column-title">Transnational Quantity</span>
+											{{item.transnational_sale_pi_qty}}</td>
+
+										<td><span class="ui-column-title">Forward Quantity</span>
+											{{item.forward_sale_pi_qty}}</td>
+
+										<td><span class="ui-column-title">HighSeas Quantity</span>
+											{{item.highseas_sale_pi_qty}}</td>
+
+										<td *ngIf="add_grade_port"><span class="ui-column-title">Grade Assortment</span>
+											<a style="cursor: pointer;" class="btn btn-info btn-sm"
+												(click)="gradeAssortment(item.id)" target="_blank">ADD</a></td>
+
+
+										<td class="ui-resizable-column">
+											<div *ngIf="item.deal_docs != null">
+												<div *ngFor="let val of getDocsArray(item.deal_docs)">
+													<span class="ui-column-title">Document</span>
+													<a href="{{val}}" target="_blank"><i class="fa fa-file"></i></a>
+												</div>
+											</div>
+										</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">Indent Pi
+												Received</span>
+											{{item.indent_pi_received}}</td>
+										<td class="ui-resizable-column"> <span class="ui-column-title">Lc Pi
+												Received</span>
+											{{item.lc_pi_received}}</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">Non Lc Pi
+												Received</span>
+											{{item.non_lc_pi_received}}</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">Total Pi
+												Received</span>
+											{{item.lc_pi_received+(+item.non_lc_pi_received)}}</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">Lc
+												Openned</span>{{item.lc_opened}}
+										</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">Non Lc
+												Opened</span>{{item.nonlc_opend}}</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">Total Lc/ Non Lc
+												Opened</span>{{item.lc_opened+item.nonlc_opend}}</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">In Hand</span>
+											{{(item.lc_pi_received+item.non_lc_pi_received) -
+											(item.lc_opened+item.nonlc_opend)}}
+										</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">In Hand</span>
+
+											<!-- (item.deal_quantity + item.transnational_sale_pi_qty + 
+											item.forward_sale_pi_qty+
+											item.highseas_sale_pi_qty) -->
+											{{(item.deal_quantity + item.transnational_sale_pi_qty + 
+												item.forward_sale_pi_qty+
+												item.highseas_sale_pi_qty) - (item.lc_opened+item.nonlc_opend)}}
+										</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">Added Date</span>
+											{{item.added_date | date : "dd-MM-y h:mm:ss a"}}</td>
+										<td class="ui-resizable-column"><span class="ui-column-title">Remark</span>
+											{{item.remark}}</td>
+										<td *ngIf="edit_fs_deal"><a style="cursor: pointer;"
+												(click)="onEdit(item.id)"><i class="fa fa-pencil"></i></a></td>
+										<td
+											*ngIf="delete_fs_deal && item.lc_pi_received==0 && item.non_lc_pi_received==0 && item.indent_pi_received==0">
+											<a style="cursor: pointer;" mwlConfirmationPopover
+												[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+												[confirmText]="confirmText" [cancelText]="cancelText"
+												[placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+												confirmButtonType="danger" cancelButtonType="success"
+												(confirm)="onDelete(item.id)" (cancel)="cancelClicked = true"><i
+													class="fa fa-trash"></i></a>
+										</td>
+
+
+
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer">
+
+									<tr>
+										<td colspan="2">Total</td>
+										<td>{{dealQt}}</td>
+										<td>{{dealRate}}</td>
+										<td></td>
+										<td>{{indentQty}}</td>
+										<td>{{transnationalQty}}</td>
+										<td>{{forwardQty}}</td>
+										<td>{{highSeasQty}}</td>
+										<td></td>
+										<td></td>
+										<td>{{indent_pi_recv}}</td>
+										<td>{{lc_pi_recv}}</td>
+										<td>{{non_lc_pi_recv}}</td>
+										<td>{{totalpi}}</td>
+										<td>{{lcOpen}}</td>
+										<td>{{NonlcOpen}}</td>
+										<td>{{TotalLc_nonLc}}</td>
+										<td>{{inHand}}</td>
+										<td>{{totalOs}}</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+
+
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td colspan="8" style="text-align:left">Not Found any data</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+
+				<div class="card-footer">
+					<button class="btn btn-primary" type="button" (click)="onBack()"><i
+							class="fa fa-undo"></i>Back</button>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

@@ -1,0 +1,532 @@
+<div class="animated fadeIn">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="row">
+              <div class="col-md-12">
+                <h4><i class="fa fa-list"></i> Short Damage List
+                  <span class="pull-right"> <button class="btn btn-primary" (click)="getLiftingList()"> <i
+                        class="fa fa-refresh"></i></button></span>
+                </h4>
+              </div>
+  
+            </div>
+  
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-12 mb-4">
+                <div class="row ">
+                  <div class="col-md-4">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <label for=""><b>Lifting Date:</b></label>
+                      </div>
+  
+                      <div class="col-md-8">
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                          </div>
+                          <input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+                            (ngModelChange)="onSelect($event)" placeholder=" Lifting Date Range ">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+  
+  
+  
+                   <div class="col-md-4">
+
+                    <div class="row">
+                      <div class="col-md-3">
+                        <label for=""><b>Status:</b></label>
+                      </div>
+  
+                      <div class="col-md-9">
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fa fa-list"></i></span>
+                          </div>
+                          <ng-select  placeholder="Select " [searchable]="true"
+                      [clearable]="true" bindLabel="value" bindValue="id" [items]="statusList"   (ngModelChange)="getLiftingList()" 
+                       [(ngModel)]="status">
+                    </ng-select>
+                        </div>
+                      </div>
+                    </div>
+
+
+             
+                  </div> 
+
+                  <div class="col-md-4">
+
+                    <div class="row">
+                      <div class="col-md-3">
+                        <label for=""><b>Company :</b></label>
+                      </div>
+  
+                      <div class="col-md-9">
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fa fa-list"></i></span>
+                          </div>
+                          <ng-select  placeholder="Select " [searchable]="true"
+                      [clearable]="true" bindLabel="value" bindValue="id" [items]="companyList"   (ngModelChange)="getCompany($event)" 
+                       [(ngModel)]="company_id">
+                    </ng-select>
+                        </div>
+                      </div>
+                    </div>
+             
+                  </div> 
+  
+                </div>
+              </div>
+            </div>
+  
+  
+            <div class="row">
+              <div class="col-md-2 offset-5" *ngIf="isLoading">
+                <app-loading-spinner></app-loading-spinner>
+              </div>
+            </div>
+  
+  
+            <div class="row" *ngIf="!isLoading">
+              <div class="col-md-12">
+                <p-table #dt [value]="lifitng_details" dataKey="id" styleClass="ui-table-customers  " [rowHover]="true"
+                  [rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading"
+                  [paginator]="true" [columns]="_selectedColumns" (onFilter)="onFilter($event, dt)" [scrollable]="true"
+                  [virtualRowHeight]="500" scrollHeight="400px" 
+                  currentPageReportTemplate="Total Records : {{lifitng_details.length}}" [filterDelay]="0"
+                  [globalFilterFields]="['quantity','truck_no','grade_name','remark','purchase_invoice_no_dt','purchase_invoice_date','term','short_material_qty','damage_material_qty','subOrgName','orgAddress','material_received_date','godownName','marketingPerson','deliveryTerm','short_damage_remark','local_purchase_id','main_grade']">
+  
+  
+                  <ng-template pTemplate="caption">
+  
+                    <div class="row">
+  
+  
+                      <div class="col-md-3">
+  
+                        <div class="ui-helper-clearfix" style="text-align: left">
+                          <button *ngIf="excel_lift" type="button" pButton icon="pi pi-file-excel" iconPos="left"
+                            label="EXCEL" (click)="exportExcelLifting()" style="margin-right: 0.5em;"
+                            class="ui-button-success"></button>
+                          <button *ngIf="pdf_lift" type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF"
+                            (click)="exportPdfLifting()" class="ui-button-warning"></button>
+                        </div>
+  
+                      </div>
+  
+                      <div class="col-md-3">
+                        
+                        <div class="col-md-5" style="text-align: left">
+                          <p-multiSelect [options]="cols_lift" [(ngModel)]="selectedColumns" optionLabel="header"
+                            selectedItemsLabel="{0} columns selected" [style]="{minWidth: '200px'}"
+                            defaultLabel="Choose Columns"></p-multiSelect>
+                        </div>
+  
+                      </div>
+  
+  
+  
+                      <div class="col-md-3">
+  
+                        <input pInputText class='form-control' type="text"
+                          (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+  
+                      </div>
+  
+  
+                    </div>
+  
+  
+  
+                  </ng-template>
+  
+                  <ng-template pTemplate="header" let-columns>
+  
+  
+                    <tr>
+  
+                      <th [style.width]="col.style" pSortableColumn="{{col.field}}" *ngFor="let col of columns"  [ngClass]="col.field == 'sub_org_name' ? 'sticky-col second-col' : ''">
+                        {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                      </th>
+                 
+  
+                    </tr>
+                    <tr>
+                      <th *ngIf="getColumnPresent('purchase_invoice_no_dt')"></th>
+  
+                      <th *ngIf="getColumnPresent('purchase_invoice_date')">
+                        <input type="text" class="form-control" [(ngModel)]="purchase_invoice_date"
+                          (ngModelChange)="onDateSelect($event,'purchase_invoice_date')"
+                          [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                          bsDatepicker placeholder="Search by Date">
+                      </th>
+  
+                      <th *ngIf="getColumnPresent('subOrgName')" class="sticky-col second-col" >
+                        <div *ngIf="supplier_list.length > 0 ">
+                          <p-multiSelect [options]="supplier_list" placeholder="All" appendTo="body"
+                            (onChange)="onchange($event,'subOrgName')" styleClass="ui-column-filter"
+                            optionLabel='subOrgName'>
+                            <ng-template let-op pTemplate="item">
+  
+                              <span>&#123;&#123;op.label&#125;&#125;</span>
+  
+                            </ng-template>
+                          </p-multiSelect>
+                        </div>
+                      </th>
+                     
+  
+                   
+  
+                      <th *ngIf="getColumnPresent('godownName')">
+                        <div *ngIf="godown.length > 0">
+                          <p-multiSelect [options]="godown" placeholder="All" appendTo="body"
+                            (onChange)="onchange($event,'godownName')" styleClass="ui-column-filter"
+                            optionLabel="godownName">
+                            <ng-template let-opt pTemplate="item">
+  
+  
+                              <span>{{opt.label}}</span>
+  
+                            </ng-template>
+                          </p-multiSelect>
+                        </div>
+                      </th>
+  
+                   
+                      <th *ngIf="getColumnPresent('truck_no')"></th>
+  
+                      <th *ngIf="getColumnPresent('main_grade')"></th>
+                      <th *ngIf="getColumnPresent('grade_name')">
+                        <div *ngIf="grade_type.length > 0">
+                          <p-multiSelect [options]="grade_type" placeholder="All" appendTo="body"
+                            (onChange)="onchange($event,'grade_name')" styleClass="ui-column-filter"
+                            optionLabel="grade_name">
+                            <ng-template let-option pTemplate="item">
+  
+  
+                              <span>&#123;&#123;option.label&#125;&#125;</span>
+  
+                            </ng-template>
+                          </p-multiSelect>
+                        </div>
+                      </th>
+  
+                      <th *ngIf="getColumnPresent('quantity')"></th>
+                      <th *ngIf="getColumnPresent('Rate')"></th>
+                      <th  *ngIf="getColumnPresent('purchase_rate')"></th>
+                  
+                      <th *ngIf="getColumnPresent('damage_material_qty')"></th>
+                      <th *ngIf="getColumnPresent('short_material_qty')"> </th>
+                      <th *ngIf="getColumnPresent('damage_short_dr_cr_note')"></th>
+                      <th  *ngIf="getColumnPresent('short_deb_credit_no')"></th>
+                      <th  *ngIf="getColumnPresent('damage_deb_credit_no')"></th>
+                      <th  *ngIf="getColumnPresent('other_remark')"></th>
+                      <th  *ngIf="getColumnPresent('other_debit_credit_no')"></th>
+                      <th  *ngIf="getColumnPresent('other_credit_amount')"></th>
+                      <th  *ngIf="getColumnPresent('short_credit_amount')"></th>
+                      <th  *ngIf="getColumnPresent('damage_credit_amount')"></th>
+                  
+                    </tr>
+  
+  
+                  </ng-template>
+                  <ng-template pTemplate="body" let-item let-columns let-index="rowIndex">
+                    <tr class="ui-selectable-row">
+                      <!--
+                              <td >
+                                <input type="checkbox" [value]="item" #inputs #checkboxes
+                                >
+                            </td>
+   -->
+  
+                      <td style="width: 150px;" *ngIf="getColumnPresent('purchase_invoice_no_dt')">
+                        <span class="ui-column-title">Purchase Invoice Number</span>
+                        {{item.purchase_invoice_no_dt}} <span *ngIf="item.purchase_invoice_copy">
+                          <span *ngFor="let doc of getDocsArray(item.purchase_invoice_copy)">
+                            <a href={{doc}} target="_blank"><i class="fa fa-file"></i></a>
+                          </span>
+                        </span>
+                      </td>
+  
+  
+                      <td style="width: 150px;" *ngIf="getColumnPresent('purchase_invoice_date')">
+                        <span class="ui-column-title">Purchase Invoice Date</span>
+                        {{item.purchase_invoice_date | date: 'dd/MM/yyyy'}}
+                      </td>
+  
+  
+                      <td class="sticky-col second-col" style="width: 200px;" *ngIf="getColumnPresent('subOrgName')">
+                        <span class="ui-column-title">Supplier</span>
+                        {{item.subOrgName}}
+                      </td>
+  
+  
+  
+  
+  
+                      <td style="width: 180px;" *ngIf="getColumnPresent('godownName')">
+                        <span class="ui-column-title">Godown</span>
+                        {{item.godownName}}
+                      </td>
+  
+                      
+  
+  
+                      <td style="width: 100px;" *ngIf="getColumnPresent('truck_no')">
+                        <span class="ui-column-title">Truck No</span>
+                        {{item.truck_no}}
+                      </td>
+
+                      <td style="width: 150px;" *ngIf="getColumnPresent('main_grade')">
+                        <span class="ui-column-title">Category</span>
+                        {{item.main_grade}}
+                      </td>
+  
+  
+                      <td style="width: 150px;" *ngIf="getColumnPresent('grade_name')">
+                        <span class="ui-column-title">Grade</span>
+                        {{item.grade_name}}
+                      </td>
+  
+  
+  
+                      <td style="width: 100px;" *ngIf="getColumnPresent('quantity')">
+                        <span class="ui-column-title"> Quantity</span>
+                        {{item.quantity}} MT
+                      </td>
+  
+                      <td style="width: 100px ;" *ngIf="getColumnPresent('Rate')">
+                        <span class="ui-column-title">Deal Rate</span>
+                        {{item.Rate}}
+                      </td>
+                      <td style="width: 100px;" pEditableColumn *ngIf="getColumnPresent('purchase_rate')">
+                        <span class="ui-column-title">Lifting Rate</span>
+  
+                        <p-cellEditor>
+                          <ng-template pTemplate="input">
+                            <input pInputText class="form-control" type="text" [(ngModel)]="item.purchase_rate"
+                              (change)="update($event , item.id , 'purchase_rate' , item )"
+                              (keydown.enter)="update($event , item.id , 'purchase_rate', item )">
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.purchase_rate}}
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+  
+  
+  
+                      <td pEditableColumn style="width: 150px;" *ngIf="getColumnPresent('damage_material_qty')">
+                        <span class="ui-column-title"> Damage Material Quantity</span>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input">
+                            <input pInputText class="form-control" type="text" [(ngModel)]="item.damage_material_qty"
+                              (change)="update($event , item.id , 'damage_material_qty', item )"
+                              (keydown.enter)="update($event , item.id , 'damage_material_qty', item )"
+                              (change)="update($event , item.id , 'damage_material_qty', item )" numbersOnly>
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.damage_material_qty * 1000}} KG ({{item.damage_material_qty}} MT )
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+  
+                      <td pEditableColumn style="width: 150px;" *ngIf="getColumnPresent('short_material_qty')">
+                        <span class="ui-column-title"> Short Material Quantity</span>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input">
+                            <input pInputText class="form-control" type="text" [(ngModel)]="item.short_material_qty"
+                              (change)="update($event , item.id , 'short_material_qty' , item )"
+                              (keydown.enter)="update($event , item.id , 'short_material_qty' , item )"
+                              (change)="update($event , item.id , 'short_material_qty' , item )" numbersOnly>
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.short_material_qty * 1000}} kg ({{item.short_material_qty}} MT )
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+  
+                      <td pEditableColumn style="width: 250px;" *ngIf="getColumnPresent('damage_short_dr_cr_note')">
+                        <span class="ui-column-title"> Short/Damage Material Remark</span>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input">
+                            <textarea pInputText class="form-control" type="text"
+                              [(ngModel)]="item.damage_short_dr_cr_note"
+                              (change)="update($event , item.id , 'damage_short_dr_cr_note' , item )"
+                              (keydown.enter)="update($event , item.id , 'damage_short_dr_cr_note', item )"></textarea>
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.damage_short_dr_cr_note}}
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+  
+                      <td pEditableColumn style="width: 150px;" *ngIf="getColumnPresent('short_deb_credit_no')">
+                        <span class="ui-column-title"> Short Debit/Credit Note No</span>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input"
+                            *ngIf="item.short_material_qty> 0 && item.short_material_qty!= null">
+                            <input pInputText class="form-control" type="text" [(ngModel)]="item.short_deb_credit_no"
+                              (change)="update($event , item.id , 'short_deb_credit_no',item )"
+                              (keydown.enter)="update($event , item.id , 'short_deb_credit_no' , item )">
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.short_deb_credit_no }}
+  
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+  
+                      <td pEditableColumn style="width: 150px;" *ngIf="getColumnPresent('damage_deb_credit_no')">
+                        <span class="ui-column-title"> Damage Debit/Credit Note No</span>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input"
+                            *ngIf="item.damage_material_qty  > 0 && item.damage_material_qty!= null">
+                            <input pInputText class="form-control" type="text" [(ngModel)]="item.damage_deb_credit_no"
+                              (change)="update($event , item.id , 'damage_deb_credit_no', item )"
+                              (keydown.enter)="update($event , item.id , 'damage_deb_credit_no' , item)">
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.damage_deb_credit_no}}
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+
+                      <td  style="width: 150px;" *ngIf="getColumnPresent('other_remark')">
+                        <span class="ui-column-title"> other Remark</span>
+                      
+                            {{item.other_remark}}
+                         
+                      </td>
+
+                      
+                      <td pEditableColumn style="width: 150px;" *ngIf="getColumnPresent('other_debit_credit_no')">
+                        <span class="ui-column-title"> Other Debit/Credit No</span>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input"
+                            *ngIf="item.other_remark != null">
+                            <input pInputText class="form-control" type="text" [(ngModel)]="item.other_debit_credit_no"
+                              (change)="update($event , item.id , 'other_debit_credit_no', item )"
+                              (keydown.enter)="update($event , item.id , 'other_debit_credit_no' , item)">
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.other_debit_credit_no}}
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+
+                         
+                      <td pEditableColumn style="width: 150px;" *ngIf="getColumnPresent('other_credit_amount')">
+                        <span class="ui-column-title"> Other Amount Debited</span>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input"
+                            *ngIf="item.other_debit_credit_no != null">
+                            <input pInputText class="form-control" type="text" [(ngModel)]="item.other_credit_amount"
+                              (change)="update($event , item.id , 'other_credit_amount', item )"
+                              (keydown.enter)="update($event , item.id , 'other_credit_amount' , item)">
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.other_credit_amount}}
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+
+                           
+                      <td pEditableColumn style="width: 150px;" *ngIf="getColumnPresent('short_credit_amount')">
+                        <span class="ui-column-title"> Short Amount Debited</span>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input"
+                          *ngIf="item.short_deb_credit_no!= null "
+                           >
+                            <input pInputText class="form-control" type="text" [(ngModel)]="item.short_credit_amount"
+                              (change)="update($event , item.id , 'short_credit_amount', item )"
+                              (keydown.enter)="update($event , item.id , 'short_credit_amount' , item)">
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.short_credit_amount}}
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+
+                      
+                           
+                      <td pEditableColumn style="width: 150px;" *ngIf="getColumnPresent('damage_credit_amount')">
+                        <span class="ui-column-title"> Damage Amount Debited</span>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input"
+                          *ngIf="item.damage_deb_credit_no!= null "
+                           >
+                            <input pInputText class="form-control" type="text" [(ngModel)]="item.damage_credit_amount"
+                              (change)="update($event , item.id , 'damage_credit_amount', item )"
+                              (keydown.enter)="update($event , item.id , 'damage_credit_amount' , item)">
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{item.damage_credit_amount}}
+                          </ng-template>
+                        </p-cellEditor>
+                      </td>
+  
+  
+  
+                    </tr>
+                  </ng-template>
+  
+                  <ng-template pTemplate="footer">
+                    <tr>
+  
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('purchase_invoice_no_dt')"></td>
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('purchase_invoice_date')"></td>
+                      <td style="width: 200px;"  *ngIf="getColumnPresent('subOrgName')"></td>
+                      <td style="width: 180px;"  *ngIf="getColumnPresent('godownName')"></td>
+                      <td style="width: 100px;"  *ngIf="getColumnPresent('truck_no')"></td>
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('main_grade')"></td>
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('grade_name')"></td>
+                      <td style="width: 100px;"  *ngIf="getColumnPresent('quantity')">Qty:{{total_qty.toFixed(3)}}</td>
+                      <td style="width: 100px;"  *ngIf="getColumnPresent('Rate')">Rate: {{rate.toFixed(2)}}</td>
+                      <td style="width: 100px;"  *ngIf="getColumnPresent('purchase_rate')"></td>
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('damage_material_qty')">{{total_damage_qty.toFixed(2)}}</td>
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('short_material_qty')">{{total_short_qty.toFixed(2)}}</td>
+                      <td style="width: 250px;"  *ngIf="getColumnPresent('damage_short_dr_cr_note')"></td>
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('short_deb_credit_no')"></td>
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('damage_deb_credit_no')"></td> 
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('other_remark')"></td> 
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('other_debit_credit_no')"></td> 
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('other_credit_amount')"></td> 
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('short_credit_amount')"></td> 
+                      <td style="width: 150px;"  *ngIf="getColumnPresent('damage_credit_amount')"></td> 
+                    
+  
+                    </tr>
+                    <tr>
+                      <td colspan="10" style="text-align:left">Total Records: {{filteredValuess?.length}}</td>
+                    </tr>
+                  </ng-template>
+  
+                  <ng-template pTemplate="emptymessage">
+  
+                    <tr>
+                      <td colspan="10" style="text-align:left">No Data found.</td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+  
+  <toaster-container [toasterconfig]="toasterconfig"></toaster-container>

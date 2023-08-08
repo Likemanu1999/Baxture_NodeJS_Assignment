@@ -1,0 +1,292 @@
+<div class="animated fadeIn">
+	<div class="card">
+		<div class="card-header">
+			<div class="row">
+				<div class="col-md-6">
+					<i class="icon-list"></i> Short Damage Clearance
+				</div>
+				<div class="col-md-6 text-right">
+					<button class="btn btn-primary " (click)="addClearance()" *ngIf="add_opt">Add Clearance</button>
+
+				</div>
+			</div>
+		</div>
+		<div class="card-body">
+			<p-table #dt [value]="data" dataKey="id" styleClass="ui-table" [rowHover]="true" [rows]="10"
+				[showCurrentPageReport]="true" [scrollable]="true" scrollHeight="400px"
+				[rowsPerPageOptions]="[10,25,50]" [paginator]="true" [columns]="cols" (onFilter)="onFilter($event, dt)"
+				[globalFilterFields]="['godown_name','grade_name','type']">
+
+				<ng-template pTemplate="caption">
+					<div class="row">
+						<div class="col-md-5">
+							<div class="input-group">
+								<input type="text" class="form-control " [(ngModel)]="selected_date_range"
+									(ngModelChange)="onChangeDate($event);getData()" [bsConfig]="datePickerConfig"
+									#dp="bsDaterangepicker" [maxDate]="maxDate" bsDaterangepicker
+									placeholder="Choose Date Range" class="form-control page-filter" readonly />
+								<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+									[uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<input pInputText class='form-control' type="text"
+								(input)="dt.filterGlobal($event.target.value, 'contains')"
+								placeholder="Global Search" />
+						</div>
+					</div>
+				</ng-template>
+
+				<ng-template pTemplate="header" let-columns>
+					<tr>
+						<th [style.width]="col.style" pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+							{{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+						</th>
+					</tr>
+					<tr>
+						<th></th>
+						<th></th>
+						<th style="width: 200px;">
+							<div *ngIf="godown_list.length > 0">
+								<p-multiSelect [options]="godown_list" placeholder="All"
+									(onChange)="onchange($event,'godown_name')"
+									styleClass="ui-column-filter" optionLabel='godown_name'
+									appendTo="body">
+									<ng-template let-op pTemplate="item">
+										<span>{{op.label}}</span>
+									</ng-template>
+								</p-multiSelect>
+							</div>
+						</th>
+						<th style="width: 200px;">
+							<div *ngIf="grade_list.length > 0">
+								<p-multiSelect [options]="grade_list" placeholder="All"
+									(onChange)="onchange($event,'grade_name')"
+									styleClass="ui-column-filter" optionLabel='grade_name'
+									appendTo="body">
+									<ng-template let-op pTemplate="item">
+										<span>{{op.label}}</span>
+									</ng-template>
+								</p-multiSelect>
+							</div>
+						</th>
+						<th></th>
+						<th></th>
+						<th style="width: 200px;">
+							<div *ngIf="types_list.length > 0">
+								<p-multiSelect [options]="types_list" placeholder="All"
+									(onChange)="onchange($event,'type')"
+									styleClass="ui-column-filter" optionLabel='type'
+									appendTo="body">
+									<ng-template let-op pTemplate="item">
+										<span>{{op.label}}</span>
+									</ng-template>
+								</p-multiSelect>
+							</div>
+						</th>
+						<th></th>
+						<th></th>
+						<th></th>
+					</tr>
+				</ng-template>
+				<ng-template pTemplate="body" let-item let-columns>
+
+					<tr class="ui-selectable-row">
+
+						<td style="width:  80px;">
+							<span class="ui-column-title">Action</span>
+							<button type="button" class="btn btn-primary btn-sm" (click)="onEdit(item)"
+								*ngIf="edit_opt"><i class="fa fa-pencil"></i></button> &nbsp;
+							<button type="button" *ngIf="del_opt" class="btn btn-danger btn-sm" mwlConfirmationPopover
+								[popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage"
+								[confirmText]="confirmText" [cancelText]="cancelText" [placement]="placement"
+								[closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="danger"
+								cancelButtonType="success" (confirm)="onDelete(item)" (cancel)="cancelClicked = true"><i
+									class="fa fa-trash"></i></button>
+						</td>
+
+						<td style="width:  100px;">
+							<span class="ui-column-title">Company Name</span>
+							{{item.company_master? item.company_master.name: ''}}
+						</td>
+
+						<td style="width:  110px;">
+							<span class="ui-column-title">Godown Name</span>
+							{{item.godown_name}}
+						</td>
+
+						<td style="width:  110px;">
+							<span class="ui-column-title">Grade Name</span>
+							{{item.grade_name}}
+						</td>
+
+						<td style="width:  100px;">
+							<span class="ui-column-title">Quantity</span>
+							{{item.quantity}}
+						</td>
+
+						<td style="width:  100px;">
+							<span class="ui-column-title">Date</span>
+							{{item.date | date: 'dd/MM/yyyy'}}
+						</td>
+
+						<td style="width:  110px;">
+							<span class="ui-column-title">Sales Purchase Type</span>
+							{{item.type}}
+						</td>
+						<td style="width:  200px;">
+							<span class="ui-column-title">Remark</span>
+							{{item.remark}}
+						</td>
+						<td style="width:  100px;">
+							<span class="ui-column-title">Updated By</span>
+							{{item.staff_member_master? item.staff_member_master.first_name : '' }}
+							{{item.staff_member_master? item.staff_member_master.last_name : '' }}
+						</td>
+						<td style="width:  100px;">
+							<span class="ui-column-title">Updated At</span>
+							{{item.modified_date | date: 'dd/MM/yyyy'}}
+						</td>
+
+					</tr>
+				</ng-template>
+
+				<ng-template pTemplate="footer">
+					<tr>
+						<td style="width:80px"></td>
+						<td style="width:100px"></td>
+						<td style="width:110px"></td>
+						<td style="width:110px">Total</td>
+						<td style="width:100px">{{totalQty | number :'1.2-3'}}MT</td>
+						<td style="width:100px"></td>
+						<td style="width:110px"></td>
+						<td style="width:200px"></td>
+						<td style="width:100px"></td>
+						<td style="width:100px"></td>
+					</tr>
+
+
+				</ng-template>
+				<ng-template pTemplate="emptymessage">
+					<tr>
+						<td colspan="5" style="text-align:left">No Data found.</td>
+					</tr>
+				</ng-template>
+			</p-table>
+
+		</div>
+	</div>
+</div>
+
+
+<div bsModal #clearanceModal="bs-modal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="Add Consume Capacity" aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<form [formGroup]="clearanceForm" (ngSubmit)="onSubmit()" class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">
+						<i class="fa fa-plus text-success"></i> Short Damage Clearance
+					</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-8">
+							<div class="form-group">
+								<label class="col-form-label" for="company_id"><strong>Select company</strong></label>
+								<ng-select id="company_id" formControlName="company_id" placeholder="Select company"
+									[searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+									[items]="company_arr" (change)="getGrade($event)">
+								</ng-select>
+							</div>
+							<div class="form-group">
+								<label class="col-form-label" for="grade_id"><strong>Select Godown</strong></label>
+								<ng-select id="grade_id" formControlName="godown_id" placeholder="Select Godown"
+									[searchable]="true" [clearable]="true" bindLabel="godown_name" bindValue="id"
+									[items]="godown">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="col-8">
+							<div class="form-group">
+								<label class="col-form-label" for="grade_id"><strong>Select Grade</strong></label>
+								<ng-select id="grade_id" formControlName="grade_id" placeholder="Select Grade"
+									[searchable]="true" [clearable]="true" bindLabel="grade_name" bindValue="grade_id"
+									[items]="grade_arr">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="col-8">
+							<div class="form-group">
+								<label class="col-form-label" for="import_local_flag"><strong>Import/Local</strong></label>
+								<ng-select id="import_local_flag" formControlName="import_local_flag" placeholder="Select Type"
+									[searchable]="true" [clearable]="true" bindLabel="label" bindValue="value" [items]="flag_list">
+								</ng-select>
+							</div>
+						</div>
+
+
+						<div class="col-8">
+							<div class="form-group">
+								<label class="col-form-label" for="sale_purchase_type"><strong>Select
+										Type</strong></label>
+								<ng-select id="sale_purchase_type" formControlName="sale_purchase_type"
+									placeholder="Select Type" [searchable]="true" [clearable]="true" bindLabel="label"
+									bindValue="value" [items]="type_list">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="col-6">
+							<div class="form-group">
+								<label for="quantity"><strong>Quantity (MT)</strong></label>
+								<input type="text" class="form-control" id="quantity" formControlName="quantity"
+									placeholder="Quantity" numbersOnly>
+							</div>
+						</div>
+
+
+						<div class="col-6">
+							<div class="form-group">
+								<label class="col-form-label" for="date"><strong>Date</strong> </label>
+								<input type="text" class="form-control" id="date" formControlName="date"
+									[bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' ,  todayHighlight: true ,isAnimated: true }"
+									#dp="bsDatepicker" bsDatepicker readonly placeholder="Enter Deal Date "
+									style="background-color: white;">
+							</div>
+						</div>
+
+						<div class="col-6">
+							<div class="form-group">
+								<label for="remark"><strong>Remark</strong></label>
+								<textarea type="text" class="form-control" id="remark" formControlName="remark"
+									placeholder="remark"
+									[class.invalid]="clearanceForm.invalid && clearanceForm.touched"></textarea>
+									
+							</div>
+						</div>
+
+
+
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+					<button type="submit" class="btn btn-primary"
+						[disabled]="clearanceForm.pristine || clearanceForm.invalid">Submit</button>
+				</div>
+			</form>
+
+
+
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

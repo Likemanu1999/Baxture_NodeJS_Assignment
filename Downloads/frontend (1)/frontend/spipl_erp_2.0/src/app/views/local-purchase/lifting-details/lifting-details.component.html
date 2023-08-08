@@ -1,0 +1,786 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="row">
+            <div class="col-md-10">
+              <h4><i class="fa fa-list"></i> Lifting Details for {{supplier}}
+                <div class="row mt-2" style="font-size: 16px;">
+                  <div class="col-md-3">
+                    <strong>PO ID: </strong>{{id}}
+                  </div>
+                  <div class="col-md-3">
+                    <strong>Quantity:</strong> {{quantity}} MT
+                  </div>
+                  <div class="col-md-3">
+                    <strong>Term:</strong> {{term}}
+                  </div>
+                </div>
+
+                <div class="row mt-2" style="font-size: 16px;">
+                  <div class="col-md-3">
+                    <strong> Rate:</strong> ₹ {{rate}}
+                  </div>
+                  <div class="col-md-3">
+                    <strong> Freight:</strong> ₹ {{freight}}
+                  </div>
+                  <div class="col-md-5">
+                    <strong>Delivery Term:</strong> {{delivery_term}}
+                  </div>
+                </div>
+
+                <div class="row mt-2" style="font-size: 16px;">
+                  <div class="col-md-3">
+                    <strong>Godown:</strong> {{godown}}
+                  </div>
+                  <div class="col-md-3">
+                    <strong>Balance:</strong> {{balance_amt}} MT
+                  </div>
+                  <div *ngIf="vendor_ref_number" class="col-md-6">
+                    <span style="color: darkblue;"> <strong>
+                        Vendor Ref Number:</strong> {{vendor_ref_number}} </span>
+                  </div>
+                </div>
+
+              </h4>
+            </div>
+            <div class="col-md-2">
+              <button *ngIf="add_lift" style="float: right;" class="btn  btn-primary" (click)="addNew()"><i
+                  class="fa fa-plus"></i> Add
+                New</button>
+            </div>
+
+          </div>
+
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-2 offset-5" *ngIf="isLoading">
+              <app-loading-spinner></app-loading-spinner>
+            </div>
+          </div>
+          <div class="row" *ngIf="!isLoading">
+            <div class="col-md-12">
+              <p-table #dt [value]="lifitng_details" dataKey="id" styleClass="ui-table-customers  " [rowHover]="true"
+                [rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [paginator]="false"
+                [scrollable]="true" [virtualRowHeight]="500" scrollHeight="400px" [virtualScroll]="true"
+                [columns]="cols_lift" (onFilter)="onFilter($event, dt)" [filterDelay]="0"
+                [globalFilterFields]="['quantity','truck_no','grade_name','remark','purchase_invoice_no','purchase_invoice_date','term','short_material_qty','damage_material_qty','vendor_ref_number']">
+
+
+                <ng-template pTemplate="caption">
+
+                  <div class="row">
+
+
+                    <div class="col-md-4">
+
+                      <div class="ui-helper-clearfix" style="text-align: left">
+                        <button type="button" *ngIf="excel_lift" pButton icon="pi pi-file-excel" iconPos="left"
+                          label="EXCEL" (click)="exportExcelLifting()" style="margin-right: 0.5em;"
+                          class="ui-button-success"></button>
+                        <button type="button" *ngIf="pdf_lift" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF"
+                          (click)="exportPdfLifting()" class="ui-button-warning"></button>
+
+                        <button type="button" pButton icon="pi pi-envelope" iconPos="left" label="Send Mail Pending"
+                          class="ui-button-warning" (click)="sendMail()"></button>
+                      </div>
+
+                    </div>
+
+
+
+                    <div class="col-md-3">
+
+                      <input pInputText class='form-control' type="text"
+                        (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+
+                    </div>
+
+
+                  </div>
+
+
+
+                </ng-template>
+
+                <ng-template pTemplate="header" let-columns>
+
+
+                  <tr>
+
+
+                    <th style="width:60px">
+                      <p-tableHeaderCheckbox (click)="onCheckAll(a.checked)" #a>
+                      </p-tableHeaderCheckbox>
+                    </th>
+                    <th *ngIf="edit_lift" style="width:90px">Edit</th>
+                    <th *ngIf="del_lift" style="width:60px">Delete</th>
+                    <th style="width:100px">Original Received</th>
+
+
+
+                    <th [style.width]="col.style" pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+                      {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                    </th>
+
+                  </tr>
+
+
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-columns let-index="rowIndex">
+                  <tr class="ui-selectable-row">
+
+
+                    <td style="width: 60px;">
+                      <input type="checkbox" [value]="item" #inputs #checkboxes
+                        (click)="onCheck(checkboxes.checked,item)">
+                      <span style="color: blue; cursor: pointer;" title="Copy Invoice" (click)="copyRecord(item)"
+                        *ngIf="copy_record"><i class="fa fa-copy"></i></span>
+                    </td>
+
+                    <td *ngIf="edit_lift" style="width: 90px;">
+                      <button type="button" title="Edit" class="btn btn-sm btn-primary" (click)="onEdit(item, index)"><i
+                          class="fa fa-pencil"></i></button>
+
+                      <button title="Upload Invoice" type="button" class="btn btn-sm btn-success"
+                        (click)="openUpdateFile(item, index)"><i class="fa fa-upload"></i></button>
+                    </td>
+                    <td *ngIf="del_lift" style="width: 60px;">
+                      <button type="button" class="btn btn-sm btn-danger" mwlConfirmationPopover
+                        [popoverTitle]="popoverTitle" [popoverMessage]="popoverMessage" [confirmText]="confirmText"
+                        [cancelText]="cancelText" [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick"
+                        confirmButtonType="danger" cancelButtonType="success" (confirm)="onDelete(item , index)"
+                        (cancel)="cancelClicked = true"><i class="fa fa-trash"></i></button>
+                    </td>
+
+                    <td style="width: 100px;">
+                      <span class="ui-column-title">Original Received</span>
+                      <span class="badge badge-success" *ngIf="item.original_doc_recv_flag">Received</span>
+                      <span class="badge badge-danger" *ngIf="!item.original_doc_recv_flag">Pending</span>
+                      <div *ngIf="item.org_doc_invoice_copy != null">
+                        <a href="{{doc}}" *ngFor="let doc of getDocsArray(item.org_doc_invoice_copy)" target="_blank">
+                          <em class="fa fa-file"></em>
+                        </a>
+                      </div>
+                      <div style="color: red; font-size: 10px;" *ngIf="item.pending_mail_sent_date != null"> Mail Sent
+                        Pending:{{item.pending_mail_sent_date | date: 'dd/MM/yyyy'}}</div>
+                    </td>
+
+
+
+                    <td style="width: 100px;">
+                      <span class="ui-column-title">Qty (Tons)</span>
+                      {{item.quantity}} MT
+                    </td>
+
+
+                    <td style="width: 120px;">
+                      <span class="ui-column-title">Truck No</span>
+                      {{item.truck_no}}
+                    </td>
+
+
+                    <td style="width: 100px;">
+                      <span class="ui-column-title">Grade</span>
+                      {{item.grade_name}}
+                    </td>
+
+                    <td style="width: 150px;">
+                      <span class="ui-column-title">Invoice No</span>
+                      {{item.purchase_invoice_no}} <span *ngIf="item.purchase_invoice_copy">
+                        <span *ngFor="let doc of getDocsArray(item.purchase_invoice_copy)">
+                          <a href={{doc}} target="_blank"><i class="fa fa-file"></i></a>
+                        </span>
+
+                      </span>
+                      <div style="color: red;">Amt: {{item.invoice_value | currencyInr}}</div>
+                    </td>
+
+                    <td style="width: 150px;">
+                      <span class="ui-column-title">Invoice Date</span>
+                      {{item.purchase_invoice_date}}
+                    </td>
+
+
+                    <td style="width: 100px;">
+                      <span class="ui-column-title">Short Material Quantity</span>
+                      {{item.short_material_qty}}
+                    </td>
+
+
+                    <td style="width: 100px;">
+                      <span class="ui-column-title">Damage Material Quantity</span>
+                      {{item.damage_material_qty}}
+                    </td>
+
+                    <td style="width: 100px;">
+                      <span class="ui-column-title">Purchase Rate</span>
+                      {{item.purchase_rate}}
+                    </td>
+
+                    <td style="width: 100px;">
+                      <span class="ui-column-title">Freight</span>
+                      {{item.freight_amount}}
+                    </td>
+
+                    <td style="width: 200px;">
+                      <span class="ui-column-title">Remark</span>
+                      {{item.remark}}
+                    </td>
+
+
+
+
+                  </tr>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                  <tr>
+
+                    <td style="width: 60px;"></td>
+                    <td *ngIf="edit_lift" style="width: 90px;"></td>
+                    <td *ngIf="del_lift" style="width: 60px;"></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 100px;">{{total_qty}}</td>
+                    <td style="width: 120px;"></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 150px;"></td>
+                    <td style="width: 150px;"></td>
+                    <td style="width: 100px;">{{total_short_qty}}</td>
+                    <td style="width: 100px;">{{total_damage_qty}}</td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 100px;"></td>
+                    <td style="width: 200px;"></td>
+
+
+                  </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+
+                  <tr>
+                    <td colspan="10" style="text-align:left">No Data found.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form [formGroup]="addForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Lifting Details</h4>
+          <button type="button" class="close" (click)=" oncloseModal()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="form-group row">
+            <div class="col-md-8">
+              <div class="form-group">
+                <label class="col-form-label" for="supplier_id">Supplier Name <span
+                    style="color: red ; font-size:5px"><i class="fa fa-asterisk "></i></span></label>
+
+                <ng-select id="supplier_id" placeholder="Select Supplier Name" formControlName="sub_org_id"
+                  [searchable]="true" [clearable]="true" bindLabel="sub_org_name" bindValue="sub_org_id"
+                  [items]="sister_company_list">
+                  <ng-template ng-option-tmp let-item="item">
+                    <div title="{{item.sub_org_name}}">{{item.sub_org_name}}
+                    </div>
+                  </ng-template>
+                </ng-select>
+
+
+
+
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="material_received_date">Material Received Date</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="material_received_date"
+                    formControlName="material_received_date"
+                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                    bsDatepicker [maxDate]="today" placeholder="Enter Material Received Date ">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="invoice_date">Purchase Invoice Date </label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="invoice_date" formControlName="invoice_date"
+                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }" #dp="bsDatepicker"
+                    bsDatepicker [maxDate]="today" placeholder="Enter Invoice Date ">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="invoice_number">Purchase Invoice Number</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="invoice_number" formControlName="invoice_number"
+                    placeholder="Enter Invoice Number ">
+                </div>
+              </div>
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="godown_id">Godown <span style="color: red ; font-size:5px"><i
+                        class="fa fa-asterisk "></i></span></label>
+                </div>
+                <div class="col-md-6">
+
+                  <ng-select id="godown_id" formControlName="godown_id" placeholder="Select Godown" [searchable]="true"
+                    [clearable]="true" bindLabel="godown_name" bindValue="id" [items]="godownList">
+                  </ng-select>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="grade_id">Grade <span style="color: red ; font-size:5px"><i
+                        class="fa fa-asterisk "></i></span></label>
+                </div>
+                <div class="col-md-6">
+                  <ng-select id="grade_id" formControlName="grade_id" placeholder="Select Grade " [searchable]="true"
+                    [clearable]="true" bindLabel="grade_name" bindValue="grade_id" [items]="grade_list">
+                    <ng-template ng-option-tmp let-item="item">
+                      <div title="{{item.grade_name}}">{{item.grade_name}}
+                      </div>
+                    </ng-template>
+                  </ng-select>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="quantity">Quantity (KG) <span style="color: red ; font-size:5px"><i
+                        class="fa fa-asterisk "></i></span></label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="quantity" formControlName="quantity"
+                    placeholder="Enter  Quantity " [(ngModel)]="lift_quantity" numbersOnly
+                    (keyup)="checkQuantity($event)">
+                </div>
+
+                <span style="color: red" *ngIf="qtyCheckFlag">Quantity Exceeds</span>
+              </div>
+              <div [innerHTML]="invoice_amount"></div>
+              <input type="hidden" class="form-control" formControlName="invoice_value" numbersOnly>
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="truck_no">Truck Number <span style="color: red ; font-size:5px"><i
+                        class="fa fa-asterisk "></i></span></label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="truck_no" formControlName="truck_no"
+                    placeholder="Enter Truck Number ">
+                </div>
+              </div>
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="lr_number">LR Number</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="lr_number" formControlName="lr_number"
+                    placeholder="Enter  Number ">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-2">
+
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="transporter_id">Transporter </label>
+                </div>
+                <div class="col-md-6">
+                  <ng-select id="transporter_id" formControlName="transporter_id" placeholder="Select Transporter "
+                    [searchable]="true" [clearable]="true" bindLabel="sub_org_name" bindValue="sub_org_id"
+                    [items]="transporter">
+                    <ng-template ng-option-tmp let-item="item">
+                      <div title="{{item.sub_org_name}}">{{item.sub_org_name}}
+                      </div>
+                    </ng-template>
+                  </ng-select>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="freight_amount">Freight Amount</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="freight_amount" formControlName="freight_amount"
+                    placeholder="Enter Freight " numbersOnly>
+                </div>
+              </div>
+            </div>
+
+
+            <hr style="width:100%;text-align:left;margin-left:0">
+
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="short_material_qty">Short Material Qty (KG)</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="short_material_qty" formControlName="short_material_qty"
+                    placeholder="Short Material Quantity" numbersOnly>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="damage_material_qty">Damage Material Qty (KG)</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="damage_material_qty" formControlName="damage_material_qty"
+                    placeholder="Damage Material Quantity " numbersOnly>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="damage_short_dr_cr_note">Short/Damage Remark</label>
+                </div>
+                <div class="col-md-6">
+                  <textarea class="form-control" id="damage_short_dr_cr_note" formControlName="damage_short_dr_cr_note"
+                    placeholder="Enter Remark "></textarea>
+                </div>
+              </div>
+
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="other_remark">Other(damage) Remark</label>
+                </div>
+                <div class="col-md-6">
+                  <textarea class="form-control" id="other_remark" formControlName="other_remark"
+                    placeholder="Enter Other Remark "></textarea>
+                </div>
+              </div>
+
+            </div>
+            <hr style="width:100%;text-align:left;margin-left:0;border-style: solid;">
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="purchase_rate">Purchase Rate By Billing Person</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="purchase_rate" formControlName="purchase_rate"
+                    placeholder="Enter Purchase Rate ">
+                </div>
+              </div>
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <label class="col-md-4 col-form-label">Upload Invoice Copy</label>
+                <div class="col-md-6">
+                  <input type="file" class="form-control" id="purchase_invoice_copy"
+                    formControlName="purchase_invoice_copy" (change)="addDocs($event)" [multiple]=true>
+                </div>
+              </div>
+            </div>
+
+
+
+
+            <div class="col-md-6">
+              <label class="col-form-label" for="original_doc_recv_flag ">Original Doc Received</label>
+              <input type="checkbox" formControlName="original_doc_recv_flag">
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <label class="col-md-4 col-form-label">Upload Original Doc Copy</label>
+                <div class="col-md-6">
+                  <input type="file" class="form-control" id="org_doc_invoice_copy"
+                    formControlName="org_doc_invoice_copy" (change)="addDocsOriginal($event)" [multiple]=true>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-2">
+
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="remark">Remark</label>
+                </div>
+                <div class="col-md-6">
+                  <textarea class="form-control" id="remark" formControlName="remark"
+                    placeholder="Enter Remark "></textarea>
+                </div>
+              </div>
+
+            </div>
+
+
+
+
+
+
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="oncloseModal()">Close</button>
+          <button type="submit" class="btn btn-primary" [disabled]="addForm.pristine || addForm.invalid">Submit</button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+<div bsModal #myModalPending="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+
+      <div class="modal-header">
+        <h4 class="modal-title">Original Pending Mail</h4>
+        <button type="button" class="close" (click)="closeModalPending()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="isLoadingMail" style="text-align: center;">
+          <app-loading-spinner></app-loading-spinner>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div *ngIf="checkedList.length>0">
+              <div class="row">
+                <div class="col-md-6">
+                  <p> <strong>To</strong> : <span *ngFor="let email of maillist"><input type="checkbox"
+                        (click)="mailto(b.checked,email)" #b> {{email}} <br> </span></p>
+                  <p><textarea class="form-control" cols="6" [(ngModel)]="tomailtext "
+                      (change)='tomailvalue($event)'>}</textarea></p>
+                </div>
+                <div class="col-md-6">
+                  <p> <strong>Cc</strong> : <span *ngFor="let email of maillist"><input type="checkbox"
+                        (click)="ccmail(c.checked,email)" #c> {{email}} <br> </span></p>
+                  <p><textarea class="form-control" cols="6" [(ngModel)]="ccmailtext "
+                      (change)='ccmailvalue($event)'></textarea></p>
+                  <p>Put Additional Email comma seperated</p>
+                </div>
+              </div>
+
+
+              <p>Dear {{supplier}},</p>
+              <p> Greetings from Sushila Parmar International Pvt Ltd.</p>
+
+              <p>We have entered into the below mentioned purchase transaction/s with your valued organization, the
+                details of the same are as below;</p>
+
+              <h5>Con ID: {{id}} , Quantity: {{quantity}} MT , Rate: {{rate}} , Grade: {{grade_name}} , Destination:
+                {{godown_name}}</h5>
+              <p>With reference to the above mentioned deal/s kindly find below the details of the pending purchase
+                invoices against the same.
+              </p>
+              <table class="table table-striped table-hover table-responsive-lg" [mfData]="checkedList"
+                #mf2="mfDataTable">
+                <thead>
+                  <tr>
+                    <th>Sr.No</th>
+                    <th>Material Received Date.</th>
+                    <th>Particulars.</th>
+                    <th>Voucher Type</th>
+                    <th>Invoice No</th>
+                    <th>Invoice Date</th>
+
+                  </tr>
+                </thead>
+                <tbody>
+
+                  <tr *ngFor="let val of mf2.data; let i = index" [attr.data-index]="i" [attr.id]="val.id">
+
+                    <td>{{i+1}}</td>
+                    <td>{{val.material_received_date | date: 'dd/MM/yyyy'}} </td>
+                    <td>{{supplier}} </td>
+                    <td>LOCAL PURCH-PP</td>
+                    <td>{{val.purchase_invoice_no}} </td>
+                    <td>{{val.purchase_invoice_date | date: 'dd/MM/yyyy'}} </td>
+
+                  </tr>
+                </tbody>
+
+              </table>
+
+              <p>Request you to kindly courier us the above pending Original Invoices to the below mentioned address;
+              </p>
+              <p>Sushila Parmar International Pvt Ltd
+                31, Adinath Shopping Centre,
+                Pune - Satara Road, Pune-411037, India.
+                Tel :- +91-20-24529999</p>
+              <p>Your quick action on the above will be highly appreciated.</p>
+              <p>Regards,</p>
+              <p>SPIPL</p>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModalPending()">Close</button>
+          <button type="button" class="btn btn-primary" (click)="original_pending_mail()">Send Mail</button>
+        </div>
+
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+</div>
+
+<div bsModal #myModalUpdateFile="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form [formGroup]="addForm" novalidate (ngSubmit)="updateFile()" autocomplete="off">
+
+        <div class="modal-header">
+          <h4 class="modal-title">Lifting File Upload</h4>
+          <button type="button" class="close" (click)=" oncloseModal()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+
+          <div class="form-group row">
+
+
+
+
+
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <label class="col-md-4 col-form-label">Upload Invoice Copy</label>
+                <div class="col-md-6">
+                  <input type="file" class="form-control" id="purchase_invoice_copy"
+                    formControlName="purchase_invoice_copy" (change)="addDocs($event)" [multiple]=true>
+                </div>
+              </div>
+            </div>
+
+
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="col-form-label" for="purchase_rate">Purchase Rate By Billing Person</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control" id="purchase_rate" formControlName="purchase_rate"
+                    placeholder="Enter Purchase Rate ">
+                </div>
+              </div>
+            </div>
+
+
+
+
+            <div class="col-md-6">
+              <label class="col-form-label" for="original_doc_recv_flag ">Original Doc Received</label>
+              <input type="checkbox" formControlName="original_doc_recv_flag">
+            </div>
+
+
+            <div class="col-md-6 mb-2">
+              <div class="row">
+                <label class="col-md-4 col-form-label">Upload Original Doc Copy</label>
+                <div class="col-md-6">
+                  <input type="file" class="form-control" id="org_doc_invoice_copy"
+                    formControlName="org_doc_invoice_copy" (change)="addDocsOriginal($event)" [multiple]=true>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="oncloseModal()">Close</button>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+      </form>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

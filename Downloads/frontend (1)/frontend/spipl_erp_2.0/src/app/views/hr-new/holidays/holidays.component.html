@@ -1,0 +1,168 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-4">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-12">
+							<i class="fa fa-plus"></i> Add New Holiday
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<form [formGroup]="holidayForm" novalidate (ngSubmit)="onSubmit()" autocomplete="off"
+								class="needs-validation">
+								<div class="form-row">
+									<div class="col-md-12">
+										<div class="form-group">
+											<label for="date">Date <sup class="text-danger"><strong>*</strong></sup>
+											</label>
+											<input type="text" class="form-control" id="date" formControlName="date"
+												placeholder="Date" [bsConfig]="datePickerConfig" bsDatepicker readonly>
+										</div>
+									</div>
+									<div class="col-md-12">
+										<div class="form-group">
+											<label for="holiday_id">Holiday <sup
+													class="text-danger"><strong>*</strong></sup>
+											</label>
+											<ng-select id="holiday_id" formControlName="holiday_id"
+												placeholder="Holiday" [searchable]="true" [clearable]="true"
+												bindLabel="name" bindValue="id" [items]="holidaysList">
+											</ng-select>
+										</div>
+									</div>
+									<div class="col-md-12">
+										<div class="form-group">
+											<label for="remark">Remark</label>
+											<textarea class="form-control" id="remark" formControlName="remark"
+												placeholder="Remark"></textarea>
+										</div>
+									</div>
+								</div>
+								<button type="submit" class="btn btn-primary" [disabled]="holidayForm.invalid">
+									Submit
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-8">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-12">
+							<i class="fa fa-list"></i> Holiday List
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="holiday_list_table" [value]="data" [rows]="5"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div class="form-group mb-1">
+													<input pInputText [(ngModel)]="selected_year"
+														(ngModelChange)="getHolidays()" [bsConfig]="yearPickerConfig"
+														#dp="bsDatepicker" bsDatepicker placeholder="Select Year"
+														class="form-control page-filter" readonly />
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData>
+									<tr class="ui-selectable-row">
+										<td *ngFor="let col of cols">
+											<div *ngIf="col.field != 'action'">
+												<span class="ui-column-title">{{ col.header }}: </span>
+												<div *ngIf="col.type == null">
+													{{ rowData[col.field] }}
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+												</div>
+											</div>
+											<div *ngIf="col.field == 'action'" class="text-center">
+												<button *ngIf="edit_opt && rowData.status == 1"
+													class="btn btn-primary btn-sm action-btn mb-2"
+													(click)="onAction(rowData, 'Edit', null)">
+													<i class="fa fa-pencil"></i>
+												</button>
+												<button *ngIf="del_opt && rowData.status == 1"
+													class="btn btn-danger btn-sm action-btn mx-2 mb-2"
+													mwlConfirmationPopover [popoverTitle]="popoverTitle"
+													[popoverMessage]="popoverMessage2" [confirmText]="confirmText"
+													[cancelText]="cancelText" [placement]="placement"
+													[closeOnOutsideClick]="closeOnOutsideClick"
+													confirmButtonType="success" cancelButtonType="danger"
+													(confirm)="onAction(rowData, 'Delete', null)"
+													(cancel)="cancelClicked = true">
+													<i class="fa fa-trash text-white"></i>
+												</button>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

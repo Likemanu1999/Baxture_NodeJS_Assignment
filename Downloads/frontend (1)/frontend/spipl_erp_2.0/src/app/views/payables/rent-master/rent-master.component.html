@@ -1,0 +1,871 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0" *ngIf="view_opt">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-3">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+						<div class="col-md-9 text-right">
+							<!-- <a *ngIf="add_opt"  -->
+
+							<a class="btn btn-primary" (click)="newRentTypeAdd()" style="color:white;"><i
+									class="fa fa-plus"></i> Add Rent Type</a>&nbsp;
+							<a class="btn btn-primary" (click)="godownAdd()" style="color:white;"><i
+									class="fa fa-plus"></i> Add New Godown</a>&nbsp;
+
+
+							<button *ngIf="add_opt" type="button" class="btn btn-primary"
+								(click)="onAction(null, 'Add')">
+								<i class="fa fa-plus"></i> Add New Rent
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="rent_master_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[5,10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (onFilter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<!-- [scrollable]="true" scrollHeight="700px"  [tableStyle]="{'min-width': '250rem'}" -->
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-9">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2"
+													(click)="exportData('Excel')" data-toggle="tooltip"
+													data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2"
+													(click)="exportData('PDF')" data-toggle="tooltip"
+													data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div class="form-group mb-1 mr-1">
+													<input pInputText [(ngModel)]="selected_date_range"
+														(ngModelChange)="clearDropdown (); getData()"
+														[bsConfig]="datePickerConfig" #dp="bsDaterangepicker"
+														[maxDate]="maxDate" bsDaterangepicker
+														placeholder="Choose Date Range" class="form-control page-filter"
+														readonly />&nbsp;
+													<app-dropdown-daterange (dateEvent)="receiveDate($event)"
+														[uploadSuccess]="uploadSuccess"></app-dropdown-daterange>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											{{col.header}}
+											<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of columns">
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row" [ngClass]="checkDate(rowData['period_end']) == 'new' ? 'newRecord': (checkDate(rowData['period_end']) == 'old' ? 'oldRecord' : '')" let i="index">
+										<td *ngFor="let col of cols">
+											<div *ngIf="getColumnPresent(col.field)">
+												<div *ngIf="col.field != 'action'">
+													<span class="ui-column-title">{{ col.header }}: </span>
+													<div *ngIf="col.type == null">
+														{{ rowData[col.field] }}
+													</div>
+
+
+													<div *ngIf="col.type == 'moreAction'">
+														<button type="button" pButton pRipple [pRowToggler]="rowData"
+															class="p-button-text p-button-rounded p-button-plain"
+															[icon]="expanded ? 'fa fa-arrow-down' : 'fa fa-arrow-right'"
+															(click)="paymentRequestRent(rowData)">
+														</button>
+													</div>
+
+												</div>
+												<div *ngIf="col.type == 'godown'">
+													<ng-template
+														*ngIf="rowData[col.field]!==null;then thenPart;else elsePart">
+													</ng-template>
+													<ng-template #thenPart>
+														{{ rowData[col.field] }}
+													</ng-template>
+													<ng-template #elsePart>
+														<i class="fa fa-times text text-danger" aria-hidden="true">
+															<span class="text text-info">No Godown</span>
+														</i>
+													</ng-template>
+												</div>
+
+
+												<div *ngIf="col.type == 'perc'">
+													{{ rowData[col.field] }}
+												</div>
+												<div *ngIf="col.type == 'Amount'">
+													{{ rowData[col.field] | currency:'INR' }}
+												</div>
+												<div *ngIf="col.type == 'Date'">
+													<div *ngIf="col.field!=='increment_amount'">
+														{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+													</div>
+												</div>
+
+												<div *ngIf="col.field=='increment_amount'">
+													<div *ngIf="col.type == 'Date'">
+														{{rowData.renewInc}}
+														<span *ngIf="rowData.renewInc; else then">
+															<button [class]="rowData.badge"
+																(click)="onAction(rowData, 'Edit_Rent')">Renew</button>
+														</span>
+														<ng-template #then>
+															{{ rowData[col.field] | date:'dd-MMM-yyyy' }}
+														</ng-template>
+													</div>
+												</div>
+
+
+												<div *ngIf="col.type == 'Status'">
+													<!-- <span *ngIf="rowData.status == 1"															
+														class="btn btn-outline-success btn-light btn-sm action-btn mb-1" (click)="changeStatus(rowData.status,rowData.id)">{{ rowData.status_name }} 
+													</span>  -->
+													<span *ngIf="rowData.status == 1"
+														class="btn btn-success btn-sm action-btn mb-1">
+
+														<a data-toggle="tooltip" data-placement="top" title="Active"
+															mwlConfirmationPopover [popoverTitle]="popoverTitle"
+															[popoverMessage]="popoverMessage2"
+															[confirmText]="confirmText" [cancelText]="cancelText"
+															[placement]="placement" closeOnOutsideClick="true"
+															confirmButtonType="success" cancelButtonType="danger"
+															(confirm)="changeStatus(rowData.status,rowData.id)"
+															(cancel)="cancelClicked = true">{{ rowData.status_name
+															}} </a>
+													</span>
+													<span *ngIf="rowData.status == 0"
+														class="btn btn-danger btn-sm action-btn mb-1">
+														<a data-toggle="tooltip" data-placement="top" title="Inactive"
+															mwlConfirmationPopover [popoverTitle]="popoverTitle"
+															[popoverMessage]="popoverMessage2"
+															[confirmText]="confirmText" [cancelText]="cancelText"
+															[placement]="placement" closeOnOutsideClick="true"
+															confirmButtonType="success" cancelButtonType="danger"
+															(confirm)="changeStatus(rowData.status,rowData.id)"
+															(cancel)="cancelClicked = true">{{ rowData.status_name
+															}} </a>
+
+													</span>
+												</div>
+												<div *ngIf="col.field == 'action'">
+													<a class="btn btn-outline-dark btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top" title="View Order"
+														(click)="onAction(rowData, 'View')">
+														<i class="fa fa-eye"></i>
+													</a>
+													<!-- <a class="btn btn-outline-dark btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top" title="Policy Claims"
+														(click)="onAction(rowData, 'Policy_Claims')">
+														Claims
+													</a> -->
+													<!-- <a class="btn btn-warning btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top" title="Attachments"
+														(click)="onAction(rowData, 'Policy_Attachments')">
+														<i class="fa fa-paperclip"></i>
+													</a> -->
+													<a *ngIf="edit_opt"
+														class="btn btn-outline-info btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top" title="Edit"
+														(click)="onAction(rowData, 'Edit_Rent')">
+														<i class="fa fa-pencil"></i>
+													</a>
+													<a *ngIf="delete_opt"
+														class="btn btn-outline-danger btn-sm action-btn mb-1 mr-1"
+														data-toggle="tooltip" data-placement="top" title="Delete"
+														mwlConfirmationPopover [popoverTitle]="popoverTitle"
+														[popoverMessage]="popoverMessage1" [confirmText]="confirmText"
+														[cancelText]="cancelText" [placement]="placement"
+														closeOnOutsideClick="true" confirmButtonType="success"
+														cancelButtonType="danger"
+														(confirm)="onAction(rowData, 'Delete_Rent')"
+														(cancel)="cancelClicked = true">
+														<i class="fa fa-trash"></i>
+													</a>
+													<a *ngIf="rowData.rent_copy != null"
+														class="btn btn-success btn-sm action-btn mr-1 mb-1"
+														data-toggle="tooltip" data-placement="top" title="Download CV"
+														[href]="rowData.rent_copy " target="_blank" download>
+														<i class="fa fa-download"></i>
+													</a>
+												</div>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="footer" let-columns>
+									<tr>
+										<td *ngFor="let col of columns">
+											<strong *ngIf="col.type == 'Amount'">
+												Total: {{ col.total | currency:'INR' }}
+											</strong>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">
+											No Data Found
+										</td>
+									</tr>
+								</ng-template>
+
+								<ng-template pTemplate="rowexpansion" let-rowData>
+
+
+									<tr *ngIf="rowData.id==rowExpansion">
+										<td colspan="60%">
+											<div class="row p-3">
+												<p-table [value]="paymentList" dataKey="id" [autoLayout]="true"
+													styleClass="rent_master_table">
+													<!-- [value]="data" -->
+													<ng-template pTemplate="header">
+									<tr>
+										<th>Sr.No</th>
+										<th>Payment Request ID</th>
+										<th>Amount Paid To Bank</th>
+										<th>Payment Request Date</th>
+										<th>UTR Number</th>
+										<th>To Bank</th>
+										<th>Payment Request</th>
+										<th>Payment Status</th>
+										<th>Approve</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-item let-index="rowIndex">
+									<tr>
+										<td>{{index+1}}</td>
+										<td>{{item.id}}</td>
+										<td>{{item.req_amount}}</td>
+										<td>{{item.req_date}}</td>
+										<td>{{item.utr_no}}</td>
+										<td>{{item.to_bank_name}}</td>
+										<td>
+											<!-- ABC -->
+											{{ item.payment_request_by }}
+										</td>
+										<td>
+											<div *ngIf="(item.utr_no== null && item.approved_by== null);then A else B">
+											</div>
+											<ng-template #A>
+												<span class="badge bg-warning">Pending</span>
+											</ng-template>
+											<ng-template #B>
+												<div *ngIf="item.utr_no!=null;then ThenPart else ElsePart"></div>
+												<ng-template #ThenPart><span class="badge bg-success">COMPLETE</span>
+												</ng-template>
+												<ng-template #ElsePart><span class="badge bg-warning">Processing</span>
+												</ng-template>
+											</ng-template>
+										</td>
+										<td>
+											<div *ngIf="item.approved_by!=null;else ElsePart">
+												<span class="badge bg-success">Approved</span>
+											</div>
+											<ng-template #ElsePart><span class="badge bg-warning">No
+													Approve</span></ng-template>
+										</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td [attr.colspan]="cols.length" class="text-center">There are no record payment
+											against yet.</td>
+									</tr>
+								</ng-template>
+
+								<!-- <ng-template pTemplate="rowexpansion" let-rowData>
+									<tr>
+										<td colspan="60%">
+											<div class="row p-3">
+												<p-table [value]="rowData.myObj" dataKey="id">
+													<!-- [value]="data" - ->
+													<ng-template pTemplate="header">
+									<tr>
+										<th colspan="25%">Sr.No</th>
+										<th colspan="25%">ID</th>
+										<th colspan="25%">UTR Number</th>
+										<th colspan="25%">Amount Paid To Bank</th>
+										<th colspan="25%">Month</th>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="body" let-item let-index="rowIndex">
+									<tr>
+										<td style="color:#ab0303" colspan="25%">{{index+1}}</td>
+										<td style="color:#ab0303" colspan="25%">{{item.id}}</td>
+										<td style="color:#ab0303" colspan="25%">{{item.utr_no}}</td>
+										<td style="color:#ab0303" colspan="25%">{{item.amount}}</td>
+										<td style="color:#ab0303" colspan="25%">{{item.month}}</td>
+									</tr>
+								</ng-template>
+								<ng-template pTemplate="emptymessage">
+									<tr>
+										<td colspan="100%">There are no record payment against yet.</td>
+									</tr>
+								</ng-template> -->
+							</p-table>
+						</div>
+						</td>
+						</tr>
+
+						</ng-template>
+
+						</p-table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<div bsModal #addRentModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add New Rent"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<form [formGroup]="rentForm" novalidate (ngSubmit)="onSubmitForm()" autocomplete="off"
+				class="needs-validation">
+				<div class="modal-header">
+					<h4 class="modal-title">
+
+						<i *ngIf="formTitle=='Add New Rent'" class="fa fa-plus text-success"></i> &nbsp;<span
+							[ngClass]="(formTitle=='Add New Rent')?'text-success':'text-danger'">{{formTitle}}</span>
+						<!-- Add New Rent -->
+					</h4>
+					<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="rent_aggrement_id">
+									<strong>Rent Type</strong>
+								</label>
+								<ng-select id="rent_aggrement_id" formControlName="rent_aggrement_purpose"
+									[searchable]="true" [clearable]="true" bindLabel="type" bindValue="id"
+									[items]="rentTypeList" (change)="selectGodown($event,'rent_type')"
+									placeholder="Rent Type">
+								</ng-select>
+							</div>
+						</div>
+
+
+
+						<div class="col-md-3" *ngIf="godownSelect">
+							<div class="form-group">
+								<label for="godown_id">
+									<strong>Godown</strong>
+								</label>
+								<ng-select id="godown_id" formControlName="godown_id" [searchable]="true"
+									[clearable]="true" bindLabel="godown_name" bindValue="id" [items]="godownsList"
+									(change)="selectGodown($event,'godown_select')" placeholder="Godown">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="state_id">
+									<strong>State</strong>
+								</label>
+								<ng-select id="state_id" formControlName="state_id" [searchable]="true"
+									[clearable]="true" bindLabel="name" bindValue="id" [items]="statesList"
+									placeholder="State">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="sub_org_id">
+									<strong>Party Name</strong>
+								</label>
+								<ng-select id="sub_org_id" formControlName="sub_org_id" [searchable]="true"
+									[clearable]="true" bindLabel="sub_org_name" bindValue="sub_org_id"
+									[items]="partiesList" placeholder="Party Name">
+								</ng-select>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="security_deposit">
+									<strong>Security Deposit</strong>
+								</label>
+								<input type="text" id="security_deposit" class="form-control"
+									formControlName="security_deposit" placeholder="Security Deposit" numbersOnly>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="rent_amount">
+									<strong>Rent Amount</strong>
+								</label>
+								<input type="text" id="rent_amount" class="form-control" formControlName="rent_amount"
+									(change)="onAction($event.target.value,'rent_amount')" placeholder="Rent Amount"
+									numbersOnly>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="period_start">
+									<strong>Period Start</strong>
+								</label>
+								<input type="text" class="form-control" id="period_start" formControlName="period_start"
+									placeholder="Period Start" [bsConfig]="datePickerConfig" bsDatepicker readonly>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="period_end">
+									<strong>Period End</strong>
+								</label>
+								<input type="text" class="form-control" id="period_end" formControlName="period_end"
+									placeholder="Period End" [bsConfig]="datePickerConfig"
+									(select)="onAction($event, 'period_end')" bsDatepicker readonly>
+
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="period_start">
+									<strong>Payment Type</strong>
+								</label>
+								<input type="text" class="form-control" value="Monthly" readonly />
+
+								<!-- <input type="text" class="form-control" id="period_end" formControlName="month_year_payment"
+									placeholder="" [bsConfig]="datePickerConfig"
+									(select)="onAction($event, 'period_end')" bsDatepicker readonly> -->
+
+								<!-- <ng-select id="godown_id" formControlName="month_year_payment" [searchable]="true"
+									[clearable]="true" bindLabel="name" bindValue="id" [items]="month_year_payment"
+									(change)="selectGodown($event,'godown_select')"
+									placeholder="Payment Time(month/year)" readOnly>
+								</ng-select> -->
+
+								<!-- <ng-select id="godown_id" formControlName="month_year_payment" [searchable]="true"
+									[clearable]="true" bindLabel="name" bindValue="id" [items]="month_year_payment"
+									(change)="selectGodown($event,'godown_select')"
+									placeholder="Payment Time(month/year)" readOnly>
+								</ng-select> -->
+
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="payment_date">
+									<strong>Payment Date (Day)</strong>
+								</label>
+								<!-- <input type="text" id="payment_date" class="form-control" formControlName="payment_date"
+									placeholder="Day of Payment " minLength="1" maxLength="2" numbersOnly> -->
+
+								<input type="text" class="form-control" id="payment_date" formControlName="payment_date"
+									placeholder="payment date" [bsConfig]="dayPickerconfig"
+									(change)="onAction($event, 'payment_date')" bsDatepicker readonly>
+							</div>
+						</div>
+
+						<!-- [minDate]="min_date" [minDate]="" -->
+
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="area_sq_ft">
+									<strong>Area (Sq.Ft.)</strong>
+								</label>
+								<input type="text" id="area_sq_ft" class="form-control" formControlName="area_sq_ft"
+									placeholder=" Area
+									(Sq.Ft.)" numbersOnly>
+							</div>
+						</div>
+						<!-- (change)="onAction($event.target.value, 'set_area_sq_ft')" -->
+
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="rate_per_sq_ft">
+									<strong>Rate (per Sq.Ft.)</strong>
+								</label>
+								<input type="text" id="rate_per_sq_ft" class="form-control"
+									formControlName="rate_per_sq_ft" placeholder="Rate (per Sq.Ft.)" numbersOnly>
+							</div>
+						</div>
+						<!-- (change)="onAction($event.target.value, 'set_rate_per_sq_ft')" -->
+
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="increment_Type">
+									<strong>Increment Type</strong>
+								</label>
+								<div class="row">
+									<div class="col-md">
+										<ng-select id="increment_Type" formControlName="increment_type"
+											[searchable]="true" [clearable]="true" bindLabel="description"
+											bindValue="id" [items]="Increment_Type"
+											(change)="onAction($event, 'increment_type')"
+											placeholder="Select Type (default %)">
+										</ng-select>
+									</div>
+
+								</div>
+
+							</div>
+						</div>
+
+						<div class="col-md-3" *ngIf="incrementType==1">
+							<div class="form-group">
+								<label for="increment_rate">
+									<strong>Increment Rate</strong>
+								</label>
+								<input type="text" id="increment_rate" class="form-control"
+									(change)="onAction($event.target.value, 'increment_rate')"
+									formControlName="increment_rate" placeholder="Rate" numbersOnly>
+								<!-- [value]="incrementRate"
+									[(ngModel)]="incrementRate" -->
+							</div>
+						</div>
+						<div class="col-md-3" *ngIf="reteWiseAmountIncrement">
+							<div class="form-group">
+								<label for="inc_amount">
+									<strong>Increment Amount 1</strong>
+								</label>
+								<input type="text" id="inc_amount" class="form-control" [value]="incrementAmount"
+									placeholder="Amount" formControlName="increment_amount" numbersOnly readOnly>
+							</div>
+						</div>
+						<div class="col-md-3" *ngIf="incrementType==2">
+							<div class="form-group">
+								<label for="increment_amount">
+									<strong>Increment Amount 2</strong>
+								</label>
+								<input type="text" id="increment_amount" class="form-control" [value]="incrementAmount"
+									(change)="onAction($event.target.value, 'increment_amount')"
+									formControlName="increment_amount" placeholder="Amount" numbersOnly>
+							</div>
+						</div>
+
+						<!-- <div class="col-md-3">
+							<div class="form-group">
+								<label for="increment_date">
+									<strong>Increment Date</strong>
+								</label>
+								<input type="text" class="form-control" id="increment_date"
+									formControlName="increment_date" placeholder="Increment Date"
+									(change)="onAction($event.target.value, 'increment_date')"
+									[bsConfig]="datePickerConfig" [maxDate]="max_date" bsDatepicker readonly>
+							</div>
+						</div> -->
+
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="increment_by_month">
+									<strong>Increment By Month</strong>
+								</label>
+								<input type="text" id="increment_by_month" class="form-control"
+									formControlName="increment_by_month" placeholder="Month Duration" numbersOnly>
+							</div>
+						</div>
+
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="rent_bill_copy">
+									<strong>Aggrement Copy</strong>
+								</label>
+								<input type="file" class="form-control" id="rent_bill_copy" formControlName="rent_copy"
+									placeholder="upload Rent Bill" (change)="onFileChange($event)">
+							</div>
+						</div>
+
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="charges_type">
+									<strong>Charge</strong>
+								</label>
+								<ng-select id="charges_type" formControlName="charges_type" [searchable]="true"
+									[clearable]="true" bindLabel="name" bindValue="id" [items]="rentTypeCharge"
+									(change)="onAction($event,'rentTypeCharge')" placeholder="Rent Type">
+								</ng-select>
+							</div>
+						</div>
+
+						<div class="col-md-3" *ngIf="isTDS">
+							<div class="form-group">
+								<label for="rent_aggrement_id">
+									<strong>TDS</strong>
+								</label>
+								<input id="_tds" (change)="onAction($event.target.value, 'tds')"
+									formControlName="tds_rate" class="form-control" numbersOnly />
+							</div>
+						</div>
+
+						<div class="col-md-3" *ngIf="isGST">
+							<div class="form-group">
+								<label for="rent_aggrement_id">
+									<strong>GST</strong>
+								</label>
+								<input id="_gst" (change)="onAction($event.target.value, 'gst')"
+									formControlName="gst_rate" class="form-control" numbersOnly />
+							</div>
+						</div>
+
+						<!--  -->
+						<!-- <div class=" col-md-3">
+							<div class="form-group">
+								<label for="tds_open_close">
+									<strong>TDS</strong>
+								</label>
+								<br>
+								<div class="row">
+									<div class="col-md-4">
+										<p-inputSwitch id="tds_open_close" formControlName="is_tds"
+											[(ngModel)]="tds_checked" (onChange)="onAction($event, 'is_tds')"
+											onLabel="Yes" offLabel="No">
+										</p-inputSwitch>
+									</div>
+									<div class="col-md-8">
+										<input id="_tds" (change)="onAction($event.target.value, 'tds')"
+											formControlName="tds_rate" *ngIf="isTDS" class="form-control" />
+
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="col-md-3">
+							<div class="form-group">
+								<label for="gst_open_close">
+									<strong>GST</strong>
+								</label>
+								<br>
+								<div class="row">
+									<div class="col-md-4">
+										<p-inputSwitch id="gst_open_close" formControlName="is_gst"
+											[(ngModel)]="gst_checked" (onChange)="onAction($event, 'is_gst')"
+											onLabel="Yes" offLabel="No">
+										</p-inputSwitch>
+									</div>
+									<div class="col-md-8">
+										<input id="_gst" (change)="onAction($event.target.value, 'gst')"
+											formControlName="gst_rate" class="form-control" *ngIf="isGST" />
+									</div>
+								</div>
+
+
+
+							</div>
+						</div> -->
+						<!--  -->
+						<!-- <div class="col-md-3">
+							<div class="form-group">
+								<label for="is_gst" class="is_gst_tds_label">
+									<strong>final amount</strong>
+								</label>
+								<br>
+								<input id="final_amount" class="form-control" formControlName="calc_rent_amount"
+									[value]="finalAmount" readonly />
+							</div>
+						</div> -->
+
+
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="remark">
+									<strong>Remark</strong>
+								</label>
+								<input type="text" id="remark" class="form-control" formControlName="remark"
+									placeholder="Remark">
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" [disabled]="rentForm.invalid">Submit</button>
+				</div>
+
+				<!-- (mouseover)='calculateData()' -->
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- (mouseover)='over()' (mouseout)='out()' -->
+<div bsModal #viewRentModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="View Deal"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content" *ngIf="selected_rent != null">
+			<div class="modal-header">
+				<h4 class="modal-title">
+					<i class="fa fa-eye text-primary"></i> View Rent Details - #{{ selected_rent.id }}
+				</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+
+					<div class="col-sm-6 mb-2"
+						*ngIf="selected_rent.godown_name && (selected_rent.godown_id !== null || selected_rent.godown_id !==0 )">
+						<strong>Godown : </strong> {{ selected_rent.godown_name }}
+					</div>
+
+					<div class="col-sm-6 mb-2">
+						<strong>Party Name: </strong> {{ selected_rent.party_name }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>State Name: </strong> {{ selected_rent.state_name }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Security Deposite: </strong> {{ selected_rent.security_deposit }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Rent Amount: </strong> {{ selected_rent.rent_amount }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>TDS Rate: </strong> {{ selected_rent.tds_rate }} %
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>TDS Amount: </strong> {{ selected_rent.tds_amount }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>GST Rate: </strong> {{ selected_rent.gst_rate }} %
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>GST Amount : </strong> {{ selected_rent.gst_amount }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Net Rate Payable: </strong> {{ selected_rent.net_rate_payable |
+						currency:selected_rent.currency
+						}}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Period Start: </strong> {{ selected_rent.period_start | date: 'dd-MMM-yyyy'}}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Period End: </strong> {{ selected_rent.period_end | date: 'dd-MMM-yyyy'}}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Area Square feet: </strong> {{ selected_rent.area_sq_ft }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Rate / square feet: </strong> {{ selected_rent.rate_per_sq_ft }}
+					</div>
+
+					<div class="col-sm-6 mb-2">
+						<strong>Increment Type: </strong>
+						<span *ngIf="selected_rent.increment_type ==1">Rate</span>
+						<span *ngIf="selected_rent.increment_type ==2 ">Amount</span>
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Increment Rate: </strong> {{ selected_rent.increment_rate }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Increment Amount: </strong> {{ selected_rent.increment_amount }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Increment Date: </strong> {{ selected_rent.increment_date }}
+					</div>
+
+					<div class="col-sm-6 mb-2">
+						<strong>Payment Day: </strong> {{ selected_rent.payment_day }} Date 0f the each month
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Total Payment: </strong> {{ selected_rent.total_payment }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<strong>Remark: </strong> {{ selected_rent.remark }}
+					</div>
+					<div class="col-sm-6 mb-2">
+						<span *ngIf="selected_rent.status_name=='Active';else ThenRemark">
+							<strong>Status: </strong> &nbsp;<span class="badge badge-success">
+								<h6>{{
+									selected_rent.status_name }}</h6>
+							</span>
+						</span>
+						<ng-template #ThenRemark class="col-sm-6 mb-2">
+							<strong>Status: </strong>&nbsp; <span class="badge badge-danger">
+								<h6>{{
+									selected_rent.status_name }} </h6>
+							</span>
+						</ng-template>
+					</div>
+					<div class="col-sm-6 mb-2" *ngIf="selected_rent.rent_copy !== null">
+						<strong>Aggrement Copy: </strong>
+						<a *ngIf="selected_rent.rent_copy!= null" class="btn btn-success btn-sm action-btn mr-1 mb-1"
+							data-toggle="tooltip" data-placement="top" title="Download CV"
+							[href]="selected_rent.rent_copy" target="_blank" download>
+							<i class="fa fa-download"></i>
+						</a>
+					</div>
+
+
+				</div>
+				<!-- <hr>
+				<div class="row">
+					<div class="col-sm-12">
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Customer</th>
+									<th>Dispatch Quantity</th>
+									<th>Dispatch Date</th>
+									<th>Invoice No.</th>
+									<th>Invoice Copy</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let item of selected_deal_dispatch; index as i;">
+									<td>{{i + 1}}</td>
+									<td>{{item.sub_org_name}} ({{item.location_vilage}})</td>
+									<td>{{item.quantity}} {{item.unit_type}}</td>
+									<td>{{item.dispatch_date | date:'dd-MMM-yyyy'}}</td>
+									<td>{{item.invoice_no}}</td>
+									<td class="text-center">
+										<a class="btn btn-outline-success btn-sm action-btn mb-2 mr-1"
+											data-toggle="tooltip" data-placement="top" title="Download Invoice"
+											(click)="onAction(item.invoice_copy, 'Download_Invoice')">
+											<i class="fa fa-download"></i>
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div> -->
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

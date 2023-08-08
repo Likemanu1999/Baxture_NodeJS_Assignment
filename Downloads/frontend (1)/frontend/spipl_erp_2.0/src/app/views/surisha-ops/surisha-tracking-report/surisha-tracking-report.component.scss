@@ -1,0 +1,140 @@
+.sales_purchase_table {
+	.ui-table-tbody > tr > td {
+		border: 0 none;
+		cursor: auto;
+		// &:first-child {
+		// 	text-align: center;
+		// }
+		// &:nth-child(2) {
+		// 	text-align: center;
+		// }
+	}
+}
+.custom-badge {
+	font-size: 12px !important;
+	padding: 4px 7px;
+}
+
+.sticky-col {
+    position: -webkit-sticky;
+    position: sticky;
+    background-color: white;
+  }
+  .second-col {
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    left: 90px;
+  }
+
+  .first {
+	width: 100px;
+	min-width: 100px;
+	max-width: 100px;
+	left: 0px;
+  }
+
+   
+.second {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  left: 100px;
+}
+
+.third {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  left: 200px;
+}
+// .custom-badge {
+// 	border-radius: 10% !important;
+// 	padding: 8px 8px !important;
+// 	font-size: 100% !important;
+// 	font-weight: normal !important;
+// }
+
+.custome-expand-btn {
+	line-height: 0 !important;
+	padding: 4px !important;
+	font-size: 11px !important;
+}
+.custome-expand-btn:focus {
+	box-shadow: none !important;
+}
+.round-badge {
+	border-radius: 50% !important;
+	padding: 9px 0px !important;
+	font-size: 13px !important;
+	font-weight: 600 !important;
+	width: 30px !important;
+	height: 30px !important;
+	text-align: center !important;
+}
+.page-filter {
+	font-size: 14px !important;
+	font-weight: normal !important;
+}
+.custom_body .sales_purchase_table .ui-table-caption {
+	background: #495057 !important;
+}
+.card-body {
+	padding: 0.75rem !important;
+}
+.custom_body .ui-multiselect {
+	top: 3px !important;
+	margin-right: 8px !important;
+	padding: 1px !important;
+	background: #fff !important;
+}
+.ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
+	text-align: left !important;
+}
+.custom_body .ui-dropdown {
+	margin-left: 8px !important;
+}
+.custom_body .ui-dropdown .ui-dropdown-label {
+	padding: 4px !important;
+	text-align: left !important;
+}
+.action-btn {
+	padding: 0px 5px !important;
+}
+
+@media screen and (max-width: 64em) {
+	.custom_body .sales_purchase_table .ui-table-caption {
+		padding: 12px !important;
+	}
+	.custom_body .sales_purchase_table .ui-table-tbody > tr > td {
+		padding: 0.3em 0.5em !important;
+	}
+	.expand-btn,
+	.expanded_row {
+		display: none !important;
+	}
+	// .sales_purchase_table {
+	// 	.ui-table-tbody > tr > td {
+	// 		&:first-child {
+	// 			text-align: left;
+	// 		}
+	// 	}
+	// }
+	.form-inline {
+		display: block !important;
+	}
+	.custom_body .ui-dropdown {
+		width: 100% !important;
+		margin-top: 4px !important;
+		margin-left: 0px !important;
+	}
+	.custom_body .ui-multiselect {
+		width: 100% !important;
+	}
+	.export-text {
+		display: inline-block !important;
+	}
+	.check {
+		display: none !important;
+	}
+}

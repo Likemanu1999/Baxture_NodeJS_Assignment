@@ -1,0 +1,237 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-3" *ngIf="add_opt">
+      <div class="card">
+        <div class="card-header">
+          <i class="icon-list"></i> Menu Master
+        </div>
+        <div class="card-body">
+        <form [formGroup]="menuForm" novalidate (ngSubmit)="onSubmit()" class="needs-validation">
+          <div class="col-md-12">
+          <div class="form-group">
+            <label class="col-form-label" for="menu_name">Menu Name</label>
+            <input class="form-control"
+              id="menu_name"
+              type="text"
+              formControlName="menu_name"
+              placeholder="Enter Menu Name"
+              required
+              autofocus
+              />
+            </div>
+            <div class="form-group">
+              <label class="col-form-label" for="parent_id">Parent Menu</label>
+              <ng-select
+              id="parent_id"
+              formControlName="parent_id"
+              placeholder="Select Parent"
+              [searchable]="true"
+              [clearable]="true"
+              bindLabel="menu_name"
+              bindValue="p_id"
+              [items]="data"
+              >
+              </ng-select>
+            </div>
+            <div class="form-group">
+              <label class="col-form-label" for="link">Link</label>
+              <input class="form-control"
+                id="link"
+                type="text"
+                formControlName="link"
+                placeholder="Enter Link"
+                required
+                autofocus
+                />
+              </div>
+            <div class="form-group">
+              <label class="col-form-label" for="fa_fa_class">Icon</label>
+              <input class="form-control"
+                id="fa_fa_class"
+                type="text"
+                formControlName="fa_fa_class"
+                placeholder="Enter Icon"
+                required
+                autofocus
+                />
+            </div>
+
+            <div class="form-group">
+              <div class="row">
+                <div class="col-md-2">
+                  <label class="col-form-label" for="add_opt">Add</label>
+                  <input class="form-control"
+                    id="add_opt"
+                    type="checkbox"
+                    formControlName="add_opt"
+                    autofocus
+                    />
+                </div>
+                <div class="col-md-2">
+                  <label class="col-form-label" for="edit_opt">Edit</label>
+                  <input class="form-control"
+                    id="edit_opt"
+                    type="checkbox"
+                    formControlName="edit_opt"
+                    autofocus
+                    />
+                </div>
+                <div class="col-md-2">
+                  <label class="col-form-label" for="view_opt">View</label>
+                  <input class="form-control"
+                    id="view_opt"
+                    type="checkbox"
+                    formControlName="view_opt"
+                    autofocus
+                    />
+                </div>
+                <div class="col-md-2">
+                  <label class="col-form-label" for="del_opt">Delete</label>
+                  <input class="form-control"
+                    id="del_opt"
+                    type="checkbox"
+                    formControlName="del_opt"
+                    autofocus
+                    />
+                </div>
+                </div>
+              </div>
+          <div class="form-group">
+            <button class="btn btn-primary mr-1" type="submit" [disabled]="menuForm.pristine || menuForm.invalid">Submit</button>
+            <button class="btn btn-danger" type="reset" [disabled]="menuForm.pristine" (click)="onReset()">Reset</button>
+          </div>
+        </div>
+        </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-9" *ngIf="view_opt">
+      <div class="card">
+        <div class="card-header">
+          <i class="icon-list"></i>  Menu List
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4 offset-md-8">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fa fa-search"></i></span>
+                </div>
+                <input type="text" class="form-control" [(ngModel)]="filterQuery"
+                 placeholder="Search by Parent, Menu, Link"/>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="isLoading" style="text-align: center;">
+            <app-loading-spinner></app-loading-spinner>
+          </div>
+          <table class="table table-striped table-hover table-responsive-lg"
+          [mfData]="data | tableFilter : filterQuery:filterArray"
+          #mf="mfDataTable"
+          [mfRowsOnPage]="5"
+          *ngIf="!isLoading"
+          >
+          <thead>
+            <tr>
+              <th>
+                <mfDefaultSorter by="sr_no">Sr.No.</mfDefaultSorter>
+              </th>
+              <th>
+                <mfDefaultSorter by="menu_name">Menu</mfDefaultSorter>
+              </th>
+              <th>
+                <mfDefaultSorter by="parentName">Parent</mfDefaultSorter>
+              </th>
+              <th>
+                <mfDefaultSorter by="link">Link</mfDefaultSorter>
+              </th>
+              <th>
+                <mfDefaultSorter by="add_opt">Add</mfDefaultSorter>
+              </th>
+              <th>
+                <mfDefaultSorter by="edit_opt">Edit</mfDefaultSorter>
+              </th>
+              <th>
+                <mfDefaultSorter by="view_opt">View</mfDefaultSorter>
+              </th>
+              <th>
+                <mfDefaultSorter by="del_opt">Delete</mfDefaultSorter>
+              </th>
+              <th>
+                <mfDefaultSorter by="fa_fa_class">Icon</mfDefaultSorter>
+              </th>
+              <th>
+                <mfDefaultSorter by="rank">Rank</mfDefaultSorter>
+              </th>
+              <th *ngIf="edit_opt">
+                <mfDefaultSorter by="edit">Edit</mfDefaultSorter>
+              </th>
+              <th *ngIf="del_opt">
+                <mfDefaultSorter by="delete">Delete</mfDefaultSorter>
+              </th>
+            </tr>
+          </thead>
+            <tbody>
+              <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" [attr.id]="item.id">
+                <td>{{i+1}}</td>
+                <td>{{item.menu_name}}</td>
+                <td>{{item.parentName}}</td>
+                <td>{{item.link}}</td>
+                <td>
+                  <i class="fa fa-times" style="color: red;" *ngIf="item.add_opt ==0"></i>
+                  <i class="fa fa-check" style="color: green;" *ngIf="item.add_opt ==1"></i>
+                </td>
+                <td>
+                  <i class="fa fa-times" style="color: red;" *ngIf="item.edit_opt ==0"></i>
+                  <i class="fa fa-check" style="color: green;" *ngIf="item.edit_opt ==1"></i>
+                </td>
+                <td>
+                  <i class="fa fa-times" style="color: red;" *ngIf="item.view_opt ==0"></i>
+                  <i class="fa fa-check" style="color: green;" *ngIf="item.view_opt ==1"></i>
+                </td>
+                <td>
+                  <i class="fa fa-times" style="color: red;" *ngIf="item.del_opt ==0"></i>
+                  <i class="fa fa-check" style="color: green;" *ngIf="item.del_opt ==1"></i>
+                </td>
+                <td><i class="{{item.fa_fa_class}}"></i></td>
+                <td>{{item.rank}}</td>
+                <td *ngIf="edit_opt"><a style="cursor: pointer;" (click)="onEdit(item)"><i class="fa fa-pencil"></i></a></td>
+                <td *ngIf="del_opt"><a style="cursor: pointer;"
+                  mwlConfirmationPopover
+                  [popoverTitle]="popoverTitle"
+                  [popoverMessage]="popoverMessage"
+                  [confirmText]="confirmText"
+                  [cancelText]="cancelText"
+                  [placement]="placement"
+                  [closeOnOutsideClick]="closeOnOutsideClick"
+                  confirmButtonType="danger"
+                  cancelButtonType="success"
+                  (confirm)="onDelete(item.p_id)"
+                  (cancel)="cancelClicked = true"
+                  ><i class="fa fa-trash"></i></a></td>
+
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr [hidden]="true">
+                <td></td>
+                <td>
+                  <select [(ngModel)]="filterQuery" class="form-control">
+                    <option value="">All</option>
+                    <option value="{{item.menu_name}}" *ngFor="let item of data">{{item.menu_name}}</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="12">
+                  <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        </div>
+      </div>
+  </div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

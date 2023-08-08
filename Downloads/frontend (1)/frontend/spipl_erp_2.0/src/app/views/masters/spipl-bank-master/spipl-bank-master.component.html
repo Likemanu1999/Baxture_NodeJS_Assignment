@@ -1,0 +1,302 @@
+<div class="animated fadeIn">
+  <div class="row" [hidden]="add_new_click">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <i class="icon-list"></i> SPIPL Bank List
+          <button class="btn btn-outline-primary active pull-right" *ngIf="add_opt" (click)="addNew()"> + Add new
+            Bank</button>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4 offset-md-8">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fa fa-search"></i></span>
+                </div>
+                <input type="text" class="form-control" [(ngModel)]="filterQuery" placeholder="Search by  name" />
+              </div>
+            </div>
+          </div>
+          <div *ngIf="isLoading" style="text-align: center;">
+            <app-loading-spinner></app-loading-spinner>
+          </div>
+
+          <table class="table table-striped table-hover table-responsive-lg"
+            [mfData]="data | tableFilter : filterQuery:filterArray" #mf="mfDataTable" [mfRowsOnPage]="5"
+            *ngIf="!isLoading">
+            <thead>
+              <tr>
+                <th>
+                  <mfDefaultSorter by="id">Id</mfDefaultSorter>
+                </th>
+                <th>
+                  <mfDefaultSorter by="bank_name">Bank Name</mfDefaultSorter>
+                </th>
+                <th>
+                  <mfDefaultSorter by="bank_phone">Mobile</mfDefaultSorter>
+                </th>
+                <th>
+                  <mfDefaultSorter by="gst_no">GST No</mfDefaultSorter>
+                </th>
+                <th>
+                  <mfDefaultSorter by="bank_address">Address</mfDefaultSorter>
+                </th>
+                <th>
+                  <mfDefaultSorter by="account_no">Account Number</mfDefaultSorter>
+                </th>
+                <th>
+                  <mfDefaultSorter by="ifsc_code">IFSC Code</mfDefaultSorter>
+                </th>
+                <th>
+                  <mfDefaultSorter by="ifsc_code">Short Form</mfDefaultSorter>
+                </th>
+                <th *ngIf="edit_opt">Edit</th>
+                <th *ngIf="del_opt">Delete</th>
+                <th>Copy</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" [attr.id]="item.id">
+                <td>{{item.id}}</td>
+                <td>{{item.bank_name}}</td>
+                <td>{{item.bank_phone}}</td>
+                <td>{{item.gst_no}}</td>
+                <td>{{item.bank_address}}</td>
+                <td>{{item.account_no}}</td>
+                <td>{{item.ifsc_code}}</td>
+                <td>{{item.short_form}}</td>
+
+                <td *ngIf="edit_opt"><a style="cursor: pointer;" (click)="onEdit(item.id)"><i
+                      class="fa fa-pencil"></i></a></td>
+                <td *ngIf="del_opt"><a style="cursor: pointer;" mwlConfirmationPopover [popoverTitle]="popoverTitle"
+                    [popoverMessage]="popoverMessage" [confirmText]="confirmText" [cancelText]="cancelText"
+                    [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="danger"
+                    cancelButtonType="success" (confirm)="onDelete(item.id)" (cancel)="cancelClicked = true"><i
+                      class="fa fa-trash"></i></a></td>
+                <td><button class="btn btn-sm btn-primary" (click)="copyRecord(item)">copy</button></td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="11">
+                  <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100,200]"></mfBootstrapPaginator>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <form [formGroup]="spiplBankForm" novalidate (ngSubmit)="onSubmit()">
+    <div class="row" [hidden]="!add_new_click">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <i class="icon-list"></i> {{mode}} SPIPL Bank
+
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="bank_name">Bank Name</label>
+                  <input type="text" class="form-control" id="bank_name" formControlName="bank_name"
+                    placeholder="Enter Bank Name ">
+                </div>
+              </div>
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="bank_phone"> Phone Number</label>
+                  <input type="number" class="form-control" id="bank_phone" formControlName="bank_phone"
+                    placeholder="Enter Phone Number ">
+                </div>
+              </div>
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="bank_email"> Email</label>
+                  <input type="email" class="form-control" id="bank_email" formControlName="bank_email"
+                    placeholder="Enter Email ">
+                </div>
+              </div>
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="account_no">Account Number</label>
+                  <input type="text" class="form-control" id="account_no" formControlName="account_no"
+                    placeholder="Enter Account Number ">
+                </div>
+              </div>
+
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="gst_no">GST Number</label>
+                  <input type="text" class="form-control" id="gst_no" formControlName="gst_no"
+                    placeholder="Enter GST Number ">
+                </div>
+              </div>
+
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="ifsc_code">IFSC Code</label>
+                  <input type="text" class="form-control" id="ifsc_code" formControlName="ifsc_code"
+                    placeholder="Enter IFSC Code ">
+                </div>
+              </div>
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="swiftcode">Swift Code</label>
+                  <input type="text" class="form-control" id="swiftcode" formControlName="swiftcode"
+                    placeholder="Enter Swift Code ">
+                </div>
+              </div>
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="branch_code">Branch Code</label>
+                  <input type="text" class="form-control" id="branch_code" formControlName="branch_code"
+                    placeholder="Enter Branch Code ">
+                </div>
+              </div>
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="ad_code">Ad Code</label>
+                  <input type="text" class="form-control" id="ad_code" formControlName="ad_code"
+                    placeholder="Enter Code ">
+                </div>
+              </div>
+
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="credit_limit">Credit Limit</label>
+                  <input type="number" class="form-control" id="credit_limit" formControlName="credit_limit"
+                    placeholder="Enter Credit Limit ">
+                </div>
+              </div>
+
+              <div class="col-6 col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="short_form">Short Form</label>
+                  <input type="text" class="form-control" id="short_form" formControlName="short_form"
+                    placeholder="Enter Short Form ">
+                </div>
+              </div>
+
+
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label class="col-form-label" for="bank_type">Bank Type</label>
+                  <ng-select id="bank_type" formControlName="bank_type" placeholder="Bank Type" [searchable]="true"
+                    [clearable]="true" bindLabel="type" bindValue="id" [items]="bank_type">
+                  </ng-select>
+
+
+                </div>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <div class="form-group">
+                  <label class="col-form-label" for="bank_address">Bank Address</label>
+                  <textarea class="form-control" id="bank_address" formControlName="bank_address"
+                    placeholder="Enter Bank Address ">
+                          </textarea>
+                </div>
+              </div>
+
+
+
+              <div class="col-md-12">
+
+                <div class="col-md-12" [hidden]="!lc_template">
+                  <label for="">Bank Lc Template</label>
+                  <ck-editor formControlName="lc_template" #myEditor [(ngModel)]="mycontent" [fullPage]="true"
+                    [config]='ckeConfig'></ck-editor>
+                  <br>
+
+                  <span>{{keys}}</span>
+
+                </div>
+
+
+                <div class="col-md-12 mt-4">
+                  <label for="">Bank ILc Template</label>
+                  <ck-editor formControlName="ilc_template" #myEditorIlc [(ngModel)]="ilc_template" [fullPage]="true"
+                    [config]='ckeConfig'></ck-editor>
+                  <br>
+
+                  <span>{{ilc_keys}}</span>
+
+
+
+                </div>
+
+                <div class="col-md-12 mt-4">
+                  <label for="">Bank FD Creation Template</label>
+                  <ck-editor formControlName="fd_creation_template" #fdCreationEditor [fullPage]="true"
+                    [config]='ckeConfig'></ck-editor>
+                  <br>
+
+                  <span>{{fd_creation_keys}}</span>
+
+
+
+                </div>
+
+                <div class="col-md-12 mt-4">
+                  <label for="">Bank FD Liquidation Template</label>
+                  <ck-editor formControlName="fd_liquidation_template" #fdLiquidationEditor [fullPage]="true"
+                    [config]='ckeConfig'></ck-editor>
+                  <br>
+
+                  <span>{{fd_liquidation_keys}}</span>
+
+
+
+                </div>
+
+                <div class="col-md-12 mt-4">
+                  <label for="">Bank FD Renew Template</label>
+                  <ck-editor formControlName="fd_renew_template" #fdRenewEditor [fullPage]="true"
+                    [config]='ckeConfig'></ck-editor>
+                  <br>
+
+                  <span>{{fd_renew_keys}}</span>
+
+
+
+                </div>
+
+
+              </div>
+
+
+
+
+
+
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button class="btn btn-primary mr-1" type="submit"
+              [disabled]="spiplBankForm.pristine || spiplBankForm.invalid">
+              <i class="fa fa-dot-circle-o"></i>Submit</button>
+
+            <button class="btn btn-danger" type="reset"><i class="fa fa-ban"></i>Reset</button>
+            <button class="btn btn-primary" type="button" (click)="onBack()"><i class="fa fa-undo"></i>Back</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

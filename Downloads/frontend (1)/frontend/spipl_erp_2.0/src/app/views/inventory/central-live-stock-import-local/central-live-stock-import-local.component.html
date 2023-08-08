@@ -1,0 +1,295 @@
+<div class="card">
+
+    <div class="card-header">
+        <h2> Central Live Inventory Import</h2>
+        <button class="btn btn-primary pull-right" *ngIf="cal_central_stock" (click)="calculateCentralStock()">
+            <i class="fa fa-refresh fa-spin"></i> Refresh
+        </button>
+    </div>
+    <div class="card-body overflow-auto">
+        <div class="row" *ngIf="isLoading">
+            <div class="col-md-12">
+                <div style="text-align: center;">
+                    <app-loading-spinner></app-loading-spinner>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3" *ngIf="!isLoading">
+            <div class="col-md-12">
+                <div class="form-inline">
+                    <div class="form-group">
+                        <label for="dateRange" class="font-weight-bold">Arrival Date: </label>
+                        <div class="input-group mx-sm-3">
+                            <input type="text" class="form-control"
+                                [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker [(bsValue)]="bsValue" readonly>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" (click)="loadData()">Get
+                        Data</button>
+                    &nbsp;&nbsp;
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+
+
+                <p-table #dt [value]="newData" dataKey="id" styleClass="ui-table-cons" [rowHover]="true" [rows]="10"
+                    [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading"
+                    [paginator]="false" [columns]="cols" (onFilter)="onFilter($event, dt)"
+                    (onLazyLoad)="onFilter($event, dt)" [scrollable]="true" scrollHeight="400px"
+                    [virtualRowHeight]="500" [virtualScroll]="true"
+                    currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+                    [filterDelay]="0" [globalFilterFields]="['godwon_name','grade_name']">
+
+                    <ng-template pTemplate="caption">
+                        <div class="ui-table-globalfilter-container">
+                            <input pInputText type="text" class="form-control"
+                                (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                placeholder="Global Search" />
+                        </div>
+                        <div class="ui-helper-clearfix" style="text-align: left">
+                            <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                (click)="exportExcel()" style="margin-right: 0.5em;"
+                                class="ui-button-success mb-2"></button>
+                        </div>
+                    </ng-template>
+
+                    <ng-template pTemplate="header" let-columns>
+                        <tr>
+                            <th style="width: 3em">
+                            </th>
+                            <th pSortableColumn="{{col.field}}" *ngFor="let col of columns" [style.width]="col.style">
+                                {{col.header}} <p-sortIcon field="{{col.field}}">
+                                </p-sortIcon>
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th style="width: 3em"></th>
+                            <th *ngIf="getColumnPresent('godown_name')">
+                                <div *ngIf="godowns.length > 0 ">
+                                    <p-multiSelect [options]="godowns" placeholder="All"
+                                        (onChange)="onchange($event,'godown_name')" styleClass="ui-column-filter"
+                                        optionLabel="godown_name" appendTo="body">
+                                        <ng-template let-option pTemplate="item">
+
+                                            <span>&#123;&#123;option.label&#125;&#125;</span>
+
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </div>
+                            </th>
+                            <th *ngIf="getColumnPresent('main_grade_name')">
+                                <div *ngIf="mainGrades.length > 0 ">
+                                    <p-multiSelect [options]="mainGrades" placeholder="All"
+                                        (onChange)="onchange($event,'main_grade_name')" styleClass="ui-column-filter"
+                                        optionLabel="main_grade_name" appendTo="body">
+                                        <ng-template let-option pTemplate="item">
+
+                                            <span>&#123;&#123;option.label&#125;&#125;</span>
+
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </div>
+                            </th>
+                            <th *ngIf="getColumnPresent('grade_name')">
+                                <div *ngIf="grades.length > 0 ">
+                                    <p-multiSelect [options]="grades" placeholder="All"
+                                        (onChange)="onchange($event,'grade_name')" styleClass="ui-column-filter"
+                                        optionLabel="grade_name" appendTo="body">
+                                        <ng-template let-option pTemplate="item">
+
+                                            <span>&#123;&#123;option.label&#125;&#125;</span>
+
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </div>
+                            </th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+
+                        </tr>
+                    </ng-template>
+
+
+
+                    <ng-template pTemplate="body" let-item let-columns>
+                        <tr class="ui-selectable-row">
+
+                            <td style="width: 3em">
+                                <input type="checkbox" [value]="item" #inputs #checkboxes
+                                    [(ngModel)]='item.isAllocateImport'
+                                    (click)="OnCheckGodownAllocationImport(checkboxes.checked,item)">
+
+                            </td>
+
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Godown Name </span>
+                                {{item.godown_name}}
+                            </td>
+
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Godown Name </span>
+                                {{item.main_grade_name}}
+                            </td>
+
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Grade Name</span>
+                                {{item.grade_name}}
+                            </td>
+
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Arrival Grade </span>
+                                {{item.arrival_grade}}
+                            </td>
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Intransite Import Purchase Regular </span>
+                                {{(item.reg_intransite).toFixed(3)}}
+                            </td>
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Intransite Import Purchase Bond</span>
+                                {{(item.bond_intransite).toFixed(3)}}
+
+                            </td>
+                            <td style="width:100px;">
+                                <span class="ui-column-title">local_purchase_import_intransite</span>
+                                {{(item.local_purchase_import_intransite)}}
+
+                            </td>
+
+
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Intransite Stock Transfer Import</span>
+                                {{(item.stock_transfer_intransite_import).toFixed(3)}}
+                            </td>
+
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Physical Stock Import</span>
+                                {{(item.inventory_import).toFixed(3)}}
+                            </td>
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Total Unsold</span>
+                                {{ (
+                                item.bond_intransite+item.stock_transfer_intransite_import_num+item.inventory_import).toFixed(3)}}
+                            </td>
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Sales Import</span>
+                                {{(item.sales_pending_import).toFixed(3)}}
+                            </td>
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Available Stock Import</span>
+                                <!-- item.reg_intransite + -->
+                                {{ ((
+                                item.bond_intransite+item.stock_transfer_intransite_import_num+item.inventory_import)
+                                - item.sales_pending_import).toFixed(3)}}
+                            </td>
+                            <td style="width:100px;">
+                                <span (click)="holdQtyUpdate(item.main_godown_id, item.grade_id,'hold_qty')"
+                                    style="cursor: pointer;"><button class="btn btn-dark">Hold</button>
+                                </span>
+                            </td>
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Hold Quantity Import</span>{{(item.hold_qty_import)}}
+                            </td>
+                            <td style="width:100px;">
+                                <span class="ui-column-title">Inventory After Hold Import</span>
+                                {{ (((
+                                item.bond_intransite+item.stock_transfer_intransite_import_num+item.inventory_import)
+                                - item.sales_pending_import) - item.hold_qty_import).toFixed(3) }}
+                            </td>
+
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="footer">
+                        <tr>
+                            <td style="width: 3em"></td>
+                            <td style="width:100px;"></td>
+                            <td style="width:100px;"></td>
+                            <td style="width:100px;"></td>
+                            <td style="width:100px;">{{tot_arrival_till_date }}</td>
+                            <td style="width:100px;">{{(tot_import_pur_reg_import).toFixed(3)}}</td>
+                            <td style="width:100px;">{{(tot_import_pur_bond_import).toFixed(3)}}</td>
+                            <td style="width:100px;">{{tot_local_purchase_import_intransite}}</td>
+                            <td style="width:100px;">{{(tot_stock_tranfer_import).toFixed(3)}}</td>
+                            <td style="width:100px;">{{(tot_physical_stock_import).toFixed(3)}}</td>
+                            <td style="width:100px;">{{(tot_unsold_import).toFixed(3)}}</td>
+                            <td style="width:100px;">{{(tot_sales_pending_import).toFixed(3)}}</td>
+                            <td style="width:100px;">{{(tot_available_import).toFixed(3)}}</td>
+                            <td style="width:100px;"></td>
+                            <td style="width:100px;">{{(tot_hold_import).toFixed(3)}}</td>
+                            <td style="width:100px;">{{(inventory_after_hold_import).toFixed(3)}}</td>
+
+
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="1" class="text-center">No Data found.</td>
+                        </tr>
+                    </ng-template>
+
+                </p-table>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div bsModal #myHoldModel="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true" [config]="{backdrop:'static'}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+
+            <div class="modal-header">
+                <h4 class="modal-title">Hold Quantity</h4>
+                <button type="button" class="close" (click)="closeModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="form-group row">
+                            <label class="col-md-6 col-form-label"><strong>Hold Qty</strong></label>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="hold_qty" [(ngModel)]="hold_qty_input"
+                                    placeholder="Enter Hold Qty">
+                            </div>
+
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-dark" (click)="submitHold()">Submit</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

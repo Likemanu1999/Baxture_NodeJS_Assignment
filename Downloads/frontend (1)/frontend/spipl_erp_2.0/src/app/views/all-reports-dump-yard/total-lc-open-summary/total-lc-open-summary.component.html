@@ -1,0 +1,214 @@
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="form-group col-6 col-md-3">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><em class="fa fa-calendar"></em></span>
+                            </div>
+                            <input pInputText [(ngModel)]="selected_date_range" (ngModelChange)="getData()"
+                                [bsConfig]="datePickerConfig" #dp="bsDaterangepicker" bsDaterangepicker
+                                placeholder="Choose Date Range" class="form-control page-filter" readonly />
+                        </div>
+                    </div>
+                    <!-- <div class="form-group col-6 col-md-3">
+                        <div class="row ">
+                            <div class="col-md-12">
+                                <div class="btn-group" dropdown>
+                                    <button dropdownToggle type="button"
+                                        class="btn btn-primary" (click)="fetchLcSummaryData()">
+                                        Submit <span class="caret"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Wise Report -->
+        <div class="row">
+            <div class="col-md-12">
+                <p-table #dt [value]="bankWiseData" styleClass="ui-table-pilist " [rowHover]="true" [rows]="50"
+                    [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100]" [paginator]="false"
+                    [filterDelay]="0" [scrollable]="true" scrollHeight="200px" [virtualRowHeight]="200"
+                    [virtualScroll]="false" [globalFilterFields]="['bank_name']" (onFilter)="onBankFilter($event, dt)">
+
+                    <ng-template pTemplate="caption">
+
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="ui-helper-clearfix" style="text-align: left">
+
+                                    <!-- <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                        (click)="exportSupplierExcel()" style="margin-right: 0.5em;"
+                                        class="ui-button-success"></button>
+                                    <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF"
+                                        (click)="exportSupplierPdf()" class="ui-button-warning"></button> -->
+
+                                    <button (click)="exportBankExcel()">Excel</button>
+                                    <button (click)="exportBankPdf()">PDF</button>
+                                    <span> Bank Wise</span>
+                                </div>
+
+                            </div>
+                            <div class="col-md-3">
+                                <div style="text-align: right">
+                                    <input pInputText type="text" class="form-control"
+                                        (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                        placeholder="Global Search" />
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </ng-template>
+
+                    <ng-template pTemplate="header">
+                        <tr class="over-flow-wrap-break-word">
+                            <th>S No.</th>
+                            <th pSortableColumn="bank_name">Bank Name <p-sortIcon field="bank_name">
+                                </p-sortIcon>
+                            </th>
+                            <th>Total LC Amount</th>
+                            <th>Total LC Count</th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                        <tr class="over-flow-wrap-break-word">
+                            <ng-container>
+                                <td>
+                                    <span class="ui-column-title">S No.</span>
+                                    {{ rowIndex+1 }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Bank Name</span>
+                                    {{ item.bank_name }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Total LC Amount</span>
+                                    {{ item.total_lc_amount | number : '1.0-3' }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Total LC Count</span>
+                                    {{ item.total_lc_count | number : '1.0-3' }}
+                                </td>
+                            </ng-container>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="footer">
+                        <tr>
+                            <td>Total Records : {{ checkBankData ? checkBankData.length : 0 }}</td>
+                            <td></td>
+                            <td>{{totalAmountBank | number : '1.0-3' }}</td>
+                            <td>{{totalLcCountBank | number : '1.0-3' }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="4" style="text-align:left">No Data Found.</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Supplier Wise Report -->
+        <div class="row">
+            <div class="col-md-12">
+                <p-table #dt1 [value]="supplierWiseData" styleClass="ui-table-pilist " [rowHover]="true" [rows]="50"
+                    [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100]" [paginator]="false"
+                    [filterDelay]="0" [scrollable]="true" scrollHeight="200px" [virtualRowHeight]="200"
+                    [virtualScroll]="false" [globalFilterFields]="['sub_org_name']"
+                    (onFilter)="onSupplierFilter($event, dt1)">
+
+                    <ng-template pTemplate="caption">
+
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="ui-helper-clearfix" style="text-align: left">
+
+                                    <!-- <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                                        (click)="exportSupplierExcel()" style="margin-right: 0.5em;"
+                                        class="ui-button-success"></button>
+                                    <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF"
+                                        (click)="exportSupplierPdf()" class="ui-button-warning"></button> -->
+                                    <button (click)="exportSupplierExcel()">Excel</button>
+                                    <button (click)="exportSupplierPdf()">PDF</button>
+                                    <span> Supplier Wise</span>
+                                </div>
+
+                            </div>
+                            <div class="col-md-3">
+                                <div style="text-align: right">
+                                    <input pInputText type="text" class="form-control"
+                                        (input)="dt1.filterGlobal($event.target.value, 'contains')"
+                                        placeholder="Global Search" />
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </ng-template>
+
+                    <ng-template pTemplate="header">
+                        <tr class="over-flow-wrap-break-word">
+                            <th>S No.</th>
+                            <th pSortableColumn="sub_org_name">Supplier's Name <p-sortIcon field="sub_org_name">
+                                </p-sortIcon>
+                            </th>
+                            <th>Total LC Amount</th>
+                            <th>Total LC Count</th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                        <tr class="over-flow-wrap-break-word">
+                            <ng-container>
+                                <td>
+                                    <span class="ui-column-title">S No.</span>
+                                    {{ rowIndex+1 }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Supplier's Name</span>
+                                    {{ item.sub_org_name }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Total LC Amount</span>
+                                    {{ item.total_lc_amount | number : '1.0-3' }}
+                                </td>
+                                <td>
+                                    <span class="ui-column-title">Total LC Count</span>
+                                    {{ item.total_lc_count | number : '1.0-3' }}
+                                </td>
+                            </ng-container>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="footer">
+                        <tr>
+                            <td>Total Records : {{ checkSupplierData ? checkSupplierData.length : 0 }}</td>
+                            <td></td>
+                            <td>{{totalAmountSupplier | number : '1.0-3' }}</td>
+                            <td>{{totalLcCountSupplier | number : '1.0-3' }}</td>
+
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="4" style="text-align:left">No Data Found.</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>

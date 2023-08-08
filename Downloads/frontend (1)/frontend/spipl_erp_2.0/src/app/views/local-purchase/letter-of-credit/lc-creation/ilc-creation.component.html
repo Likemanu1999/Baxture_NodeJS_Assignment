@@ -1,0 +1,410 @@
+<div class="animated fadeIn" *ngIf="!lc_editor">
+
+  <div class="row">
+  <div class="col-md-12">
+      <div class="card">
+          <div class="card-header">
+              <h4><i class="fa fa-file"></i> {{mode}} ILC Application</h4>
+          </div>
+          <form [formGroup]="createLcForm" novalidate  autocomplete="off" (ngSubmit) = "onSubmit()">
+          <div class="card-body">
+              <div class="row">
+                  <div class="col-md-12">
+
+
+                      <div class="row">
+
+                        <div class="col-md-3">
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>ILC Application Date :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <input type="text"
+                                class="form-control"
+                                formControlName="ilc_date"
+                                id="ilc_date"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker"
+                                [(ngModel)]="ilc_date"
+                                bsDatepicker
+                                placeholder="ILC Date " readonly>
+                            </div>
+                            </div>
+                          </div>
+
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>Applicants Bank :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <ng-select
+                            id="spipl_bank_id"
+                            *ngIf="ourBank.length> 0"
+                            formControlName="spipl_bank_id"
+                            placeholder="Applicants Bank "
+                            [searchable]="true"
+                            [clearable]="true"
+                            bindLabel="bank_name"
+                            bindValue="id"
+                            [items]="ourBank"
+                            [(ngModel)]="spipl_bank_id"
+                            >
+                            </ng-select>
+                            </div>
+                            </div>
+                          </div>
+
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>Latest Date of Shipment :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <input type="text"
+                                class="form-control"
+                                formControlName="latest_date_of_shipment"
+                                id="latest_date_of_shipment"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker"
+                                [(ngModel)]="latest_date_of_shipment"
+                                bsDatepicker
+                                placeholder="Shipment Date " readonly>
+                            </div>
+                            </div>
+                          </div>
+
+
+                        </div>
+                        <div class="col-md-3">
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>Days of Expiry :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <input type="text"
+                                class="form-control"
+                                placeholder="Days of Expiry" (keyup) = "lastDateCalculate($event , latest_date_of_shipment)">
+                            </div>
+                            </div>
+                          </div>
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>ILC Expiry Date :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <input type="text"
+                                class="form-control"
+                                formControlName="ilc_expiry_date"
+                                id="ilc_expiry_date"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker"
+                                [(ngModel)]="ilc_expiry_date"
+
+                                bsDatepicker
+                                placeholder="Expiry Date " readonly>
+                            </div>
+                            </div>
+                          </div>
+
+
+                        </div>
+
+
+
+
+
+                        <div class="col-md-3">
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>Advising Bank :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <ng-select
+                                *ngIf="advisingBank.length> 0"
+                            id="advising_bank_id"
+                            formControlName="advising_bank_id"
+                            placeholder="Advising Bank "
+                            [searchable]="true"
+                            [clearable]="true"
+                            bindLabel="bank_name"
+                            bindValue="id"
+                            [items]="advisingBank"
+                            [(ngModel)]="advising_bank_id"
+                            >
+                            </ng-select>
+                            </div>
+                            </div>
+                          </div>
+
+
+                        </div>
+
+                        <div class="col-md-3">
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>Negotiating Bank :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <ng-select
+                            id="negotiating_bank_id"
+                            *ngIf="negotiatingBank.length> 0"
+                            formControlName="negotiating_bank_id"
+                            placeholder="Negotiating Bank "
+                            [searchable]="true"
+                            [clearable]="true"
+                            bindLabel="bank_name"
+                            bindValue="id"
+                            [items]="negotiatingBank"
+                            [(ngModel)]="negotiating_bank_id"
+                            >
+                            </ng-select>
+                            </div>
+                            </div>
+                          </div>
+
+
+                        </div>
+
+
+
+                        <div class="col-md-3">
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>Transhipment :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <ng-select
+                            id="transhipment"
+                            formControlName="transhipment"
+                            placeholder="Transhipment"
+                            [searchable]="true"
+                            [clearable]="true"
+                            bindLabel="name"
+                            bindValue="id"
+                            [items]="transship"
+                            [(ngModel)]="transhipment"
+                            >
+                            </ng-select>
+                            </div>
+                            </div>
+                          </div>
+
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>Partial Shipment :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <ng-select
+                            id="partial_shipment"
+                            formControlName="partial_shipment"
+                            placeholder="Partial Shipment "
+                            [searchable]="true"
+                            [clearable]="true"
+                            bindLabel="name"
+                            bindValue="id"
+                            [items]="transship"
+                            [(ngModel)]="partial_shipment"
+                            >
+                            </ng-select>
+                            </div>
+                            </div>
+                          </div>
+
+
+                        </div>
+
+                        <div class="col-md-3">
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <label for=""><strong>Tolerance :</strong></label>
+                            </div>
+                            <div class="col-md-8">
+
+                              <div class="form-group">
+                                <input type="text"
+                                class="form-control"
+                                id="tolerance"
+                                formControlName="tolerance"
+                                placeholder="Tolerance"  [(ngModel)]="toleranceValue" numbersOnly>
+                            </div>
+
+
+                            </div>
+                          </div>
+
+
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-12 mt-3">
+                          <h5> PI Details</h5>
+                        <table class="table table-striped table-hover table-responsive-lg"
+                        [mfData]="pi_arr_details"
+                        #mf="mfDataTable"
+                        [mfRowsOnPage]="5"
+
+                        >
+                          <thead>
+                            <tr style="color:brown;">
+                              <th>
+                                <mfDefaultSorter by="sr_no">Sr.No.</mfDefaultSorter>
+                              </th>
+                              <th>PI Invoice No.</th>
+                              <th>Quantity</th>
+                              <th>Amount</th>
+                              <th>Place Of Destination</th>
+                              <th>Place of Loading</th>
+
+                            </tr>
+                          </thead>
+                          <tbody>
+                             <ng-container *ngIf="mode == 'Create'">
+                              <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" >
+
+                                <td>{{i+1}}</td>
+                                <td>{{item.pi_invoice_no}}</td>
+                                <td>{{item.quantity_utilized_lc}}</td>
+                                <td>{{item.amount_utilized_lc |currencyInr}}</td>
+                                <td>{{item.place_of_destination }}</td>
+                                <td>{{item.place_of_loading }}</td>
+
+
+                              </tr>
+                            </ng-container>
+
+                            <ng-container  *ngIf="mode == 'Edit'">
+                              <tr *ngFor="let item of mf.data; let i = index" [attr.data-index]="i" >
+
+                                <td>{{i+1}}</td>
+                                <td>{{item.proformarefno}}</td>
+                                <td>{{item.pi_quantity}}</td>
+                                <td>{{item.pi_amount |currencyInr}}</td>
+                                <td>{{item.placeofdestination }}</td>
+                                <td>{{item.placeofloading }}</td>
+
+
+                              </tr>
+                            </ng-container>
+
+
+
+
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colspan="9">
+                                <mfBootstrapPaginator [rowsOnPageSet]="[5,10,15,100]"></mfBootstrapPaginator>
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+
+
+                        </div>
+                      </div>
+
+                      <div class="row">
+                       <div class="col-md-12">
+                         <div class="row">
+                           <div class="col-md-2">
+                             <strong>Supplier Name :</strong>
+                            </div>
+                            <div class="col-md-4">
+                              <strong>{{supplierName}}</strong>
+                            </div>
+                         </div>
+
+                         <div class="row">
+                          <div class="col-md-2">
+                            <strong>Total Amount :</strong>
+                           </div>
+                           <div class="col-md-4">
+                             <strong>{{totalAmount |currencyInr}}</strong>
+                           </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-2">
+                            <strong>Total Quantity :</strong>
+                           </div>
+                           <div class="col-md-4">
+                             <strong>{{totalQuantity}}</strong>
+                           </div>
+                        </div>
+                       </div>
+                      </div>
+
+
+
+                    </div>
+
+
+                 </div>
+              </div>
+
+              <div class="card-footer">
+                <div class="row">
+                  <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary"  [disabled]="createLcForm.pristine || createLcForm.invalid">Submit</button>
+
+                    <button class="btn btn-primary" (click)="onBack()"> Back</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+    </div>
+</div>
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+<div *ngIf="lc_editor">
+  <app-ilc-editor [ilc_arr] = "ilc_arr"></app-ilc-editor>
+</div>

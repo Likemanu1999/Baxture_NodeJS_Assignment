@@ -1,0 +1,1357 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4><i class="fa fa-file"></i> {{title}}
+          </h4>
+
+        </div>
+        <div class="card-body" [hidden]="lc_form">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row">
+                <div class="form-group col-6 col-md-2">
+                  <ng-select placeholder="Proforma Invoice Flag" [searchable]="true" [clearable]="true" bindLabel="name"
+                    bindValue="id" [items]="pi_flag" (change)="onSubmit($event,'pi_flag_status','id')">
+                  </ng-select>
+                </div>
+
+                <div class="form-group col-6 col-md-2">
+                  <ng-select placeholder="Status" [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                    [items]="status" (change)="onSubmit($event,'availability','id')">
+                  </ng-select>
+                </div>
+
+                <div class="form-group col-6 col-md-2">
+                  <ng-select placeholder="Supplier" [searchable]="true" [clearable]="true" bindLabel="sub_org_name"
+                    bindValue="sub_org_id" [items]="sub_org" (change)="onSubmit($event,'supplier','sub_org_id')">
+                  </ng-select>
+                </div>
+
+                <div class="form-group col-6 col-md-2">
+                  <ng-select placeholder=" Bank" [searchable]="true" [clearable]="true" bindLabel="bank_name"
+                    bindValue="id" [items]="spipl_bank" (change)="onSubmit($event,'bank','id')">
+                  </ng-select>
+                </div>
+
+                <div class="col-md-2">
+                  <input type="checkbox" (change)="onSubmit($event,'non_pending_check','')"> <span>NON Pending (LC and
+                    Non-LC)</span>
+                </div>
+
+                <div class="row " *ngIf="sendMail">
+                  <div class="col-md-12">
+                    <div class="btn-group" dropdown>
+                      <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle">
+                        Send Mail <span class="caret"></span>
+                      </button>
+                      <ul *dropdownMenu class="dropdown-menu" role="menu">
+                        <li role="menuitem"><a class="dropdown-item" style="cursor: pointer;"
+                            (click)="sendPiMail('1')">PI Registration</a></li>
+
+                        <li role="menuitem"><a class="dropdown-item" style="cursor: pointer;"
+                            (click)="sendPiMail('2')">NON Pending</a></li>
+
+
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+
+
+              </div>
+            </div>
+          </div>
+
+
+
+
+          <p-table #dt [value]="lc_data" dataKey="id" styleClass="ui-table-customers " [rowHover]="true" [rows]="10"
+            [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="isLoading" [paginator]="true"
+            (onFilter)="onFilter($event, dt)"
+            currentPageReportTemplate="Showing &#123;currentPage&#125;   of &#123;totalPages&#125; entries"
+            [filterDelay]="0"
+            [globalFilterFields]="['suppierOrgName','proform_invoice_no','proform_invoice_date','pi_quantity','unit','pi_rate','currency','gradeName','destinationPort','tentitive_departure_date','','buyerBankName','firstAdvBank','secondAdvBank','pi_flag','added_date','bank_lc_no','indent_invoice_no','indent_commision_amt_usd']"
+            [resizableColumns]="true">
+
+
+            <ng-template pTemplate="caption">
+
+              <div class="row">
+                <div class="col-md-9">
+                  <div class="ui-helper-clearfix" style="text-align: left">
+
+                    <button type="button" pButton icon="pi pi-file-excel" iconPos="left" label="EXCEL"
+                      (click)="exportExcel()" style="margin-right: 0.5em;" class="ui-button-success"></button>
+                    <button type="button" pButton icon="pi pi-file-pdf" iconPos="left" label="PDF" (click)="exportPdf()"
+                      class="ui-button-warning"></button>
+
+                  </div>
+
+                </div>
+                <div class="col-md-3">
+                  <div style="text-align: right">
+                    <input pInputText type="text" class="form-control"
+                      (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+                  </div>
+                </div>
+
+              </div>
+
+
+            </ng-template>
+
+            <ng-template pTemplate="header">
+              <tr>
+                <!-- <th>Sr.No. </th> -->
+                <th style="width: 3rem">
+                  <p-tableHeaderCheckbox (click)="onCheckAll(a.checked)" #a></p-tableHeaderCheckbox>
+                </th>
+                <th [style.width]="col.style" pSortableColumn="{{col.field}}" *ngFor="let col of colss"
+                  pResizableColumn> {{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+                </th>
+                <th style="width: 100px;" *ngIf="pi_flag_status == 3 && availability != 0">Indent PI</th>
+                <th style="width: 120px;" *ngIf="pi_flag_status == 3 && availability != 0">Indent Invoice Number</th>
+                <th style="width: 120px;" *ngIf="pi_flag_status == 3 && availability != 0">Indent Commission Amount</th>
+                <th style="width: 100px;" *ngIf="pi_flag_status == 3 && availability != 0">Indent Non Copy</th>
+                <th style="width: 100px;" *ngIf="pi_flag_status == 3 && availability != 0">Indent Ammend Copy</th>
+                <th style="width: 100px;" *ngIf="pi_flag_status == 2 && availability != 0">Non LC Pi Details</th>
+                <th style="width: 90px;" *ngIf="edit_opt">Edit</th>
+                <th style="width: 90px;" *ngIf="del_opt">Delete</th>
+              </tr>
+
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+              <tr class="ui-selectable-row">
+
+                <td>
+
+
+                  <input type="checkbox" [value]="item" #inputs #checkboxes (click)="onChange(checkboxes.checked,item)">
+
+                </td>
+
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Supplier</span>
+                  &#123;&#123;item.suppierOrgName&#125;&#125; <div *ngIf="item.non_sent_to_supplier_dt != ''"><span
+                      class="badge badge-pill badge-warning"
+                      [pTooltip]="item.non_sent_to_supplier_dt | date: 'dd-MM-y hh:mm:ss a'" tooltipPosition="top"
+                      placeholder="Bottom">NON Pending Mail Sent</span></div>
+
+                
+                </td>
+
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">PI Invoice Number</span>
+                  &#123;&#123;item.proform_invoice_no&#125;&#125; &nbsp;&nbsp;
+                  <span *ngIf="item.pi_copy">
+                    <span *ngFor="let val of getDocsArray(item.pi_copy)">
+                      <a href="{{val}}" target="_blank"><i class="fa fa-file"></i></a>
+                    </span>
+                  </span>
+                </td>
+
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">PI Invoice Date</span>
+                  &#123;&#123;item.proform_invoice_date | date : "dd-MM-y "&#125;&#125;
+                </td>
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Quantity</span>
+                  &#123;&#123;item.pi_quantity&#125;&#125;
+                  <p *ngIf="item.half_pending_non" style="color:tomato">Half Non Pending : {{item.half_pending_non}}</p>
+                </td>
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Unit</span>
+                  &#123;&#123;item.unit&#125;&#125;
+                </td>
+
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Rate</span>
+                  &#123;&#123;item.pi_rate&#125;&#125;
+                </td>
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Amount</span>
+                  {{item.pi_rate * item.pi_quantity }}
+                </td>
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Currency</span>
+                  &#123;&#123;item.currency&#125;&#125;
+                </td>
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Grade</span>
+                  &#123;&#123;item.gradeName&#125;&#125;
+                </td>
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Port</span>
+                  &#123;&#123;item.destinationPort&#125;&#125;
+                  <div *ngIf="item.pi_mail_to_cha_dt != ''"><span class="badge badge-pill badge-primary"
+                      [pTooltip]="item.pi_mail_to_cha_dt| date: 'dd-MM-y hh:mm:ss a'" tooltipPosition="top"
+                      placeholder="Bottom">PI Mail Sent</span></div>
+                </td>
+
+                <td class="ui-resizable-column">
+                  <div class="ui-column-title">ETD/ETA</div>
+                  <span class="badge badge-pill badge-primary ">ETD: {{item.tentitive_departure_date | date :"dd-MM-y"}}
+                  </span> <span class="badge badge-pill badge-danger a1" *ngIf="item.ETD_diff > 0">{{item.ETD_diff}}
+                  </span> <br>
+                  <span class="badge badge-pill badge-success">ETA: {{item.tentitive_arrival_date | date :"dd-MM-y"}}
+                  </span>
+
+                </td>
+
+                <td class="ui-resizable-column">
+                  <div class="ui-column-title">LC/TT Details</div>
+                  <div *ngIf="item.pi_flag == 1  && item.lc_expiry_date">
+                    <div *ngIf="item.lc_exp_flag==1">
+                      <span class="badge badge-pill badge-primary a1">{{item.lc_expiry_date | date:'dd-MM-y'}} </span>
+                    </div>
+
+                    <div *ngIf="item.lc_exp_flag==0">
+                      <span class="badge badge-pill badge-primary">{{item.lc_expiry_date| date:'dd-MM-y'}} </span>
+                    </div>
+                    <div style="font-size :12px">Lc No: {{item.bank_lc_no}}</div>
+                    <div style="font-size :12px">Opening Date: {{item.lc_opening_date}}</div>
+                  </div>
+
+                  <div *ngIf="item.pi_flag == 2">
+                    <div *ngIf="item.non_lc_swift_tt_details != ''">
+                      <div *ngFor="let val of getDocsArray(item.non_lc_swift_tt_details)">
+                        <span style="font-size: 12px;">REF NO:- {{val.non_lc_swift_ref_no}} </span>
+                        <span style="font-size: 12px;">Date:- {{val.non_lc_swift_date | date:'dd-MM-y'}} </span>
+                      </div>
+
+                    </div>
+
+
+                  </div>
+
+
+                </td>
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Buyer Bank</span>
+                  &#123;&#123;item.buyerBankName&#125;&#125;
+                </td>
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">First Advising Bank</span>
+                  &#123;&#123;item.firstAdvBank&#125;&#125;
+                </td>
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Second Advising Bank</span>
+                  &#123;&#123;item.secondAdvBank&#125;&#125;
+                </td>
+
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">PI Flag</span>
+                  <div [innerHTML]="getFlag(item.pi_flag)"></div>
+                </td>
+
+
+                <td class="ui-resizable-column">
+                  <span class="ui-column-title">Added Date</span>
+                  &#123;&#123;item.added_date | date : "dd-MM-y hh:mm:ss a "&#125;&#125;
+                </td>
+                <td class="ui-resizable-column" *ngIf="pi_flag_status == 3 && availability != 0 ">
+                  <span class="ui-column-title">Indent PI</span>
+                  <button class="btn btn-sm btn-info" (click)="indentLc(item)">Update</button>
+                </td>
+
+                <td class="ui-resizable-column" *ngIf="pi_flag_status == 3 && availability != 0">
+                  <span class="ui-column-title">Indent Invoice Number</span>
+                  &#123;&#123;item.indent_invoice_no&#125;&#125;
+                  <span *ngIf="item.scanimg_indent_lc">
+                    <span *ngFor="let val of getDocsArray(item.scanimg_indent_lc)">
+                      <a href="{{val}}" target="_blank"><i class="fa fa-file"></i></a>
+                    </span>
+                  </span>
+                </td>
+
+                <td class="ui-resizable-column" *ngIf="pi_flag_status == 3 && availability != 0 ">
+                  <span class="ui-column-title">Indent Commission Amount</span>
+                  &#123;&#123;item.indent_commision_amt_usd&#125;&#125;
+                </td>
+
+                <td class="ui-resizable-column" *ngIf="pi_flag_status == 3 && availability != 0 ">
+                  <span class="ui-column-title">Indent Non Copy</span>
+
+                  <span *ngIf="item.scanimg_indent_non">
+                    <span *ngFor="let val of getDocsArray(item.scanimg_indent_non)">
+                      <a href="{{val}}" target="_blank"><i class="fa fa-file"></i></a>
+                    </span>
+                  </span>
+                </td>
+
+                <td class="ui-resizable-column" *ngIf="pi_flag_status == 3 && availability != 0">
+                  <span class="ui-column-title">Indent Ammend Copy</span>
+
+                  <span *ngIf="item.scanimg_indent_amend">
+                    <span *ngFor="let val of getDocsArray(item.scanimg_indent_amend)">
+                      <a href="{{val}}" target="_blank"><i class="fa fa-file"></i></a>
+                    </span>
+                  </span>
+                </td>
+
+
+                <td class="ui-resizable-column" *ngIf="pi_flag_status == 2 && non_lc_pi && availability != 0">
+                  <span class="ui-column-title">Non Lc Pi Details</span>
+                  <button class="btn btn-sm btn-warning" (click)="non_lc_details(item.id)">Details</button>
+
+                </td>
+                <td *ngIf="edit_opt"><a style="cursor: pointer;" (click)="onEdit(item.id)"><i
+                      class="fa fa-pencil"></i></a></td>
+                <td *ngIf="del_opt"><a style="cursor: pointer;" mwlConfirmationPopover [popoverTitle]="popoverTitle"
+                    [popoverMessage]="popoverMessage" [confirmText]="confirmText" [cancelText]="cancelText"
+                    [placement]="placement" [closeOnOutsideClick]="closeOnOutsideClick" confirmButtonType="danger"
+                    cancelButtonType="success" (confirm)="onDelete(item.id)" (cancel)="cancelClicked = true"><i
+                      class="fa fa-trash"></i></a></td>
+
+
+
+
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+
+              <tr>
+                <td colspan="3">Total</td>
+                <td></td>
+                <td>{{total_qty}}</td>
+                <td></td>
+                <td>{{tot_rate}}</td>
+                <td>{{tot_amt}}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td *ngIf="pi_flag_status == 3 "></td>
+                <td *ngIf="pi_flag_status == 3 "></td>
+                <td *ngIf="pi_flag_status == 3 ">{{commision_amt}}</td>
+                <td *ngIf="pi_flag_status == 3 "></td>
+                <td *ngIf="pi_flag_status == 3 "></td>
+                <td *ngIf="pi_flag_status == 2 "></td>
+                <td></td>
+                <td></td>
+
+              </tr>
+
+
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="8" style="text-align:left">Not Found any data</td>
+              </tr>
+            </ng-template>
+          </p-table>
+          <br>
+          <button class="btn btn-info btn-sm" style="color:white;" (click)="createLc()"
+            *ngIf="pi_flag_status == 1 && availability==1 && create_lc">Create LC</button>
+          <!-- </div> -->
+
+
+        </div>
+
+
+        <div class="card-body" [hidden]="!lc_form">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="text-right"><button class="btn btn-info" (click)="bactToList()">Back to list</button></div>
+            </div>
+
+          </div>
+          <form [formGroup]="addForm" novalidate (ngSubmit)="onSubmitLc()" autocomplete="off" class="needs-validation">
+
+            <div class="row">
+              <div class="col-md-12">
+
+                <table class="table table-bordered table-responsive">
+
+                  <tbody>
+                    <tr>
+                      <!-- <td>LC Number : </td> -->
+                      <input type="hidden" class="form-control" id="suppiler_id" formControlName="suppiler_id"
+                        [(ngModel)]="supplier_id">
+
+                      <!-- <input type="hidden"
+                                      class="form-control"
+                                      id="spipl_bank_id"
+                                      formControlName="spipl_bank_id"
+                                      [(ngModel)]="spipl_bank_id"
+                                    > -->
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="row">
+                          <div class="col-md-2">Date of Lc Application:</div>
+                          <div class="col-md-6">
+                            <div class="form-group col-md-5">
+                              <input type="text" class="form-control" id="lc_date" formControlName="lc_date"
+                                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                #dp="bsDatepicker" bsDatepicker [maxDate]="today" placeholder="Enter Date " required
+                                [ngClass]="{ 'is-invalid': submitted && f.lc_date.errors, 'is-valid': f.lc_date.touched && !f.lc_date.errors }">
+                            </div>
+
+
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>To,<br>The Assistant General Manager,<br>{{buyerBankName}}<br>{{buyerBankAddress}}</td>
+                    </tr>
+                    <tr>
+                      <td> Sub: - Request of LC Opening of {{suppierOrgName}} for {{currency}} {{totamount}}=00</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Dear Sir,<br>
+                        <p>Please issue the letter of credit to following party.</p>
+
+                        <p>1) Benificiary (Name and Address):{{suppierOrgName}} {{suppierOrgAddress}}</p>
+                        <p>2) LC Amt :- {{totamount}}=00 {{currency}}</p>
+                        <div class="row">
+
+                          <div class="col-md-2">
+                            3) Applicants Bank :
+                          </div>
+                          <div class="form-group col-md-3">
+                            <ng-select id="spipl_bank_id" formControlName="spipl_bank_id" placeholder=" Bank"
+                              [searchable]="true" [clearable]="true" bindLabel="bank_name" bindValue="id"
+                              [items]="spipl_bank" required
+                              [ngClass]="{ 'is-invalid': submitted && f.spipl_bank_id.errors, 'is-valid': f.spipl_bank_id.touched && !f.spipl_bank_id.errors }">
+                            </ng-select>
+
+                          </div>
+                        </div>
+
+                        <div class="row">
+
+
+
+                          <div class="col-md-2">
+                            4) INCO Terms:
+                          </div>
+                          <div class="form-group col-md-3">
+                            <ng-select placeholder="Select Term " id="payment_term_id" formControlName="payment_term_id"
+                              [searchable]="true" [clearable]="true" bindLabel="pay_term" bindValue="pt_id"
+                              [items]="paymentTerm" required
+                              [ngClass]="{ 'is-invalid': submitted && f.payment_term_id.errors, 'is-valid': f.payment_term_id.touched && !f.payment_term_id.errors }">
+                            </ng-select>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-2">
+                            5) Latest Date of shipment:
+                          </div>
+                          <div class="form-group col-md-3">
+                            <input type="text" class="form-control" id="date_of_shipment"
+                              formControlName="date_of_shipment"
+                              [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                              #dp="bsDatepicker" bsDatepicker placeholder="Enter Date " [(ngModel)]="latest_date"
+                              (ngModelChange)="lastDateCalculate(expiry,latest_date)" required
+                              [ngClass]="{ 'is-invalid': submitted && f.date_of_shipment.errors, 'is-valid': f.date_of_shipment.touched && !f.date_of_shipment.errors }">
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-2">
+                            6) Date and Place of expiry of this credit:
+                          </div>
+                          <div class="form-group col-md-2">
+                            <input type="number" class="form-control" id="expiry_count" formControlName="expiry_count"
+                              [(ngModel)]="expiry" (ngModelChange)="lastDateCalculate(expiry,latest_date)">
+                          </div>
+                          <div class="form-group col-md-3">
+                            <input type="text" class="form-control" id="lc_expiry_date" formControlName="lc_expiry_date"
+                              [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                              #dp="bsDatepicker" bsDatepicker [maxDate]="today" [(ngModel)]="exp_date">
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <!-- <tr>
+                                          <td>Kindly issue the Draft of LC for Verification ,before sending Original LC to Beneficiary. We authorize you to debit LC issuing charges to our account no.2551261005273</td>
+                                      </tr> -->
+
+                    <tr>
+                      <td>
+                        Thanking You,<br>
+                        {{buyerOrgName}}
+                        <br><br>
+                        <p>Authorized Signatory,</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <table class="table table-bordered table-responsive">
+                        <tbody>
+                          <tr>
+                            <td>71D</td>
+                            <td>ADVISING BANK</td>
+                            <td>{{firstAdvBank}},<br>
+                              {{firstAdvBankAddress}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>31D</td>
+                            <td>EXIPIRY DATE AND PLACE</td>
+                            <td>{{exp_date}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>50</td>
+                            <td>APPLICANT NAME AND ADDRESS</td>
+                            <td>{{buyerOrgName}},<br>
+                              {{buyerOrgAddress}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>51A</td>
+                            <td>APPLICANT BANK(ADDRESS)</td>
+                            <td>{{buyerBankName}},<br>
+                              {{buyerBankAddress}}<br>
+                              SWIFT CODE :-{{buyerBankSwiftCode}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>59</td>
+                            <td>BENEFICIARY NAME AND ADDRESS</td>
+                            <td>{{suppierOrgName}}<br><br>
+                              {{suppierOrgAddress}}
+
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>32B</td>
+                            <td>CURRENCY /AMOUNT(LC VALUE)</td>
+                            <td>{{totamount}}=00 {{currency}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>39A</td>
+                            <td>TOLERANCE</td>
+                            <td>
+                              <div class="form-group col-md-4">
+                                <ng-select placeholder="Tolerance" formControlName="tolerance" id="tolerance"
+                                  [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                  [items]="tolarance" required
+                                  [ngClass]="{ 'is-invalid': submitted && f.tolerance.errors, 'is-valid': f.tolerance.touched && !f.tolerance.errors }">
+                                </ng-select>
+
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>41D</td>
+                            <td>AVILABLE WITH /BY</td>
+                            <td>
+                              <div class="form-group col-md-4">
+                                <ng-select placeholder="Available bank" formControlName="available_with_by"
+                                  id="available_with_by" [searchable]="true" [clearable]="true" bindLabel="bank_name"
+                                  bindValue="bank_id" [items]="org_bank" (change)="setSelectedStatus($event)" required
+                                  [ngClass]="{ 'is-invalid': submitted && f.available_with_by.errors, 'is-valid': f.available_with_by.touched && !f.available_with_by.errors }">
+                                </ng-select>
+
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>42C</td>
+                            <td>DRAFT</td>
+                            <td>{{payment_term}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>43T</td>
+                            <td>TRANSHIMENT</td>
+                            <td>
+                              <div class="form-group col-md-4">
+                                <ng-select placeholder="transhipment" formControlName="transhipment" id="transhipment"
+                                  [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                  [items]="transship" required
+                                  [ngClass]="{ 'is-invalid': submitted && f.transhipment.errors, 'is-valid': f.transhipment.touched && !f.transhipment.errors }">
+                                </ng-select>
+
+                              </div>
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td>43P</td>
+                            <td>PARTIAL SHIPMENT</td>
+                            <td>
+                              <div class="form-group col-md-4">
+                                <ng-select placeholder="Partial shipment" formControlName="partial_shipment"
+                                  id="partial_shipment" [searchable]="true" [clearable]="true" bindLabel="name"
+                                  bindValue="id" [items]="transship" required
+                                  [ngClass]="{ 'is-invalid': submitted && f.partial_shipment.errors, 'is-valid': f.partial_shipment.touched && !f.partial_shipment.errors }">
+                                </ng-select>
+
+                              </div>
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td>44E</td>
+                            <td>PORT OF SHIPMENT</td>
+                            <td>
+                              <div *ngFor="let i of item">
+                                {{i.material_load_port}},
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>44F</td>
+                            <td>PORT OF DISCHARGE</td>
+                            <td>
+                              <div *ngFor="let i of item">
+                                {{i.destinationPort}},
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>44C</td>
+                            <td>LAST DATE OF SHIPMENT</td>
+                            <td>{{exp_date}}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>45A</td>
+                            <td>DESCRIPTION OF ITEMS IMPORTED
+                              AND TERMS OF SHIPMENT</td>
+                            <td>
+
+                              <p *ngFor="let i of item">{{i.product_name}} Qty : {{i.pi_quantity}} {{i.unit}}, Grade
+                                :{{i.gradeName}} ,{{i.destinationPort}} Term {{i.piInsuranceType}}</p>
+
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td>47A</td>
+                            <td>ADDITIONAL CONDITION</td>
+                            <td>
+                              <ol>
+                                <li>CONFIRM THE LC.</li>
+                                <li>OUTSIDE INDIA CHARGES ARE FOR THE ACCOUNT OF BENEFICIARY.</li>
+                                <li>INTEREST @ LIBOR +100 BPPA.FROM THE DATE OF NEGOTATION TO THE MATURITY DATE TO BE
+                                  PAID BY THE APPLICANT.</li>
+                                <li>CONFIRMATION CHARGES 100 BPPA FROM THE DATE OF LC ISSUANCE TILL THE NEGOTATION DATE,
+                                  TO THE ACCOUNT OF APPLICANT.</li>
+                                <li>THE DRAFT DRAWN {{payment_term}}, THE PAYMENT TO BENEFICIARY IS TO BE MADE AT SIGHT
+                                  BASIS PROVIDED THAT ALL DOCUMENTS PRESENTED ARE COMPLIED WITH L/C TERMS AND CLAIM FROM
+                                  US ON DATE ALONG WITH INTEREST OF USANCE PERIOD.</li>
+                                <li>.DOCUMENTS PRESENTED WITH MISSPELLING OR TYPING ERRORS THAT DO NOT AFFECT THE
+                                  MEANING OF A WORD OR SENTENCE IN WHICH THEY OCCUR,DO NOT MAKE A DOCUMENT DISCREPANT
+                                  UNLESS SUCH ERRORS RELATED TO PRICES,QUANTITY,QUALITY,DESCRIPTION OF GOODS AND SO
+                                  AFFECT THE MEANING.</li>
+                                <li>THE DISCREPANCY WHICH DOES NOT AFFECT QUALITY, QUANTITY, DESCRIPTION OF GOODS AND
+                                  PRICE OF THE L/C ARE ACCEPTABLE.</li>
+                              </ol>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>71B</td>
+                            <td>BANK CHARGES(INSIDE/OUTSIDE)</td>
+                            <td>
+                              ALL CHARGES OUTSIDE INDIA (EXCEPT DISCOUNT,INTEREST,AND CONFIRMATION CHARGES)
+                              ARE INTO THE ACCOUNT OF BENEFICIARY
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>48</td>
+                            <td>SUBMISION OF DOCUMENTS(WITHIN DAYS FROM BL DATE)</td>
+                            <td>
+                              WITHIN 21 DAY FROM SHIPMENT DATE
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>49</td>
+                            <td>CONFIRMATION (WITH OR WITHOUT)</td>
+                            <td>
+
+                              <div class="form-group col-md-4" style="padding-bottom: 50px;">
+                                <ng-select placeholder="confirmation" formControlName="confirmation" id="confirmation"
+                                  [searchable]="true" [clearable]="true" bindLabel="name" bindValue="id"
+                                  [items]="confirm" required
+                                  [ngClass]="{ 'is-invalid': submitted && f.confirmation.errors, 'is-valid': f.confirmation.touched && !f.confirmation.errors }">
+                                </ng-select>
+
+                              </div>
+
+                            </td>
+                          </tr>
+                          <tr></tr>
+                        </tbody>
+                      </table>
+                    </tr>
+                    <tr>
+                      <td class="text-center">
+                        <h4>ANNEXURE</h4>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <h4>FOR LC OF {{suppierOrgName}} FOR {{currency}} {{totamount}}=00</h4>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>PLEASE NOTE THAT 1 COMPLETE SET OF DOCS WILL CARRY FOLLOWING DOCS:
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2) BILL OF LADING IN TRIPLICATE.
+                        <textarea formControlName="bl_description" id="bl_description" placeholder="Enter The Data"
+                          cols="20" class="form-control" required
+                          [ngClass]="{ 'is-invalid': submitted && f.bl_description.errors, 'is-valid': f.bl_description.touched && !f.bl_description.errors }"></textarea>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>3) CLAUSE OF "14 DAYS FREE DETENTION AT THE PORT OF DISCHRAGE" SHOULD BE MENTIONED IN EACH
+                        BILL OF LADING.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>4) PORT OF DISCHARGE WILL BE AS BELOW : AS PER PROFORMA INVOICE DETAILS</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p *ngFor="let i of item">> FOR QTY {{i.pi_quantity}} MT (GRADE {{i.gradeName}}):- DISCHARGE
+                          PORT {{i.destinationPort}} AS PER PI REF. NO.{{i.proform_invoice_no}}
+                          DTD:{{i.tentitive_departure_date}}</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>5)PACKING LIST.:Packing should be in manufactureres printed bags and not in plain bags.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>6) CERTIFICATE OF ORIGIN, ISSUNED BY CHAMBER OF COMMEECE.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>7)CERTIFICATE OF QUALITY Mentioning This Material is " <span
+                          *ngFor="let i of item">{{i.productName}} /</span> ".
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>8)INSURANCE COVER ORIGINAL DOCS. (INSURANCE ON "SELLERS WAREHOUSE TO BUYER WAREHOUSE" BASIS.)
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>9)PCS/NSR/CIC/CSR/ISR/ISPS/EGSS/EIC/CTR/EOC/MUCI/ECRS/CON/TTCI/PSI/BRS NOT TO BE RECOVERED
+                        FROM APPLICANT / IMPORTER / CONSIGNEE BY THE SHIPPING COMPANY AND MESSAGE TO BE GIVEN TO
+                        SHIPPING COMPANY PRIOR TO SHIPMENT.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>10) {{payment_term}}.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>11) All Documents should be in the name of {{buyerOrgName}} {{buyerOrgAddress}}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>12] Beneficiary Certificate that they have e-mailed Applicant one set on Non Negotiable
+                        document within 8 working days from date of shipment, a copy of certificate to accompany with
+                        documents. Applicants email id: parmar@parmarglobal.com
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>13] Invoice No.,Unit Price must not apper on Bills Of Lading & Certificate of Origin &
+                        Shipping Co Certificate.
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>14] Certificate from Shipping Co OR their agent stating thet carring Vessel is registered with
+                        an approved classificatiob society as per the Institute classification Clause and Class
+                        maintained equivalent to the Lloyds 100 A1 and that vessel is sea worthy and not more than 20
+                        years old.
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>15] Bills of Lading to show full particulars of agent at discharge port, i.e. Name, Address,
+                        Telephone/Telex & Fax No.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>16] Documents presented with misspelling or typing error that do not affect the meaning of
+                        word or sentence in which they are occur,do not make a document discrepant unless such error
+                        related to prices,quantity,quality,description of goods and so affect the meaning.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>17] The discrepancy which does not affect quality,quantity,description of goods and price of
+                        the L/C are acceptable.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>18] LC NO, LC ISSUING BANK NAME, PAN AAFCP3570L SHOULD APPEAR ON ALL DOCUMENTS.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>19]<p *ngFor="let itm of item , let i = index" [attr.data-index]="i">{{i+1}} - PI No
+                          {{itm.proform_invoice_no}} KINDLY MENTION GSTIN NO- {{itm.gstNo}} ON THE BILL OF LADING FOR
+                          {{itm.destinationPort}} PORT. </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>20] BILL OF LADING TO MENTION IEC CODE -{{buyeriec}} AND EMAIL ID. PARMAR AT PARMARGLOBAL.COM.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        THANKS // REGARDS<br>
+                        {{buyerOrgName}}
+                        <br><br>
+                        <p>Authorized Signatory</p>
+
+                      </td>
+                    </tr>
+                    <!-- ANNEXURE iv -->
+
+                    <tr>
+                      <td class="text-center">
+                        <h5>ANNEXURE - IV</h5>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="row">
+                          <div class="col-md-9"></div>
+                          <div class="col-md-3">
+                            <div class="row">
+                              <div class="col-md-4">Place :</div>
+                              <div class="col-md-8">Pune</div>
+                              <div class="col-md-4">Date :</div>
+                              <div class="col-md-8">
+                                <div class="form-group">
+                                  <input type="text" class="form-control" id="annexe_6_date"
+                                    formControlName="annexe_6_date"
+                                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                    #dp="bsDatepicker" bsDatepicker [maxDate]="today" required
+                                    [ngClass]="{ 'is-invalid': submitted && f.annexe_6_date.errors, 'is-valid': f.annexe_6_date.touched && !f.annexe_6_date.errors }">
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        To,<br>
+                        The Manager,<br>
+                        {{buyerBankName}}<br>
+                        {{buyerBankAddress}}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Dear Sir,<br>
+                        Sub: - Our Import of {{suppierOrgName}} FOR {{currency}} {{totamount}}=00 (Currency & Amount)
+                        under free importability.</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Ref:
+                        <p>With reference to our above imports, we hereby declare that-</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>i) The merchandise referred above can be imported freely as per the existing EXIM Policy; and
+                        </p>
+                        <p>ii) Te subject goods have not been restricted or canalised under ITC (HS) Classification of
+                          Export and Import Items.</p>
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>I/We understand to submit to you the Exchange Control copy of Bill of entry for Home
+                          Consumption certified by the Customs / Customs Assessment Certificate or Postal Appraisal
+                          Form, as the case may be, -</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>a) Within three months from the data of remittance, in the case of import on sight D/P
+                          basis.,</p>
+                        <p>b) on or before the due date of the bills, in the case of import on D/A usance basis.,</p>
+                        <p>c) within 15 days after completion of 12 months from date of advance remittance in case of
+                          capital goods and with in 15 days after completion of three months from date of advance
+                          remittance in case of other goods.</p>
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Thanking You,<br>
+                        <p>{{buyerOrgName}}</p>
+                        <br><br>Authorized Signatory
+                      </td>
+                    </tr>
+
+                    <!-- ANNEXURE vii -->
+                    <tr>
+                      <td class="text-center">
+                        <h5>ANNEXURE VII</h5>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <h5>DECLARATION CUM UNDERTAKING TO BE OBTAINED FROM THE APPLICANT (IMPORTER) SEEKING WAIVER OF
+                          LLOYDS CERTIFICATE /SGS CERTIFICATE OPENING IMPORT LETTER OF CREDIT</h5>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="row">
+                          <div class="col-md-9"></div>
+                          <div class="col-md-3">
+                            <div class="row">
+                              <div class="col-md-4">Place :</div>
+                              <div class="col-md-8">
+                                <div class="form-group">
+                                  <input type="text" class="form-control" id="place" formControlName="place">
+                                </div>
+
+                              </div>
+                              <div class="col-md-4">Date :</div>
+                              <div class="col-md-8">
+                                <div class="form-group">
+                                  <input type="text" class="form-control" id="annexe_7_date"
+                                    formControlName="annexe_7_date"
+                                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-blue' }"
+                                    #dp="bsDatepicker" bsDatepicker [maxDate]="today" required
+                                    [ngClass]="{ 'is-invalid': submitted && f.annexe_7_date.errors, 'is-valid': f.annexe_7_date.touched && !f.annexe_7_date.errors }">
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        To,<br>
+                        The Manager/ Senior Manager,<br>
+                        {{buyerBankName}}<br>
+                        {{buyerBankAddress}}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Dear Sir,<br>
+                        Sub: - Request for waiver of SGS Certificate in respect of Import Letter of Credit to be opened
+                        in favour of {{suppierOrgName}} for {{currency}} {{totamount}}=00 being import of
+                        {{suppierOrgName}}.</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        1. I/We hereby declare that the waiver of SGS Certificate is at my/our request only
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        2.I/We hereby declare that Iam fully aware of the implications involved in seeking will be above
+                        clauses & hereby undertake that :<br>
+                        All disputed relating to the quality of goods supplied by the Overseas Supplier will be settled
+                        outside the purview of the subject import letters of credit and your Bank will not be involved
+                        in any cases relating to such disputes
+                        Since Bank deal only with documents. I/We hereby undertake not to bring any import, in the court
+                        of law thereby hindering the Bank to honor its commitments unlist the subject Letter of
+                        Credit.<br>
+                        I/We will be fully responsible for any consequence arising out of waiver of the above
+                        certificates & Bank will not be affected by such consequences in as far as herewith commitments
+                        under the subject letters of credit is concerned.
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>3. I/We also undertake to discharge our contractual obligations to the Bank as per the letter
+                        agreed while establishing the LC.</td>
+                    </tr>
+                    <tr>
+                      <td>This undertaking letter is given by me/us in continuation of my/our FLC Agreement
+                        cum-Application executed on <input type="date" formControlName="app_date" id="app_date" />
+                        while establishing the LC & also forms pat & parcel of FLC Agreement cum- Application executed
+                        by me.</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Thanking You,<br>
+                        Yours Faithfully,<br><br>
+                        For {{buyerOrgName}}<br><br>
+                        Authorized Signatory
+                      </td>
+                    </tr>
+
+
+                  </tbody>
+
+                </table>
+
+              </div>
+            </div>
+
+            <div class="row">
+              <button class="btn btn-primary mr-1" type="submit">
+                <i class="fa fa-dot-circle-o"></i>Submit</button>
+            </div>
+          </form>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+
+
+<div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+
+      <div class="modal-header">
+        <h4 class="modal-title"><i class="fa fa-envolope"></i> PI Mail To CHA</h4>
+        <button type="button" class="close" (click)="closeModal()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="isLoading" style="text-align: center;">
+          <app-loading-spinner></app-loading-spinner>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div *ngIf="item.length>0">
+              <div class="row">
+                <div class="col-md-6">
+                  <p> <strong>To</strong> : <span *ngFor="let to of email"><input type="checkbox"
+                        (click)="mailto(a.checked,to)" #a> {{to}} </span></p>
+                  <p><textarea class="form-control" cols="6" [(ngModel)]="tomailtext "
+                      (change)='tomailvalue($event)'></textarea></p>
+                </div>
+                <div class="col-md-6">
+                  <p> <strong>Cc</strong> : <span *ngFor="let tocc of email"><input type="checkbox"
+                        (click)="ccmail(e.checked,tocc)" #e> {{tocc}} </span></p>
+                  <p><textarea class="form-control" cols="6" [(ngModel)]="ccmailtext "
+                      (change)='ccmailvalue($event)'></textarea></p>
+                  <p>Put Additional Email comma seperated</p>
+                </div>
+              </div>
+
+              <p><strong>Subject</strong> : SParmar :PI for Registration at {{item[0]['destinationPort']}}</p>
+            </div>
+            <p>Dear Sir / Madam,</p>
+            <p> Good Day. </p>
+            <p>Please Find attached New PI's for registration. </p>
+          </div>
+        </div>
+        <table class="table table-striped table-hover table-responsive-lg" [mfData]="item" #mf="mfDataTable">
+          <thead>
+            <tr>
+              <th>sr.No</th>
+              <th>Party Name</th>
+              <th>PI No.</th>
+              <th>PI Date </th>
+              <th>Quantity</th>
+              <th>Grade</th>
+
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let val of mf.data; let i = index" [attr.data-index]="i" [attr.id]="val.id">
+
+              <td>{{i+1}}</td>
+              <td>{{val.suppierOrgName}}</td>
+              <td>{{val.proform_invoice_no}}</td>
+              <td>{{val.proform_invoice_date}}</td>
+              <td>{{val.pi_quantity}} </td>
+              <td>{{val.gradeName}}</td>
+
+            </tr>
+          </tbody>
+
+        </table>
+
+        <div class="row">
+          <div class="col-md-12">
+            <p>Kindly confirm once get registered.
+            </p>
+            <p></p>
+
+            <p>Regards, </p>
+            <p>SParmar.</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <span *ngFor="let val of item">
+            <span class="col-md-12" *ngIf="val.pi_copy">
+              <span *ngFor="let doc of getDocsArray(val.pi_copy)"> <a href="{{doc}}" target="_blank"><i
+                    class="fa fa-file"></i></a></span>
+            </span>
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+        <button type="button" class="btn btn-primary" (click)="send_mail()">Send Mail</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+<div bsModal #pendingMailModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+
+      <div class="modal-header">
+        <h4 class="modal-title"><i class="fa fa-envolope"></i> Non-Pending Mail to Supplier</h4>
+        <button type="button" class="close" (click)="closeModal()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="isLoading" style="text-align: center;">
+          <app-loading-spinner></app-loading-spinner>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div *ngIf="item.length>0">
+              <div class="row">
+                <div class="col-md-6">
+                  <p> <strong>To</strong> : <span *ngFor="let mail of email"><input type="checkbox"
+                        (click)="mailto(a.checked,mail)" #a> {{mail}} </span></p>
+                  <p><textarea class="form-control" cols="6" [(ngModel)]="tomailtext "
+                      (change)='tomailvalue($event)'></textarea></p>
+                </div>
+                <div class="col-md-6">
+                  <p> <strong>Cc</strong> : <span *ngFor="let cc of email"><input type="checkbox"
+                        (click)="ccmail(e.checked,cc)" #e> {{cc}} </span></p>
+                  <p><textarea class="form-control" cols="6" [(ngModel)]="ccmailtext "
+                      (change)='ccmailvalue($event)'></textarea></p>
+                  <p>Put Additional Email comma seperated</p>
+                </div>
+              </div>
+
+
+              <p>Dear Sir / Madam,</p>
+              <p> Good Day. </p>
+              <p>We request you to kindly send us the Shipping Documents for the vessel:- </p>
+            </div>
+
+            <table class="table table-striped table-hover table-responsive-lg" [mfData]="item" #mf2="mfDataTable">
+              <thead>
+                <tr>
+                  <th>sr.No</th>
+                  <th>PI No.</th>
+                  <th>Quantity</th>
+                  <th>Grade</th>
+                  <th>Port</th>
+                  <th>ETD</th>
+
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let val of mf2.data; let i = index" [attr.data-index]="i" [attr.id]="val.id">
+
+                  <td>{{i+1}}</td>
+                  <td>{{val.proform_invoice_no}} </td>
+                  <td><span *ngIf="val.half_pending_non > 0 ; else quantity">{{val.half_pending_non}}
+                      {{val.unit}}</span>
+                    <ng-template #quantity>
+                      {{val.pi_quantity}} {{val.unit}}
+                    </ng-template>
+                  </td>
+                  <td>{{val.gradeName}}</td>
+                  <td>{{val.destinationPort}} </td>
+                  <td>{{val.tentitive_arrival_date}}</td>
+
+                </tr>
+              </tbody>
+
+            </table>
+            <p>Your kind reply on above will be highly appreciated.
+            </p>
+            <p>Thank you for your kind cooperation </p>
+
+            <p>Regards, </p>
+            <p>SParmar.</p>
+          </div>
+
+
+          <!-- <div class="row" >
+        <span *ngFor="let val of item">
+          <span class="col-md-12" *ngIf="val.pi_copy">
+            <span  *ngFor="let doc of getDocsArray(val.pi_copy)"> <a href="{{serverUrl+doc}}" target="_blank"><i class="fa fa-file"></i></a></span>
+           </span>
+        </span>
+
+      </div> -->
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+          <button type="button" class="btn btn-primary" (click)="send_mail()">Send Mail</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<div bsModal #indentModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" [config]="{backdrop:'static'}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+
+      <div class="modal-header">
+        <h4 class="modal-title">Indent Lc</h4>
+        <button type="button" class="close" (click)="indentModal.hide()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form [formGroup]="indentForm" novalidate (ngSubmit)="onSubmitIndent()" autocomplete="off">
+
+        <div class="modal-body">
+
+
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="indent_invoice_no">Indent Invoice Number</label>
+                  <div class="form-group">
+                    <input type="text" class="form-control" id="indent_invoice_no" formControlName="indent_invoice_no"
+                      [(ngModel)]="indent_invoive">
+                  </div>
+
+                </div>
+
+                <div class="col-md-6">
+                  <label for="indent_commision_amt_usd">Indent Commission Amount</label>
+                  <div class="form-group">
+                    <input type="text" class="form-control" id="indent_commision_amt_usd"
+                      formControlName="indent_commision_amt_usd" [(ngModel)]="indet_commission">
+                  </div>
+
+                </div>
+
+
+                <div class="col-md-6">
+                  <label for="scanimg_indent_lc">Indent LC</label>
+                  <div class="form-group">
+                    <input type="file" class="form-control" id="scanimg_indent_lc" formControlName="scanimg_indent_lc"
+                      (change)="addIndentLc($event)" [multiple]=true>
+                  </div>
+
+                </div>
+
+
+                <div class="col-md-6">
+                  <label for="scanimg_indent_non">Indent NON</label>
+                  <div class="form-group">
+                    <input type="file" class="form-control" id="scanimg_indent_non" formControlName="scanimg_indent_non"
+                      (change)="scanIndentNon($event)" [multiple]=true>
+                  </div>
+
+                </div>
+
+
+                <div class="col-md-6">
+                  <label for="scanimg_indent_amend">Indent Ammend</label>
+                  <div class="form-group">
+                    <input type="file" class="form-control" id="scanimg_indent_amend"
+                      formControlName="scanimg_indent_amend" (change)="scanIndentAmend($event)" [multiple]=true>
+                  </div>
+
+                </div>
+
+                <div class="col-md-6 mt-3">
+                  <ng-container *ngIf="indent_flag; then check; else notcheck">
+                  </ng-container>
+
+                  <ng-template #check>
+                    <input type="checkbox" id="" formControlName="indent_shipment_complete_flag" [checked]="true">
+                  </ng-template>
+
+                  <ng-template #notcheck>
+                    <input type="checkbox" id="" formControlName="indent_shipment_complete_flag">
+                  </ng-template>
+
+                  <span>Shipment Status Check For Complete</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="indentModal.hide()">Close</button>
+          <button type="submit" class="btn btn-primary">Update </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>

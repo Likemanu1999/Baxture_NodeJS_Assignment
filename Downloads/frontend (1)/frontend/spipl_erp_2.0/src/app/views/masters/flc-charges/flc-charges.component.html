@@ -1,0 +1,712 @@
+<div class="row">
+	<div class="col-md-2 offset-5" *ngIf="isLoading">
+		<app-loading-spinner></app-loading-spinner>
+	</div>
+</div>
+
+
+
+<div class="row" *ngIf="!isLoading">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-header">
+				<h4><i class="fa fa-money"></i> FLC Bank Charges
+
+					<button class="btn btn-outline-primary active pull-right"  (click)="addFlcCharges()">
+						+
+						Add New FLC Charges</button>
+				</h4>
+			</div>
+
+			<div class="card-body">
+
+				<div class="row">
+					<div class="col-md-3">
+						
+						<div class="input-group">
+							<label for=""><b>Added Date</b></label>&nbsp;
+							<div class="input-group-prepend">
+								<span class="input-group-text"><i class="fa fa-calendar"></i></span>
+							</div>
+							<input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue"
+								(ngModelChange)="onSelect($event,'1')" placeholder="">
+						</div>
+					</div>
+
+					<!-- <div class="col-md-2">
+						<label for="">To Date</label>
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text"><i class="fa fa-calendar"></i></span>
+							</div>
+							<input type="text" class="form-control " bsDaterangepicker [(ngModel)]="bsRangeValue2"
+								(ngModelChange)="onSelect($event,'2')" placeholder="">
+						</div>
+					</div> -->
+				</div>
+<br>
+				<p-table #dt [value]="flcChargesList" styleClass="ui-table-flc-charges-list" [rowHover]="true"
+					[rows]="10" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50,100,150,200]"
+					[loading]="isLoading" [paginator]="true" [columns]="selectedColumns" [autoLayout]="true"
+					(onFilter)="onFilter($event, dt)"
+					currentPageReportTemplate="Total Records : &#123;&#123;flcChargesList.length&#125;&#125; "
+					[filterDelay]="0" [globalFilterFields]="['bank_name']">
+					 <div class="ui-table-globalfilter-container">
+					<input pInputText type="text" class="form-control" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Global Search" />
+
+				</div> 
+					<ng-template pTemplate="header">
+
+
+						<tr>
+							<th pSortableColumn="{{col.field}}" *ngFor="let col of cols"> {{col.header}}</th>
+						</tr>
+						 <tr>
+						
+						<th *ngIf=" getColumnPresent('bank_name')" >
+							<div *ngIf="banks.length > 0 ">
+							  <p-multiSelect [options]="banks" placeholder="All" (onChange)="onchange($event,'bank_name')" styleClass="ui-column-filter" optionLabel='bank_name'>
+								<ng-template let-op pTemplate="item">
+		
+										<span>&#123;&#123;op.label&#125;&#125;</span>
+		
+								</ng-template>
+							</p-multiSelect>
+							</div>
+						</th>
+						<th></th>
+						<th></th>
+						<th></th>
+					</tr> 
+
+					</ng-template>
+					<ng-template pTemplate="body" let-flcCharges let-index="rowIndex">
+						<tr class="ui-selectable-row">
+
+							<td>
+								<span class="ui-column-title">Bank Name</span>
+								{{flcCharges.bank_name}}
+								<!-- <button class="btn btn-sm btn-danger"
+								(click)="getDetailsCharges(flcCharges)">{{flcCharges.spipl_bank.bank_name}}</button> -->
+							</td>
+							<td>
+								<span class="ui-column-title">From date</span>
+								{{flcCharges.from_date | date :'dd/MM/yyyy'}}
+							</td>
+							<td>
+								<span class="ui-column-title">To date</span>
+								{{flcCharges.to_date | date :'dd/MM/yyyy'}}
+							</td>
+
+							<td>
+								<a style="cursor: pointer;" (click)="onEdit(flcCharges.id)"><i
+										class="fa fa-pencil"></i></a> 
+										&nbsp;
+								<a style="cursor: pointer;" (click)="getDetailsCharges(flcCharges)"><i
+											class="fa fa-eye"></i></a>
+										
+							</td>
+
+
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="footer">
+						<tr>
+							<td colspan="4" style="text-align: right;"></td>
+						</tr>
+					</ng-template>
+
+					<ng-template pTemplate="emptymessage">
+						<tr>
+
+							<td colspan="4" style="text-align:left">No Records found.</td>
+						</tr>
+					</ng-template>
+
+				</p-table>
+			</div>
+		</div>
+
+
+
+	</div>
+</div>
+
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
+
+
+ <div bsModal #myModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}" >
+	<div class="modal-dialog modal-lg " role="document" *ngIf="chargesGgetOne">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h4 class="modal-title">Charges Details</h4>
+				<button type="button" class="close" (click)=" myModal.hide()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+			<div class="row">
+
+				<div class="col-md-6">
+
+					<div class="card">
+						<div class="card-header">
+							
+							<b><i class="fa fa-university"></i>Bank & Dates</b>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="col-6 col-md-4">
+									
+										<label class="col-form-label" for="bank_id">Bank Name</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.spipl_bank.bank_name}}</b></label>
+								</div>
+								<div class="col-6 col-md-4">
+										<label class="col-form-label" for="from_date">From Date</label> 
+										<label class="col-form-label" ><b>{{chargesGgetOne.from_date | date : 'dd/MM/yyyy'}}</b></label>
+								</div>
+	
+								<div class="col-6 col-md-4">
+										<label class="col-form-label" for="to_date">To Date</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.to_date | date : 'dd/MM/yyyy'}}</b></label>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-6">
+
+					<div class="card">
+						<div class="card-header">
+							
+							<b><i class="fa fa-money"></i>LC Ammendment Charges</b>
+						</div>
+						<div class="card-body">
+							<div class="row">
+	
+								<div class="col-6 col-md-6">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_ammend_clause">Ammendment Charges on
+											Clause(Flat)</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lc_ammend_clause}}</b></label>
+									</div>
+								</div>
+	
+	
+								<div class="col-6 col-md-6">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_ammend_swift">Ammendment Swift Charges
+											(Flat)</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lc_ammend_swift}}</b></label>
+										
+									</div>
+								</div>
+	
+							</div>
+						</div>
+					</div>
+	
+				</div>
+
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+						
+							<b><i class="fa fa-money"></i>LC Opening Charges</b>
+						</div>
+						<div class="card-body">
+							<div class="row">
+
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_open_first_qtr">First Quarter Charges
+											(%)</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lc_open_first_qtr}}</b></label>
+										
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_open_after_qtr_per_month">After First Quarter
+											Per Month Charges (%)</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lc_open_after_qtr_per_month}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_open_per_annum">Per Annum</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lc_open_per_annum}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_open_concession">Concession (%) on LC
+											Open</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lc_open_concession}}</b></label>
+										
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_open_concession_exceed">Concession (%) Exceed
+											after Perticular amount cross</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lc_open_concession_exceed}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_open_at_sight_bob_first_qtr">At Sight LC First
+											Quarter Charges (%)(BOB)</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lc_open_at_sight_bob_first_qtr}}</b></label>
+									
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_open_at_sight_bob_after_qtr_per_month">At
+											Sight After First Quarter Per Month Charges (%)(BOB)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.lc_open_at_sight_bob_after_qtr_per_month}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="lc_open_swift">LC Open Swift (Flat) </label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lc_open_swift}}</b></label>
+									</div>
+								</div>
+	
+	
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<b><i class="fa fa-money"></i>NON-LC Remittance Charges</b>
+							
+						</div>
+						<div class="card-body">
+							<div class="row">
+	
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="nonlc_remittance">NONLC Remittance Charges
+											(%)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.nonlc_remittance}}</b></label>
+									</div>
+								</div>
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="nonlc_remittance_min_value">NONLC Remittance Min
+											Value (Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.nonlc_remittance_min_value}}</b></label>
+									</div>
+								</div>
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="nonlc_remittance_max_value">NONLC Remittance Max
+											Value (Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.nonlc_remittance_max_value}}</b></label>
+									</div>
+								</div>
+								<div class="col-6 col-md-3">
+									<div class="form-group">
+										<label class="col-form-label" for="nonlc_remittance_swift">NONLC Remittance Swift
+											(Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.nonlc_remittance_swift}}</b></label>
+									</div>
+								</div>
+	
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							
+							<b><i class="fa fa-money"></i> Payment Remittance Charges</b>
+						</div>
+						<div class="card-body">
+							<div class="row">
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="remitance">Payment Remittance Charges
+											(Flat)</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.remitance}}</b></label>
+									</div>
+								</div>
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="remittance_swift">Payment Remittance Swift
+											Charges (Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.remittance_swift}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="supplier_remit_percentage">Supplier Usance
+											Remittance (%)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.supplier_remit_percentage}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="supplier_remit_min">Supplier Usance Remittance
+											Min Value (Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.supplier_remit_min}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="supplier_remit_max">Supplier Usance Remittance
+											Max Value (Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.supplier_remit_max}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="supplier_usance_swift">Supplier Usance Swift
+											(Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.supplier_usance_swift}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="confirmation_swift">Confrimation Swift
+											(Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.confirmation_swift}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="roll_over_interest_swift">Roll Over Interest
+											Swift (Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.roll_over_interest_swift}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="roll_over_remittance_swift">Roll Over Remittance
+											Swift (Flat)</label>
+											<label class="col-form-label" ><b>{{chargesGgetOne.roll_over_remittance_swift}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="discrepancy">Discrepancy Charges</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.discrepancy}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="lou">LOU Charges</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.lou}}</b></label>
+									</div>
+								</div>
+	
+								<div class="col-6 col-md-2">
+									<div class="form-group">
+										<label class="col-form-label" for="sblc">SBLC Charges</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.sblc}}</b></label>
+									</div>
+								</div>
+	
+	
+	
+							</div>
+						</div>
+					</div>
+	
+				</div>
+
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<b><i class="fa fa-money"></i> Forward Booking Charges</b>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="col-6 col-md-4">
+									<div class="form-group">
+										<label class="col-form-label" for="forward_booking">Forward Booking Charges</label>
+										<label class="col-form-label" ><b>{{chargesGgetOne.forward_booking}}</b></label>
+									</div>
+								</div>
+							</div>
+						</div>
+	
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
+
+			<!-- <div class="modal-header">
+				<h4 class="modal-title">Charges Details</h4>
+				<button type="button" class="close" (click)=" myModal.hide()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<h4>LC Opening Charges</h4>
+				<div class="row">
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>First Quarter Charges (%)</b></label> 
+							{{chargesGgetOne.lc_open_first_qtr}}
+
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>After First Quarter Per Month Charges (%)</b></label>
+							{{chargesGgetOne.lc_open_after_qtr_per_month}}
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Per Annum</b></label>
+							{{chargesGgetOne.lc_open_per_annum}}
+							
+
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Concession (%) on LC Open</b></label>
+							{{chargesGgetOne.lc_open_concession}}
+
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Concession (%) Exceed after Perticular amount cross of LC Open</b></label>
+							{{chargesGgetOne.lc_open_concession_exceed}}
+
+
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>At Sight LC First Quarter Charges (%)(BOB)</b></label>
+							{{chargesGgetOne.lc_open_at_sight_bob_first_qtr}}
+
+
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>At Sight After First Quarter Per Month Charges (%)(BOB)</b></label>
+							{{chargesGgetOne.lc_open_at_sight_bob_after_qtr_per_month}}
+
+						  </div>
+					</div>
+
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>LC Open Swift (Flat)</b></label>
+							{{chargesGgetOne.lc_open_swift}}
+
+						  </div>
+					</div>
+
+
+				</div>
+
+
+				<h4>LC Ammemnd Charges</h4>
+				<div class="row">
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Ammendment Charges on Clause(Flat)</b></label> 
+							{{chargesGgetOne.lc_ammend_clause}}
+							
+
+						  </div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Ammendment Swift Charges (Flat)</b></label> 
+							{{chargesGgetOne.lc_ammend_swift}}
+
+						  </div>
+					</div>
+				</div>
+
+
+				
+				<h4>Payment Remittance (LC) Charges</h4>
+				<div class="row">
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Payment Remittance Charges (Flat)</b></label> 
+							{{chargesGgetOne.remitance}}
+
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Payment Remittance Swift Charges (Flat)</b></label> 
+							{{chargesGgetOne.remittance_swift}}
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Supplier Usance Remittance (%)</b></label> 
+							{{chargesGgetOne.supplier_remit_percentage}}
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Supplier Usance Remittance Min Value (Flat)</b></label> 
+							{{chargesGgetOne.supplier_remit_min}}
+
+						  </div>
+					</div>
+
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Supplier Usance Remittance Max Value (Flat)</b></label> 
+							{{chargesGgetOne.supplier_remit_max}}
+
+						  </div>
+					</div>
+
+					
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Supplier Usance Swift (Flat)</b></label> 
+							{{chargesGgetOne.supplier_usance_swift}}
+						  </div>
+					</div>
+
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Confrimation Swift (Flat)</b></label> 
+							{{chargesGgetOne.confirmation_swift}}
+						  </div>
+					</div>
+
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Roll Over Interest Swift (Flat)</b></label> 
+							{{chargesGgetOne.roll_over_interest_swift}}
+
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Roll Over Remittance Swift (Flat)</b></label> 
+							{{chargesGgetOne.roll_over_remittance_swift}}
+
+						  </div>
+					</div>
+
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Discrepancy Charges</b></label> 
+							{{chargesGgetOne.discrepancy}}
+
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>LOU Charges</b></label> 
+							{{chargesGgetOne.lou}}
+
+						  </div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>SBLC Charges</b></label> 
+							
+							{{chargesGgetOne.sblc}}
+						  </div>
+					</div>
+
+				</div>
+
+				<h4>Payment Remittance (NON-LC) Charges</h4>
+				<div class="row">
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>NONLC Remittance Charges (%)</b></label> 
+							{{chargesGgetOne.nonlc_remittance}}
+
+						  </div>
+					</div>
+
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>NONLC Remittance Min Value (Flat)</b></label> 
+							
+							{{chargesGgetOne.nonlc_remittance_min_value}}
+						  </div>
+					</div>
+
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>NONLC Remittance Max Value (Flat)</b></label> 
+							{{chargesGgetOne.nonlc_remittance_max_value}}
+
+						  </div>
+					</div>
+
+					<div class="col-md-3">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>NONLC Remittance Swift (Flat)</b></label> 
+							{{chargesGgetOne.nonlc_remittance_swift}}
+
+						  </div>
+					</div>
+				</div>
+
+				<h4>Forward Booking Charges</h4>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="form-group">
+							<label class="col-form-label" for="purchase_holder_id"><b>Forward Booking Charges</b></label> 
+							{{chargesGgetOne.forward_booking}}
+
+
+						  </div>
+					</div>
+					</div>
+
+
+
+			</div> -->
+
+
+		</div>
+	</div>
+</div> 

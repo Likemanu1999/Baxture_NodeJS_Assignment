@@ -1,0 +1,339 @@
+<div class="animated fadeIn custom_body">
+	<div class="row">
+		<div class="col-md-12 p-0">
+			<div class="card">
+				<div class="card-header">
+					<div class="row">
+						<div class="col-md-3">
+							<i class="fa fa-list"></i> {{ page_title }}
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+							<p-table #dt dataKey="id" styleClass="sales_orders_table" [value]="data" [rows]="10"
+								[showCurrentPageReport]="true" [rowHover]="true" [rowsPerPageOptions]="[10,25,50,100]"
+								[loading]="isLoading" [autoLayout]="true" [paginator]="true" [columns]="cols"
+								[globalFilterFields]="filter" (filter)="onFilter($event, dt)"
+								(onLazyLoad)="onFilter($event, dt)"
+								currentPageReportTemplate="Showing &#123;currentPage&#125; of &#123;totalPages&#125; entries">
+								<ng-template pTemplate="caption">
+									<div class="row">
+										<div class="col-md-10">
+											<div class="form-inline">
+												<a class="btn btn-success text-white mb-1 mr-2" data-toggle="tooltip"
+													(click)="exportData('Excel')" data-placement="top" title="Excel">
+													<i class="fa fa-file-excel-o"></i>
+													<span class="export-text d-none">Excel</span>
+												</a>
+												<a class="btn btn-danger text-white mb-1 mr-2" data-toggle="tooltip"
+													(click)="exportData('pdf')" data-placement="top" title="PDF">
+													<i class="fa fa-file-pdf-o"></i>
+													<span class="export-text d-none">PDF</span>
+												</a>
+												<div class="form-group mb-1 mr-1">
+													<p-multiSelect [options]="cols" [(ngModel)]="cols"
+														optionLabel="header" selectedItemsLabel="{0} columns selected"
+														defaultLabel="Choose Columns">
+													</p-multiSelect>
+												</div>
+												<div class="mb-1 mr-1">
+													<p-dropdown [(ngModel)]="selectOffer"
+														placeholder="Choose Deal Offer" [options]="offerList"
+														optionValue="id" optionLabel="offer_id" [filter]="true"
+														[showClear]="true" (onChange)="onAction($event,'offer',null)">
+													</p-dropdown>
+												</div>
+												<a *ngIf="checked.length > 0 && selectedOffer != null"
+													class="btn btn-success text-white mb-1 mr-2"
+													(click)="onAction(null, 'Transfer','whatsapp')"
+													data-toggle="tooltip" data-placement="top"
+													title="WhatsApp Transfer">
+													<i class="fa fa-whatsapp mr-1"></i>
+													<span class="export-text">Send WhatsApp</span>
+												</a>
+												<a *ngIf="checked.length > 0 && selectedOffer != null"
+													class="btn btn-primary text-white mb-1 mr-2"
+													(click)="onAction(null, 'Transfer','email')" data-toggle="tooltip"
+													data-placement="top" title="Email Transfer">
+													<i class="fa fa-envelope mr-1"></i>
+													<span class="export-text">Send Email</span>
+												</a>
+											</div>
+										</div>
+										<div class="col-md-2">
+											<div class="w-100 mt-1 pull-right">
+												<input pInputText type="text" class="form-control"
+													(input)="dt.filterGlobal($event.target.value, 'contains')"
+													placeholder="Global Search" />
+											</div>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="header" let-columns>
+									<tr>
+										<th pSortableColumn="{{col.field}}" *ngFor="let col of columns">
+											<div *ngIf="col.type == null">
+												{{col.header}}
+												<p-sortIcon *ngIf="col.sort" field="{{col.field}}"></p-sortIcon>
+											</div>
+											<div *ngIf="col.type == 'Check'" class="text-center">
+												<p-tableHeaderCheckbox (click)="onAction(a.checked, 'Check_All',null)"
+													#a></p-tableHeaderCheckbox>
+											</div>
+										</th>
+									</tr>
+									<tr>
+										<th *ngFor="let col of cols" [style.width]='col.style'>
+											<p-multiSelect *ngIf="col.filter" [options]="col.dropdown"
+												defaultLabel="All"
+												(onChange)="customFilter($event.value, col.field, 'in')">
+											</p-multiSelect>
+										</th>
+									</tr>
+								</ng-template>
+
+								<ng-template pTemplate="body" let-rowData let-expanded="expanded">
+									<tr class="ui-selectable-row ">
+										<td *ngFor="let col of cols" [style.width]='col.style'
+											[ngClass]="(rowData.is_open == 0) ? 'font-weight-bold' : ''">
+											<div *ngIf="getColumnPresent(col.field)">
+												<div *ngIf="col.type != 'check'">
+													<span class="ui-column-title">{{ col.header }}: </span>
+													<div *ngIf="col.type == null">
+														<div
+															*ngIf="col.field != 'country_code' && col.field != 'contact_no' && col.field != 'product_type'">
+															{{ rowData[col.field] }}
+														</div>
+													</div>
+													<div *ngIf="col.field == 'contact_no'">
+														+{{rowData['country_code']}} {{rowData[col.field]}}
+													</div>
+													<div *ngIf="col.field == 'product_type'">
+														{{rowData[col.field] == 1 ? "PVC" : "PE & PP"}}
+													</div>
+												</div>
+												<div *ngIf="col.type == 'Check'" class="text-center">
+													<p-checkbox value="rowData" [value]="rowData" [inputId]="rowData.id"
+														[(ngModel)]="checked"
+														(ngModelChange)="onAction($event,'Check',null)">
+													</p-checkbox>
+												</div>
+											</div>
+										</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Preview -->
+<div bsModal #whatsappModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Preview"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title"><i class="fa fa-eye"></i> Preview</h4>
+				<button type="button" class="close" (click)="whatsappModal.hide()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body" *ngIf="selectedOffer != null">
+				<div class="row">
+					<div class="col-md-12">
+						<p class="mb-1">
+							<strong>Date : </strong>
+							{{currentDate | date: 'dd-MMM-yyyy'}}
+						</p>
+						<p class="mb-1">
+							<strong>Offer Id : </strong>
+							{{selectedOffer.offer_id}}
+						</p>
+						<p class="mb-1">
+							<strong>Grade : </strong>
+							{{selectedOffer.grade_name}}
+						</p>
+						<p class="mb-1">
+							<strong>Manufacturer : </strong>
+							{{selectedOffer.supplier}}
+						</p>
+						<p class="mb-1">
+							<strong>CoO : </strong>
+							{{selectedOffer.name}}
+						</p>
+						<p class="mb-1">
+							<strong>Information : </strong>
+							{{selectedOffer.information}}
+						</p>
+						<p class="mb-1">
+							<strong>Sector : </strong>
+							{{selectedOffer.sector}}
+						</p>
+						<p class="mb-1">
+							<strong>FCL Loading : </strong>
+							{{selectedOffer.quantity}}MT
+						</p>
+						<p class="mb-1">
+							<strong>Port : </strong>
+							{{selectedOffer.portName}}
+						</p>
+						<p class="mb-1">
+							<strong>Arrival : </strong>
+							{{selectedOffer.arrival}}
+						</p>
+						<p class="mb-1">
+							<strong>Delivery : </strong>
+							{{selectedOffer.term}}
+						</p>
+						<p class="mb-1">
+							<strong>Offer Rate : </strong>
+							Rs.{{selectedOffer.offer_rate}}/MT
+						</p>
+						<p class="mb-1">
+							<strong>Offer Expiry: </strong>
+							6.00 pm Today
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="contactInfo">
+				<div class="col-md-12" *ngIf="selectedEmails && selectedAction == 'email'">
+					<p-chips [(ngModel)]="selectedEmails" placeholder="Selected Email Address" [addOnTab]="true"
+						[addOnBlur]="true" separator=",">
+					</p-chips>
+				</div>
+				<div class="col-md-12" *ngIf="selectedContacts && selectedAction == 'whatsapp'">
+					<p-chips [(ngModel)]="selectedContacts" placeholder="Selected Mobile Number" [addOnTab]="true"
+						[addOnBlur]="true" separator=",">
+					</p-chips>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" (click)="SendMessage();">Confirm </button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Send email -->
+<div bsModal #sendMailModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+	aria-hidden="true" [config]="{backdrop:'static'}">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+
+			<div class="modal-header">
+				<h4 class="modal-title"><i class="fa fa-envolope"></i> Offer Details</h4>
+				<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<div class="modal-body">
+				<div class="row" *ngIf="selectedOffer != null">
+					<div class="col-md-12">
+						<div style="text-align: center;">
+							<h4>{{selectedOffer.offer_id}}</h4>
+						</div>
+						<div class="row" *ngIf="selectedEmails && selectedAction == 'email'">
+							<span  class="contactInfo col-md-5 ml-5">
+								<p> <strong>To</strong> :
+									<span>
+										<p-chips [(ngModel)]="selectedEmails" placeholder="Selected Email Address"
+											[addOnTab]="true" [addOnBlur]="true" separator=",">
+										</p-chips>
+									</span>
+							</span>
+							<span  class="contactInfo col-md-5">
+								<p> <strong>Cc</strong> :
+									<span>
+										<p-chips [(ngModel)]="selectedCCEmails" placeholder="Selected Email Address"
+											[addOnTab]="true" [addOnBlur]="true">
+										</p-chips>
+									</span>
+							</span>
+						</div>
+
+
+
+					</div>
+					<div style="margin: 0px 17px 17px 50px">
+						<div>Dear Sir / Madam, </div>
+						<div class="mb-2"> Good Day. </div>
+						<div>
+							<strong>Date : </strong>
+							{{currentDate | date: 'dd-MMM-yyyy'}}
+						</div>
+						<div>
+							<strong>Offer Id : </strong>
+							{{selectedOffer.offer_id}}
+						</div>
+						<div>
+							<strong>Grade : </strong>
+							{{selectedOffer.grade_name}}
+						</div>
+						<div>
+							<strong>Manufacturer : </strong>
+							{{selectedOffer.supplier}}
+						</div>
+						<div>
+							<strong>CoO : </strong>
+							{{selectedOffer.name}}
+						</div>
+						<div>
+							<strong>Information : </strong>
+							{{selectedOffer.information}}
+						</div>
+						<div>
+							<strong>Sector : </strong>
+							{{selectedOffer.sector}}
+						</div>
+						<div>
+							<strong>FCL Loading : </strong>
+							{{selectedOffer.quantity}}MT
+						</div>
+						<div>
+							<strong>Port : </strong>
+							{{selectedOffer.portName}}
+						</div>
+						<div>
+							<strong>Arrival : </strong>
+							{{selectedOffer.arrival}}
+						</div>
+						<div>
+							<strong>Delivery : </strong>
+							{{selectedOffer.term}}
+						</div>
+						<div>
+							<strong>Offer Rate : </strong>
+							Rs.{{selectedOffer.offer_rate}}/MT
+						</div>
+						<div class="mb-2">
+							<strong>Offer Expiry : </strong>
+							6.00 pm Today
+						</div>
+						<div>Regards , SParmar</div>
+					</div>
+					
+				</div>
+
+
+
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+				<button type="button" class="btn btn-primary" (click)="compose_mail()">Send	Mail</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<toaster-container [toasterconfig]="toasterconfig"></toaster-container>
