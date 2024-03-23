@@ -1,8 +1,0 @@
-switch-label .switch-input:checked ~ .switch-slider::before {
-    -webkit-transform: translateX(22px);
-    transform: translateX(41px);
-}
-
-.switch-label {
-    width: 70px;
-}
